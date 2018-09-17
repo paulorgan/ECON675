@@ -1,22 +1,18 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS1
-# last Update: Sept 12, 2018
+# last Update: Sept 17, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
 
+# packages
 require(tidyverse)
 require(magrittr)
-
-# for table output
-require(xtable)
-
-# permutation tests
-require(perm)
-
-# power calculatoins
-require(pwr)
+require(xtable) # for table output
+require(perm) # permutation tests
+require(pwr) # power calculatoins
+require(ggplot2) # plots
 
 select = dplyr::select
 
@@ -48,7 +44,7 @@ q2$conf_int <-
 xtable(q2)
 
 ###############################################################################
-# Question 3: Analysis of Experiments
+## Question 3: Analysis of Experiments
 # 1) Neyman's Approach:
 
 # 1a) ATE
@@ -67,16 +63,21 @@ ATE = Ybar1-Ybar0
 S1 = (1/(N1-1))*var(df$earn78[df$treat==1])
 S0 = (1/(N0-1))*var(df$earn78[df$treat==0])
 
-Tstat = ATE / sqrt(S1+S0)
+se <- sqrt(S1+S0)
+
+Tstat = ATE / se
 pval = 2*pnorm(-abs(Tstat))
 
-CI = paste0('[',round(ATE-1.96*sqrt(S1+S0),2),', ',round(ATE+1.96*sqrt(S1+S0),2),']')
+CI_31b = paste0('[',round(ATE-1.96*sqrt(S1+S0),2),', '
+            ,round(ATE+1.96*sqrt(S1+S0),2),']')
 
 # Canned version for comparison
 ttest <- t.test(earn78 ~ treat, data = df)
 ttest
 
+###############################################################################
 # 2) Fisher's Approach
+# a) p-Value
 # Fisher
 fisher_1 <- permTS(earn78 ~ treat, data = df,
                    alternative = 'two.sided', method = 'exact.mc',
@@ -88,7 +89,66 @@ earn78_0 <- df$earn78[df$treat==0]
 earn78_1 <- df$earn78[df$treat==1]
 ks.test(earn78_0, earn78_1, alternative = 'two.sided', exact = T)
 
+# b) Confidence Interval
+# Imputation assuming ATE is constant
+# (Generating Yi(1) and Yi(0) for each i, assuming ATE estimate is constant)
+Y1_imp <- (df$treat==1) * df$earn78 + (df$treat==0) * (df$earn78 + ATE)
+Y0_imp <- (df$treat==1) * (df$earn78 - ATE) + (df$treat==0) * df$earn78
+
+# define statistic (difference in means)
+boot_T <- function(x, ind) {
+  mean(Y1_imp[df$treat[ind]==1]) - mean(Y0_imp[df$treat[ind]==0])
+}
+
+# run bootstrap using defined statistic
+boot_results <- boot(df, R = 999, statistic = boot_T,
+                     sim = "permutation", stype = "i")
+
+# construct 95% confidence interval
+CI_32b = paste0('[', quantile(boot_results$t,0.025), ', ',
+               quantile(boot_results$t,0.975), ']')
+
+###############################################################################
 # 3) Power Calculations
-pwr.t2n.test(N0,N1,d=.5,sig.level=.05)
+# a) deriving power function
+
+# Z value for 95%
+Z <- 1.96
+
+# testing tau_0 = 0. plot tau on either side of 0
+df_p <- data.frame(tau = seq(-2500, 2500, 25))
+
+# calculate propability of rejection under each alternative tau
+df_p %<>% mutate(prob_rej = pnorm(Z-tau/se, lower.tail=F) +
+                   pnorm(Z+tau/se, lower.tail=F))
+
+plot <- ggplot(df_p, aes(x = tau, y = prob_rej)) +
+  geom_point() + geom_smooth() +
+  ylab('Power') + xlab('tau') +
+  geom_hline(yintercept=0.05,linetype='dashed',color='red')
+ggsave('power.png', plot)
+
+# b) determining minimum sample size
+df_n <- data.frame(n = seq(100,5000,5))
+
+# given: probablity of treatment is 2/3
+p <- 2/3
+
+# effect we want to detect
+tau_0 <- 1000
+
+# variances of observed data
+V1 <- var(df$earn78[df$treat==1])
+V0 <- var(df$earn78[df$treat==0])
+
+# simulate with different sample sizes
+df_n %<>% mutate(n1 = n*p,
+                 n0 = n-n1,
+                 std_err = sqrt(V1/n1 + V0/n0),
+                 power = pnorm(Z-tau_0/std_err, lower.tail=F) +
+                   pnorm(Z+tau_0/std_err, lower.tail=F)) 
+
+# find sample size st power is at least .8
+min_n <- min(df_n$n[df_n$power>=0.8])
 
 ###############################################################################
