@@ -1,21 +1,21 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS1
-# last Update: Sept 17, 2018
+# last Update: Sept 18, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
 
 # packages
-require(tidyverse)
-require(magrittr)
-require(xtable) # for table output
-require(perm) # permutation tests
-require(boot) # bootstrapping
-require(ggplot2) # plots
+require(tidyverse) # data cleaning and manipulation
+require(magrittr)  # syntax
+require(xtable)    # regression table output
+require(perm)      # permutation tests
+require(boot)      # bootstrapping
+require(ggplot2)   # plots
 
+set.seed(22)
 select = dplyr::select
-
 setwd('C:/Users/prorgan/Box/Classes/Econ 675/Problem Sets/PS1')
 
 ###############################################################################
@@ -28,6 +28,7 @@ df <- read_csv('LaLonde_1986.csv')
 # add necessary variables
 df %<>% mutate(educ2 = educ*educ, blackXearn74 = black * earn74)
 
+# run regression
 reg <- lm(earn78 ~ treat + black + age + educ + educ2 +
             earn74 + blackXearn74 + u74 + u75, data = df)
 
@@ -40,14 +41,13 @@ q2$conf_int <-
   paste0('[',round(q2$coefficient-1.96*q2$std_error,2),', ',
          round(q2$coefficient+1.96*q2$std_error,2),']')
 
-# round cols
+# output table for Latex
 xtable(q2)
 
 ###############################################################################
 ## Question 3: Analysis of Experiments
 # 3.1) Neyman's Approach:
-
-# 3.1a) ATE
+# 3.1a) Average Treatment Effect
 N1 = sum(df$treat==1)
 N0 = sum(df$treat==0)
 
@@ -72,8 +72,7 @@ CI_31b = paste0('[',round(ATE-1.96*sqrt(S1+S0),2),', '
             ,round(ATE+1.96*sqrt(S1+S0),2),']')
 
 # Canned version for comparison
-ttest <- t.test(earn78 ~ treat, data = df)
-ttest
+t.test(earn78 ~ treat, data = df)
 
 ###############################################################################
 # 3.2) Fisher's Approach
@@ -126,7 +125,7 @@ plot <- ggplot(df_p, aes(x = tau, y = prob_rej)) +
   geom_point() + geom_smooth() +
   ylab('Power') + xlab('tau') +
   geom_hline(yintercept=0.05,linetype='dashed',color='red')
-ggsave('power_R.png', plot)
+ggsave('power_R.png', plot, width = 6, height = 4, units = 'in')
 
 # 3.3b) determining minimum sample size
 df_n <- data.frame(n = seq(100,5000,5))

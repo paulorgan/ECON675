@@ -8,9 +8,10 @@ set more off
 capture log close
 
 cd "C:\Users\prorgan\Box\Classes\Econ 675\Problem Sets\PS1"
-
 log using ps1.log, replace
+set seed 22
 
+* load data
 insheet using "LaLonde_1986.csv", clear
 
 ********************************************************************************
@@ -28,7 +29,7 @@ outreg2 using q2outreg.tex, side stats(coef se tstat pval ci) ///
 
 ********************************************************************************
 * Question 3: Analysis of Experiments
-* 1) Neyman's Approach
+* 3.1) Neyman's Approach
 * manually
 sum earn78 if treat==0
 local N0 = r(N)
@@ -55,6 +56,7 @@ local mu0 = round(`mu0', .01)
 local mu1 = round(`mu1', .0001)
 local sd0 = round(`sd0', .01)
 local sd1 = round(`sd1', .0001)
+local tau = round(`tau', .01)
 local T = round(`T', .01)
 local pval = round(`pval', .0001)
 local ci_low = round(`ci_low', .01)
@@ -62,21 +64,22 @@ local ci_high = round(`ci_high', .01)
 
 di "Control: `mu0' (`sd0') -- N=`N0'" 
 di "Treatment: `mu1' (`sd1') -- N=`N1'" 
+di "Difference: `tau'"
 di "Test = `T' -- p-val = `pval'"
 di "CI: [`ci_low', `ci_high']"
 
 * canned version for comparison:
 ttest earn78, by(treat) unequal
 
-* 2) Fisher's Approach
-* 2a) p-Value
+* 3.2) Fisher's Approach
+* 3.2a) p-Value
 * Fisher permutation
 permute treat diffmean=(r(mu_2)-r(mu_1)), reps(999) nowarn: ttest earn78, by(treat)
 
 * Kolgomorov-Smirnov
 ksmirnov earn78, by(treat) exact
 
-* 2b) confidence interval
+* 3.2b) confidence interval
 * define imputed variables
 gen y1_imp = earn78
 replace y1_imp = earn78 + `tau' if treat==0
@@ -93,19 +96,20 @@ program define SUTVAdiff, rclass
 	return scalar SUTVAdiff = `temp1' - `temp0'
 end
 
+* run bootstrap
 bootstrap diff = r(SUTVAdiff), reps(999): SUTVAdiff
 
-* 3) Power Calculations
-* 3a) graphing power function
+* 3.3) Power Calculations
+* 3.3a) graphing power function
 local a = 0.05
 local Z = invnormal(1-`a'/2)
 
-** Plot power functions
+* Plot power functions and save
 twoway (function y = 1 - normal(x/`v'+`Z') + normal(x/`v'-`Z'), range(-2500 2500)), ///
-	   yline(`a', lpattern(dash))
-graph save power_stata.png, replace
+	   yline(`a', lpattern(dash)) yti("Power") xti("tau")
+graph export power_Stata.png, replace
 
-* 3b) determining minimum sample size
+* 3.3b) determining minimum sample size
 mata:
 	y = st_data(., "earn78"); t = st_data(., "treat")
 	
