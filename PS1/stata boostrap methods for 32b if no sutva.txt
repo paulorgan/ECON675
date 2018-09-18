@@ -1,0 +1,5 @@
+* bootstrapping using regression method
+bootstrap, reps(999) seed(100): regress earn78 treat
+
+* bootstrapping with difference in means
+bootstrap (r(mu_1)-r(mu_2)), reps(999) strata(treat): ttest earn78, by(treat) unequal

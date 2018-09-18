@@ -11,7 +11,7 @@ require(tidyverse)
 require(magrittr)
 require(xtable) # for table output
 require(perm) # permutation tests
-require(pwr) # power calculatoins
+require(boot) # bootstrapping
 require(ggplot2) # plots
 
 select = dplyr::select
@@ -45,9 +45,9 @@ xtable(q2)
 
 ###############################################################################
 ## Question 3: Analysis of Experiments
-# 1) Neyman's Approach:
+# 3.1) Neyman's Approach:
 
-# 1a) ATE
+# 3.1a) ATE
 N1 = sum(df$treat==1)
 N0 = sum(df$treat==0)
 
@@ -59,7 +59,7 @@ Ybar0 = sumY0/N0
 
 ATE = Ybar1-Ybar0
 
-# 1b) t-test
+# 3.1b) t-test
 S1 = (1/(N1-1))*var(df$earn78[df$treat==1])
 S0 = (1/(N0-1))*var(df$earn78[df$treat==0])
 
@@ -76,8 +76,8 @@ ttest <- t.test(earn78 ~ treat, data = df)
 ttest
 
 ###############################################################################
-# 2) Fisher's Approach
-# a) p-Value
+# 3.2) Fisher's Approach
+# 3.2a) p-Value
 # Fisher
 fisher_1 <- permTS(earn78 ~ treat, data = df,
                    alternative = 'two.sided', method = 'exact.mc',
@@ -89,7 +89,7 @@ earn78_0 <- df$earn78[df$treat==0]
 earn78_1 <- df$earn78[df$treat==1]
 ks.test(earn78_0, earn78_1, alternative = 'two.sided', exact = T)
 
-# b) Confidence Interval
+# 3.2b) Confidence Interval
 # Imputation assuming ATE is constant
 # (Generating Yi(1) and Yi(0) for each i, assuming ATE estimate is constant)
 Y1_imp <- (df$treat==1) * df$earn78 + (df$treat==0) * (df$earn78 + ATE)
@@ -109,8 +109,8 @@ CI_32b = paste0('[', quantile(boot_results$t,0.025), ', ',
                quantile(boot_results$t,0.975), ']')
 
 ###############################################################################
-# 3) Power Calculations
-# a) deriving power function
+# 3.3) Power Calculations
+# 3.3a) graphing power function
 
 # Z value for 95%
 Z <- 1.96
@@ -126,9 +126,9 @@ plot <- ggplot(df_p, aes(x = tau, y = prob_rej)) +
   geom_point() + geom_smooth() +
   ylab('Power') + xlab('tau') +
   geom_hline(yintercept=0.05,linetype='dashed',color='red')
-ggsave('power.png', plot)
+ggsave('power_R.png', plot)
 
-# b) determining minimum sample size
+# 3.3b) determining minimum sample size
 df_n <- data.frame(n = seq(100,5000,5))
 
 # given: probablity of treatment is 2/3

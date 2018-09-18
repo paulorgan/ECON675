@@ -2,7 +2,7 @@
       name:  <unnamed>
        log:  C:\Users\prorgan\Box\Classes\Econ 675\Problem Sets\PS1\ps1.log
   log type:  text
- opened on:  14 Sep 2018, 17:19:44
+ opened on:  18 Sep 2018, 16:49:02
 
 . 
 . insheet using "LaLonde_1986.csv", clear
@@ -66,7 +66,7 @@ dir : seeout
 
 . local sd0 = r(sd)
 
-. local V0 = r(Var)/r(N)
+. local V0 = r(Var)/(`N0'-1)
 
 . 
 . sum earn78 if treat==1
@@ -81,7 +81,7 @@ dir : seeout
 
 . local sd1 = r(sd)
 
-. local V1 = r(Var)/r(N)
+. local V1 = r(Var)/(`N1'-1)
 
 . 
 . local tau = `mu1'-`mu0'
@@ -93,6 +93,12 @@ dir : seeout
 . local pval = 2*normal(-abs(`T'))
 
 . 
+. local ci_low  = `tau' + invnormal(.025)*`v'
+
+. local ci_high = `tau' + invnormal(.975)*`v'
+
+. 
+. * rounding
 . local mu0 = round(`mu0', .01)
 
 . local mu1 = round(`mu1', .0001)
@@ -100,6 +106,14 @@ dir : seeout
 . local sd0 = round(`sd0', .01)
 
 . local sd1 = round(`sd1', .0001)
+
+. local T = round(`T', .01)
+
+. local pval = round(`pval', .0001)
+
+. local ci_low = round(`ci_low', .01)
+
+. local ci_high = round(`ci_high', .01)
 
 . 
 . di "Control: `mu0' (`sd0') -- N=`N0'" 
@@ -109,7 +123,10 @@ Control: 4554.8 (5483.84) -- N=260
 Treatment: 6349.1454 (7867.4047) -- N=185
 
 . di "Test = `T' -- p-val = `pval'"
-Test = 2.674145801182356 -- p-val = .0074919871307942
+Test = 2.67 -- p-val = .0076
+
+. di "CI: [`ci_low', `ci_high']"
+CI: [475.91, 3112.78]
 
 . 
 . * canned version for comparison:
@@ -134,6 +151,7 @@ Ho: diff = 0                     Satterthwaite's degrees of freedom =  307.132
 
 . 
 . * 2) Fisher's Approach
+. * 2a) p-Value
 . * Fisher permutation
 . permute treat diffmean=(r(mu_2)-r(mu_1)), reps(999) nowarn: ttest earn78, by(treat)
 (running ttest on estimation sample)
@@ -170,7 +188,7 @@ Monte Carlo permutation results                 Number of obs     =        445
 ------------------------------------------------------------------------------
 T            |     T(obs)       c       n   p=c/n   SE(p) [95% Conf. Interval]
 -------------+----------------------------------------------------------------
-    diffmean |   1794.343       3     999  0.0030  0.0017  .0006197   .0087507
+    diffmean |   1794.343       2     999  0.0020  0.0014  .0002425    .007213
 ------------------------------------------------------------------------------
 Note: Confidence interval is with respect to p=c/n.
 Note: c = #{|T| >= |T(obs)|}
@@ -191,10 +209,108 @@ Note: Ties exist in combined dataset;
       there are 308 unique values out of 445 observations.
 
 . 
-. * 3) Power Calculations
+. * 2b) confidence interval
+. * define imputed variables
+. gen y1_imp = earn78
+
+. replace y1_imp = earn78 + `tau' if treat==0
+(260 real changes made)
+
 . 
+. gen y0_imp = earn78
+
+. replace y0_imp = earn78 - `tau' if treat==1
+(185 real changes made)
+
 . 
-. ********************************************************************************
+. program define SUTVAdiff, rclass
+  1.         sum y1_imp if treat==1
+  2.         local temp1 = r(mean)
+  3.         sum y0_imp if treat==0
+  4.         local temp0 = r(mean)
+  5.         return scalar SUTVAdiff = `temp1' - `temp0'
+  6. end
+
+. 
+. bootstrap diff = r(SUTVAdiff): SUTVAdiff
+(running SUTVAdiff on estimation sample)
+
+Warning:  Because SUTVAdiff is not an estimation command or does not set e(sample), bootstrap has no way to determine which observations are used in calculating the
+          statistics and so assumes that all observations are used.  This means that no observations will be excluded from the resampling because of missing values or other
+          reasons.
+
+          If the assumption is not true, press Break, save the data, and drop the observations that are to be excluded.  Be sure that the dataset in memory contains only the
+          relevant data.
+
+Bootstrap replications (50)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+
+Bootstrap results                               Number of obs     =        445
+                                                Replications      =         50
+
+      command:  SUTVAdiff
+         diff:  r(SUTVAdiff)
+
+------------------------------------------------------------------------------
+             |   Observed   Bootstrap                         Normal-based
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+        diff |   1794.343   605.5103     2.96   0.003     607.5647    2981.121
+------------------------------------------------------------------------------
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD594_000000.tmp"
+
+. 
+. bootstrap diff = r(SUTVAdiff), reps(999): SUTVAdiff
+(running SUTVAdiff on estimation sample)
+
+Warning:  Because SUTVAdiff is not an estimation command or does not set e(sample), bootstrap has no way to determine which observations are used in calculating the
+          statistics and so assumes that all observations are used.  This means that no observations will be excluded from the resampling because of missing values or other
+          reasons.
+
+          If the assumption is not true, press Break, save the data, and drop the observations that are to be excluded.  Be sure that the dataset in memory contains only the
+          relevant data.
+
+Bootstrap replications (999)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+..................................................   100
+..................................................   150
+..................................................   200
+..................................................   250
+..................................................   300
+..................................................   350
+..................................................   400
+..................................................   450
+..................................................   500
+..................................................   550
+..................................................   600
+..................................................   650
+..................................................   700
+..................................................   750
+..................................................   800
+..................................................   850
+..................................................   900
+..................................................   950
+.................................................
+
+Bootstrap results                               Number of obs     =        445
+                                                Replications      =        999
+
+      command:  SUTVAdiff
+         diff:  r(SUTVAdiff)
+
+------------------------------------------------------------------------------
+             |   Observed   Bootstrap                         Normal-based
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+        diff |   1794.343   650.7335     2.76   0.006     518.9289    3069.757
+------------------------------------------------------------------------------
+
 . 
 end of do-file
 
