@@ -1,7 +1,7 @@
 ********************************************************************************
 * Author: Paul R. Organ
 * Purpose: ECON 675, PS1
-* Last Update: Sept 12, 2018
+* Last Update: Sept 17, 2018
 ********************************************************************************
 clear all
 set more off
@@ -60,11 +60,15 @@ di "Test = `T' -- p-val = `pval'"
 ttest earn78, by(treat) unequal
 
 * 2) Fisher's Approach
+* 2a) p-Value
 * Fisher permutation
 permute treat diffmean=(r(mu_2)-r(mu_1)), reps(999) nowarn: ttest earn78, by(treat)
 
 * Kolgomorov-Smirnov
 ksmirnov earn78, by(treat) exact
+
+* 2b) confidence interval
+
 
 * 3) Power Calculations
 
