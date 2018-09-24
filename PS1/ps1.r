@@ -1,7 +1,7 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS1
-# last Update: Sept 18, 2018
+# Last Update: Sept 24, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
@@ -36,10 +36,13 @@ reg <- lm(earn78 ~ treat + black + age + educ + educ2 +
 q2 <- xtable(reg)
 colnames(q2) <- c('coefficient', 'std_error', 't_stat', 'p_val')
 
+# Z-value for 95%
+z = qnorm(.025, lower.tail=F)
+
 # add confidence interval
 q2$conf_int <-
-  paste0('[',round(q2$coefficient-1.96*q2$std_error,2),', ',
-         round(q2$coefficient+1.96*q2$std_error,2),']')
+  paste0('[',round(q2$coefficient-z*q2$std_error,2),', ',
+         round(q2$coefficient+z*q2$std_error,2),']')
 
 # output table for Latex
 xtable(q2)
@@ -68,8 +71,8 @@ se <- sqrt(S1+S0)
 Tstat = ATE / se
 pval = 2*pnorm(-abs(Tstat))
 
-CI_31b = paste0('[',round(ATE-1.96*sqrt(S1+S0),2),', '
-            ,round(ATE+1.96*sqrt(S1+S0),2),']')
+CI_31b = paste0('[',round(ATE-z*sqrt(S1+S0),2),', '
+            ,round(ATE+z*sqrt(S1+S0),2),']')
 
 # Canned version for comparison
 t.test(earn78 ~ treat, data = df)
@@ -111,15 +114,12 @@ CI_32b = paste0('[', quantile(boot_results$t,0.025), ', ',
 # 3.3) Power Calculations
 # 3.3a) graphing power function
 
-# Z value for 95%
-Z <- 1.96
-
 # testing tau_0 = 0. plot tau on either side of 0
 df_p <- data.frame(tau = seq(-2500, 2500, 25))
 
 # calculate propability of rejection under each alternative tau
-df_p %<>% mutate(prob_rej = pnorm(Z-tau/se, lower.tail=F) +
-                   pnorm(Z+tau/se, lower.tail=F))
+df_p %<>% mutate(prob_rej = pnorm(z-tau/se, lower.tail=F) +
+                   pnorm(z+tau/se, lower.tail=F))
 
 plot <- ggplot(df_p, aes(x = tau, y = prob_rej)) +
   geom_point() + geom_smooth() +
@@ -144,8 +144,8 @@ V0 <- var(df$earn78[df$treat==0])
 df_n %<>% mutate(n1 = n*p,
                  n0 = n-n1,
                  std_err = sqrt(V1/n1 + V0/n0),
-                 power = pnorm(Z-tau_0/std_err, lower.tail=F) +
-                   pnorm(Z+tau_0/std_err, lower.tail=F)) 
+                 power = pnorm(z-tau_0/std_err, lower.tail=F) +
+                   pnorm(z+tau_0/std_err, lower.tail=F)) 
 
 # find sample size st power is at least .8
 min_n <- min(df_n$n[df_n$power>=0.8])
