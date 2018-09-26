@@ -98,7 +98,7 @@ Y1_imp <- (df$treat==1) * df$earn78 + (df$treat==0) * (df$earn78 + ATE)
 Y0_imp <- (df$treat==1) * (df$earn78 - ATE) + (df$treat==0) * df$earn78
 
 # define statistic (difference in means)
-boot_T <- function(x, ind) {
+boot_T <- function(data, ind) {
   mean(Y1_imp[df$treat[ind]==1]) - mean(Y0_imp[df$treat[ind]==0])
 }
 
