@@ -11,6 +11,7 @@ require(tidyverse) # data cleaning and manipulation
 require(magrittr)  # syntax
 require(ggplot2)   # plots
 require(kedd)      # kernel estimation
+require(ks)        # kernel estimation
 
 set.seed(22)
 select = dplyr::select
@@ -36,8 +37,6 @@ samp <- rnorm(n=n,mean=mus[comps],sd=sds[comps])
 # check plot
 plot(density(samp))
 
-
-
 # define Kernel function: K(u)=.75(1-u^2)(ind(abs(u)<=1))
 K0 <- function(u){
   out <- .75 * (1-u^2) * (abs(u) <= 1)
@@ -48,11 +47,20 @@ K1 <- function(u){
   out <- .75 * (-2 * u) * (abs(u) <= 1)
 }
 
-# define DGP
+# compute optimal bandwidth using kedd package
+h.amise(samp, kernel = 'epanechnikov', deriv.order=0)
+plot.h.amise(h.amise(samp, kernel = 'epanechnikov', deriv.order= 0))
+
+h.amise(samp, kernel = 'epanechnikov', deriv.order=1)
+
+# what about the np package? see function npregbw
+# https://cran.r-project.org/web/packages/np/np.pdf
 
 
-# compute optimal bandwidth
-h.amise(kernel = 'epanechnikov', deriv.order= 0)
+# trying using ks package
+# can't implement epanechnikov kernel here...only Normal
+hamise.mixt(mus,sds,props=c(.5,.5),samp=n,deriv.order=0)
+hamise.mixt(mus,sds,props=c(.5,.5),samp=n,deriv.order=1)
 
 # Q1.3b
 # simulate 1000 times
