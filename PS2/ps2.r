@@ -1,7 +1,7 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS2
-# Last Update: Oct 2, 2018
+# Last Update: Oct 3, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
@@ -73,7 +73,7 @@ rm(list = ls())
 gc()
 
 ###############################################################################
-## Q5a
+## Q2.5a
 # define datagenerating process
 set.seed(22)
 dgp <- function(n){
@@ -99,7 +99,7 @@ n <- 1000
 M <- 1000
 
 ###############################################################################
-## Q5b
+## Q2.5b
 # series truncation
 K  <- 1:20
 nK <- length(K)
@@ -159,7 +159,7 @@ plot <- ggplot(data = averages, aes(x = K, y = avg_MSE, color = Group)) +
   geom_point(size = 2) + scale_color_manual(values=c('black','red')) +
   theme(legend.position='none')
 plot
-ggsave('q5b_R.png')
+ggsave('q2_5b_R.png')
 
 ###############################################################################
 ## Q5c
@@ -220,7 +220,7 @@ plot <- ggplot(data = df, aes(x = x, y = value, color = type)) +
   scale_color_manual(values = c('black', 'black', 'red', 'blue')) +
   scale_size_manual(values = c(0,0,2,2))
 plot
-ggsave('q5c_R.png')
+ggsave('q2_5c_R.png')
 
 ###############################################################################
 ## Q5d
@@ -280,6 +280,50 @@ plot <- ggplot(data = df1, aes(x = x, y = value, color = type)) +
   scale_color_manual(values = c('black', 'black', 'red', 'blue')) +
   scale_size_manual(values = c(0,0,2,2))
 plot
-ggsave('q5d_R.png')
+ggsave('q2_5d_R.png')
+
+###############################################################################
+## Question 3: Semiparametric Semi-Linear Model
+# clean up
+rm(list = ls())
+gc()
+
+###############################################################################
+## Q3.4a
+# define data generating process
+
+# dimensions
+d <- 5
+
+set.seed(22)
+dgp <- function(n){
+  # input:  sample size n
+  # output: n draws of X and Y according to DGPs as specified in PSet
+  
+  # X is a d by n matrix ~ U(-1,1)
+  X <- matrix(runif(n*d,-1,1), ncol=d)
+  
+  # V ~ N(0,1) and U ~ N(0,1)
+  V <- rnorm(n)
+  U <- rnorm(n)
+  
+  # Eps = .36...*(1+||X||^2)*V
+  E <- 0.3637899*(1+diag(X %*% t(X)))*V
+  
+  # g_0(X) = exp(||X||^2)
+  G <- exp(diag(X %*% t(X)))
+  
+  # T = ind(||x||+u >= 0) (times 1 to convert from Boolean to numeric)
+  Tee <- (sqrt(diag(X %*% t(X))) + U >= 0)*1
+  
+  # returning list with matrix X, vector Y, vector T
+  out = list(X=X,Y=Y,Tee=Tee)
+}
+
+# sample size
+n <- 500
+
+# replications
+M <- 1000
 
 ###############################################################################
