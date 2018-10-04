@@ -1,7 +1,7 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS2
-# Last Update: Oct 3, 2018
+# Last Update: Oct 4, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
@@ -10,9 +10,11 @@ options(stringsAsFactors = F)
 require(tidyverse) # data cleaning and manipulation
 require(magrittr)  # syntax
 require(ggplot2)   # plots
-require(kedd)      # kernel estimation
-require(ks)        # kernel estimation
+require(kedd)      # kernel bandwidth estimation
+require(ks)        # kernel bandwidth estimation
+require(np)        # kernel bandwidth estimation
 require(car)       # heteroskedastic robust SEs
+require(xtable)    # tables for LaTeX
 
 setwd('C:/Users/prorgan/Box/Classes/Econ 675/Problem Sets/PS2')
 
@@ -52,15 +54,13 @@ K1 <- function(u){
 h.amise(samp, kernel = 'epanechnikov', deriv.order=0)
 plot.h.amise(h.amise(samp, kernel = 'epanechnikov', deriv.order= 0))
 
-h.amise(samp, kernel = 'epanechnikov', deriv.order=1)
-
 # what about the np package? see function npregbw
 # https://cran.r-project.org/web/packages/np/np.pdf
+# think this only works if regressing y on x
 
 # trying using ks package
 # can't implement epanechnikov kernel here...only Normal
 hamise.mixt(mus,sds,props=c(.5,.5),samp=n,deriv.order=0)
-hamise.mixt(mus,sds,props=c(.5,.5),samp=n,deriv.order=1)
 
 # Q1.3b
 # simulate 1000 times
@@ -162,7 +162,7 @@ plot
 ggsave('q2_5b_R.png')
 
 ###############################################################################
-## Q5c
+## Q2.5c
 # define grid of evaluation points
 grid     <- seq(-1,1,.1)
 eval_pts <- length(grid)
@@ -223,7 +223,7 @@ plot
 ggsave('q2_5c_R.png')
 
 ###############################################################################
-## Q5d
+## Q2.5d
 # Now estimating the derivative of the regression function
 # This will reuse my code from above, with new polynomials (taking derivs)
 
@@ -292,16 +292,18 @@ gc()
 ## Q3.4a
 # define data generating process
 
-# dimensions
-d <- 5
+# sample size
+n <- 500
+# replications
+M <- 1000
 
-set.seed(22)
+# define data generating process
 dgp <- function(n){
   # input:  sample size n
   # output: n draws of X and Y according to DGPs as specified in PSet
   
-  # X is a d by n matrix ~ U(-1,1)
-  X <- matrix(runif(n*d,-1,1), ncol=d)
+  # X is a d(5) by n matrix ~ U(-1,1)
+  X <- matrix(runif(n*5,-1,1), ncol=5)
   
   # V ~ N(0,1) and U ~ N(0,1)
   V <- rnorm(n)
@@ -314,16 +316,235 @@ dgp <- function(n){
   G <- exp(diag(X %*% t(X)))
   
   # T = ind(||x||+u >= 0) (times 1 to convert from Boolean to numeric)
-  Tee <- (sqrt(diag(X %*% t(X))) + U >= 0)*1
+  Tee <- matrix((sqrt(diag(X %*% t(X))) + U >= 0)*1, ncol = 1)
+  
+  # Y as defined in problem (assuming \theta_0 = 1)
+  Y <- matrix(Tee + G + E, ncol = 1)
   
   # returning list with matrix X, vector Y, vector T
   out = list(X=X,Y=Y,Tee=Tee)
 }
 
-# sample size
-n <- 500
+# define polynomial basis
+K <- c(6,11,21,26,56,61,126,131,252,257,262,267,272,277)
 
-# replications
-M <- 1000
+polybasis <- function(X,K){
+  # inputs: data matrix X, 'order' K
+  # outputs: polynomial basis of 'order' K
+  # Note: this gets really ugly at the end,
+  # but I was tired and gave up trying to find a more elegant way
+  if(K==6){basis <- poly(X,degree=1,raw=T)}
+  if(K==11){basis <- cbind(poly(X,degree=1,raw=T),
+                           X[,1]^2,X[,2]^2,X[,3]^2,X[,4]^2,X[,5]^2)}
+  if(K==21){basis <- poly(X,degree=2,raw=T)}
+  if(K==26){basis <- cbind(poly(X,degree=2,raw=T),
+                           X[,1]^3,X[,2]^3,X[,3]^3,X[,4]^3,X[,5]^3)}
+  if(K==56){basis <- poly(X,degree=3,raw=T)}
+  if(K==61){basis <- cbind(poly(X,degree=3,raw=T),
+                           X[,1]^4,X[,2]^4,X[,3]^4,X[,4]^4,X[,5]^4)}
+  if(K==126){basis <- poly(X,degree=4,raw=T)}
+  if(K==131){basis <- cbind(poly(X,degree=4,raw=T),
+                            X[,1]^5,X[,2]^5,X[,3]^5,X[,4]^5,X[,5]^5)}
+  if(K==252){basis <- poly(X,degree=5,raw=T)}
+  if(K==257){basis <- cbind(poly(X,degree=5,raw=T),
+                            X[,1]^6,X[,2]^6,X[,3]^6,X[,4]^6,X[,5]^6)}
+  if(K==262){basis <- cbind(poly(X,degree=5,raw=T),
+                            X[,1]^6,X[,2]^6,X[,3]^6,X[,4]^6,X[,5]^6,
+                            X[,1]^7,X[,2]^7,X[,3]^7,X[,4]^7,X[,5]^7)}
+  if(K==267){basis <- cbind(poly(X,degree=5,raw=T),
+                            X[,1]^6,X[,2]^6,X[,3]^6,X[,4]^6,X[,5]^6,
+                            X[,1]^7,X[,2]^7,X[,3]^7,X[,4]^7,X[,5]^7,
+                            X[,1]^8,X[,2]^8,X[,3]^8,X[,4]^8,X[,5]^8)}
+  if(K==272){basis <- cbind(poly(X,degree=5,raw=T),
+                            X[,1]^6,X[,2]^6,X[,3]^6,X[,4]^6,X[,5]^6,
+                            X[,1]^7,X[,2]^7,X[,3]^7,X[,4]^7,X[,5]^7,
+                            X[,1]^8,X[,2]^8,X[,3]^8,X[,4]^8,X[,5]^8,
+                            X[,1]^9,X[,2]^9,X[,3]^9,X[,4]^9,X[,5]^9)}
+  if(K==277){basis <- cbind(poly(X,degree=5,raw=T),
+                            X[,1]^6,X[,2]^6,X[,3]^6,X[,4]^6,X[,5]^6,
+                            X[,1]^7,X[,2]^7,X[,3]^7,X[,4]^7,X[,5]^7,
+                            X[,1]^8,X[,2]^8,X[,3]^8,X[,4]^8,X[,5]^8,
+                            X[,1]^9,X[,2]^9,X[,3]^9,X[,4]^9,X[,5]^9,
+                            X[,1]^10,X[,2]^10,X[,3]^10,X[,4]^10,X[,5]^10)}
+  return(basis)
+}
+
+###############################################################################
+## Q3.4b
+
+# number of different orders to test
+nK <- length(K)
+
+# define blank matrices to fill with simulated results
+thetas <- matrix(NA, ncol = nK, nrow = M)
+SEs    <- matrix(NA, ncol = nK, nrow = M)
+
+set.seed(22)
+ptm <- proc.time()
+for(m in 1:M){
+  # draw data
+  data <- dgp(n)
+  X   <- data$X
+  Y   <- data$Y
+  Tee <- data$Tee
+  
+  # cycle through K orders
+  for(k in 1:nK){
+    # generate basis, add intercept
+    X_poly <- cbind(1,polybasis(X,K[k]))
+
+    # define M_P (I-P(P'P)^{-1}P)
+    M_P <- diag(n) - (X_poly %*% solve((t(X_poly) %*% X_poly)) %*% t(X_poly))
+    
+    # estimate theta(K)
+    theta <- (t(Tee) %*% M_P %*% Y)/(t(Tee) %*% M_P %*% Tee)
+    
+    # sigma (for variance estimate)
+    sigma <- diag( as.numeric((M_P %*% (Y - Tee*as.numeric(theta))))^2 )
+    
+    # standard error
+    bread <- solve((t(Tee) %*% M_P %*% Tee))
+    se <- sqrt( bread %*% (t(Tee)%*%M_P%*%sigma%*%M_P%*%Tee) %*% bread)
+    
+    # save to matrix
+    thetas[m,k] <- theta
+    SEs[m,k]    <- se
+  }
+}
+proc.time() - ptm
+# 12 minute runtime
+
+# calculate averages, variances, etc. of simulated values
+summ <- matrix(NA, ncol=6, nrow = nK)
+for(k in 1:nK){
+  summ[k,1] <- K[k] # 'order' K
+  summ[k,2] <- mean(thetas[,k]) # avergage theta(K)
+  summ[k,3] <- summ[k,2]-1 # average bias of theta(K) (assuming theta_0=1)
+  summ[k,4] <- sd(thetas[,k])^2 # sample variance of theta(K)
+  summ[k,5] <- mean( (SEs[,k])^2 ) # average of vhat
+  # check if CIs for each simulation include 1 (here checking the boundaries)
+  summ[k,6] <- 1 - mean( thetas[,k]-1.96*SEs[k] > 1 | thetas[,k]+1.96*SEs[k] < 1)
+}
+
+# format
+summ %<>% as.data.frame
+names(summ) <- c('K', 'avg_theta', 'avg_bias',
+                 'samp_variance', 'avg_vhat', 'coverage_rate')
+
+# write for inclusion in latex document
+print(xtable(summ,digits=c(0,0,3,3,3,3,3)),include.rownames=F)
+
+###############################################################################
+## Q3.4c
+
+# define crossvalidation function
+crossval <- function(X, Y, Tee, nK, K){
+  # blank vector to fill with MSE
+  MSEs <- rep(NA, nK)
+  
+  # loop through each K to identify optimal bandwidth
+  for(k in 1:nK){
+    # define polynomial basis
+    X_poly <- cbind(1, Tee, polybasis(X, K[k]))
+    # QR decomposition
+    X_poly_Q <- qr.Q(qr(X_poly))
+    XX <- X_poly_Q %*% t(X_poly_Q)
+    Y_hat <- XX %*% Y
+    W <- diag(XX)
+    MSEs[k] <- mean( ((Y-Y_hat)/(1-W))^2 )
+  }
+
+  # return the optimal K
+  return(K[which.min(MSEs)])
+}
+
+# define blank vectors to fill with simulated results and optimal Ks
+# (not matrices now, since we are using optimal K)
+thetas <- rep(NA, M)
+SEs    <- rep(NA, M)
+Ks     <- rep(NA, M)
+
+# simulate M times
+set.seed(22)
+ptm <- proc.time()
+for(m in 1:M){
+  # draw data
+  data <- dgp(n)
+  X   <- data$X
+  Y   <- data$Y
+  Tee <- data$Tee
+  
+  # given data, estimate optimal K using cross validation
+  K_CV <- crossval(X, Y, Tee, nK, K)
+  
+  # generate basis, add intercept
+  X_poly <- cbind(1,polybasis(X,K_CV))
+  
+  # define M_P (I-P(P'P)^{-1}P)
+  M_P <- diag(n) - (X_poly %*% solve((t(X_poly) %*% X_poly)) %*% t(X_poly))
+  
+  # estimate theta(K)
+  theta <- (t(Tee) %*% M_P %*% Y)/(t(Tee) %*% M_P %*% Tee)
+  
+  # sigma (for variance estimate)
+  sigma <- diag( as.numeric((M_P %*% (Y - Tee*as.numeric(theta))))^2 )
+  
+  # standard error
+  bread <- solve((t(Tee) %*% M_P %*% Tee))
+  se <- sqrt( bread %*% (t(Tee)%*%M_P%*%sigma%*%M_P%*%Tee) %*% bread)
+  
+  # save to vectors
+  thetas[m] <- theta
+  SEs[m]    <- se
+  Ks[m]     <- K_CV
+}
+proc.time() - ptm
+# runtime 14 minutes
+
+# prep data for plots to show results
+df <- data.frame(K = Ks, theta = thetas, se = SEs, rep = 1:M) %>%
+  mutate(ci_low = theta - 1.96*se, ci_high = theta + 1.96*se) %>%
+  arrange(ci_low) %>% mutate(rep_sorted = 1:M)
+
+# panel 1: histogram of optimal Ks
+k_df <- df %>% group_by(K) %>% summarise(Count = n()) %>% mutate(K = as.character(K))
+p1 <- ggplot(k_df, aes(x=K,y=Count)) + geom_bar(stat='identity') +
+  theme_minimal() + ggtitle('Optimal K')
+p1
+
+# panel 2: distribution of theta
+p2 <- ggplot(df, aes(x=theta)) + geom_histogram(bins=12) + theme_minimal() +
+  geom_vline(xintercept=1,linetype='solid',color='red',size=1) +
+  labs(title='Estimates of Theta',x='Theta',y='Count')
+p2
+
+# panel 3: distribution of SEs
+p3 <- ggplot(df, aes(x=se)) + geom_histogram(bins=12) + theme_minimal() +
+  labs(title='SEs on Estimates of Theta',x='Standard Error',y='Count')
+p3
+
+# panel 4: confidence intervals, sorted by lower point
+p4 <- ggplot(df) +
+  geom_line(aes(x = rep_sorted, y=ci_low)) +
+  geom_line(aes(x = rep_sorted, y=ci_high)) +
+  geom_hline(yintercept=1,linetype='solid',color='red',size=1) +
+  theme_minimal() +
+  labs(title='Confidence Intervals for Theta',x='Replication (Sorted)',y='Theta')
+p4
+
+# combine with multiplot
+source('multiplot.R')
+png('q3_4c_R.png')
+multiplot(p1, p3, p2, p4, cols=2)
+dev.off()
+
+# values for latex
+avg_K     <- mean(Ks)
+median_K  <- median(Ks)
+avg_theta <- mean(thetas)
+avg_bias  <- mean(thetas)-1
+samp_var  <- sd(thetas)^2
+avg_vhat  <- mean(SEs^2)
+coverage  <- 1 - mean(df$ci_low > 1 | df$ci_high < 1)
 
 ###############################################################################

@@ -1,0 +1,37 @@
+-------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:\Users\prorgan\Box\Classes\Econ 675\Problem Sets\PS2\ps2.log
+  log type:  text
+ opened on:   4 Oct 2018, 15:51:40
+
+. set seed 22
+
+. 
+. ********************************************************************************
+. *** Question 1: Kernel Density Estimation
+. ********************************************************************************
+. * Q1.3a
+. 
+. set obs 1000
+number of observations (_N) was 0, now 1,000
+
+. 
+. gen x = .5*rnormal(-1.5,1.5) + .5*rnormal(1,1)
+
+. 
+. kdensity x, at(x) generate(fx) nograph
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD2700_000000.tmp"
+
+. forvalues i = 1/1000 {
+  2.         kdensity x if _n != `i', at(x) generate(foo fx`i') kernel(epan2) nograph
+  3.         drop foo
+  4. }
+
+. 
+end of do-file
+
+. exit, clear
