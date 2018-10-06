@@ -1,7 +1,7 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS2
-# Last Update: Oct 4, 2018
+# Last Update: Oct 5, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
@@ -20,51 +20,121 @@ setwd('C:/Users/prorgan/Box/Classes/Econ 675/Problem Sets/PS2')
 
 ###############################################################################
 ## Question 1: Kernel Density Estimation
-# Q1.3a
+## Q1.3a
 
 # sample size
 n     <- 1000
 
-# equally weight two distributions
-set.seed(22)
-comps <- sample(1:2,prob=c(.5,.5),size=n,replace=T)
+# data generating process
+dgp <- function(n){
+  # equally weight two distributions
+  comps <- sample(1:2,prob=c(.5,.5),size=n,replace=T)
+  
+  # Normal density specs
+  mus <- c(-1.5, 1)
+  sds <- sqrt(c(1.5, 1))
+  
+  # generate sample
+  samp <- rnorm(n=n,mean=mus[comps],sd=sds[comps])
+  
+  return(samp)
+}
 
-# Normal density specs
-mus <- c(-1.5, 1)
-sds <- sqrt(c(1.5, 1))
+# mean of mixture
+mu_true <- .5*-1.5 + .5*1
+# sd of mixture
+var_true <- .5*1.5 + .5*1 + (.5*-1.5+.5*1-(.5*-1.5+.5*1)^2)
+# see: https://stats.stackexchange.com/questions/16608/
+# what-is-the-variance-of-the-weighted-mixture-of-two-gaussians
 
-# generate sample
-set.seed(22)
-samp <- rnorm(n=n,mean=mus[comps],sd=sds[comps])
+# true dgp
+f_true <- function(x){dnorm(x,mean=mu_true,sd=sqrt(var_true))}
 
-# check plot
-plot(density(samp))
+# second deriv of normal dist
+norm_2d <- function(u,meanu,sdu){dnorm(u,mean=meanu,sd=sdu)*
+                    (((u-meanu)^2/(sdu^4))-(1/(sdu^2)))}
 
+# AIMSE-optimal bandwidth choice
+optimal_h <- function(n,mean,sd){
+  f <- function(x,mean,sd){norm_2d(x,mean,sd)^2}
+  k1 <- .75^2*(2-4/3+2/5)
+  k2 <- .75*(2/3-2/5)
+  k3 <- integrate(f, lower = -Inf, upper = Inf, m = mean, s = sd)$val
+  h <- (k1/(k3*k2^2)*(1/n))^(1/5)
+  return(h)
+}
+
+# theoretically optimal h
+h_aimse <- optimal_h(1000,mu_true,sqrt(var_true))
+
+###############################################################################
+## Q1.3b
 # define Kernel function: K(u)=.75(1-u^2)(ind(abs(u)<=1))
 K0 <- function(u){
   out <- .75 * (1-u^2) * (abs(u) <= 1)
 }
 
-# first derivative of Kernel function
+# first derivative of Kernel function (do we need)
 K1 <- function(u){
   out <- .75 * (-2 * u) * (abs(u) <= 1)
 }
 
-# compute optimal bandwidth using kedd package
-h.amise(samp, kernel = 'epanechnikov', deriv.order=0)
-plot.h.amise(h.amise(samp, kernel = 'epanechnikov', deriv.order= 0))
+# function to calculte IMSE
+imse <- function(h,X){
+  # empty matrices to fill with results
+  e_li <- matrix(NA,nrow=M,ncol=n)
+  e_lo <- matrix(NA,nrow=M,ncol=n)
+  
+  # loop over each i to do leave one out
+  for(i in 1:n){
+    # repeat observation for each simulation
+    Xi_n <- matrix(rep(X[,i],n), nrow=M)
+    # apply kernel function to x-x_i
+    df <- matrix(sapply((X-Xi_n)/h,FUN=K0), nrow=M)
+    
+    # fhat with i in
+    fhat_li <- rowMeans(df)
+    # fhat with i out
+    fhat_lo <- rowMeans(df[,-i])
+    
+    # f(x_i)
+    f_xi <- sapply(X[,i],FUN=f_true)
+    
+    # mse with i in
+    e_li[,i] <- sapply(fhat_li-f_xi, FUN = function(x){x^2})
+    # mse with i out
+    e_lo[,i] <- sapply(fhat_lo-f_xi, FUN = function(x){x^2})
+  }
+  # take mean over M reps and i obs
+  out <- c(mean(e_li),mean(e_lo))
+}
 
-# what about the np package? see function npregbw
-# https://cran.r-project.org/web/packages/np/np.pdf
-# think this only works if regressing y on x
-
-# trying using ks package
-# can't implement epanechnikov kernel here...only Normal
-hamise.mixt(mus,sds,props=c(.5,.5),samp=n,deriv.order=0)
-
-# Q1.3b
 # simulate 1000 times
 M <- 1000
+
+# generate matrix with M rows of sampled data
+set.seed(22)
+X <- matrix(M*dgp(n),nrow=M,ncol=n)
+
+# sequence of h's to test
+hs <- seq(.5,1.5,.1) * h_aimse
+
+# testing for 2 values of h
+hs <- hs[6:7]
+
+# loop through values of h and calculate mean IMSE with i in, out
+ptm <- proc.time()
+means <- lapply(hs, X, FUN = imse)
+proc.time() - ptm
+# runtime for 2 hs: 51 minutes
+# runtime for 11 hs: 
+
+# format
+df <- means %>% unlist %>% matrix(nrow = length(hs)) %>% data.frame %>%
+  rename(IMSE_LI = X1, IMSE_LO = X2) %>% mutate(h = hs)
+
+# plot
+
 
 ###############################################################################
 ## Question 2: Linear Smoothers, Cross-Validation, and Series
