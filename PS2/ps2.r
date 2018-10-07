@@ -1,7 +1,7 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS2
-# Last Update: Oct 5, 2018
+# Last Update: Oct 7, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
@@ -11,8 +11,6 @@ require(tidyverse) # data cleaning and manipulation
 require(magrittr)  # syntax
 require(ggplot2)   # plots
 require(kedd)      # kernel bandwidth estimation
-require(ks)        # kernel bandwidth estimation
-require(np)        # kernel bandwidth estimation
 require(car)       # heteroskedastic robust SEs
 require(xtable)    # tables for LaTeX
 
@@ -74,12 +72,7 @@ K0 <- function(u){
   out <- .75 * (1-u^2) * (abs(u) <= 1)
 }
 
-# first derivative of Kernel function (do we need)
-K1 <- function(u){
-  out <- .75 * (-2 * u) * (abs(u) <= 1)
-}
-
-# function to calculte IMSE
+# function to calculate IMSE
 imse <- function(h,X){
   # empty matrices to fill with results
   e_li <- matrix(NA,nrow=M,ncol=n)
@@ -89,24 +82,25 @@ imse <- function(h,X){
   for(i in 1:n){
     # repeat observation for each simulation
     Xi_n <- matrix(rep(X[,i],n), nrow=M)
-    # apply kernel function to x-x_i
-    df <- matrix(sapply((X-Xi_n)/h,FUN=K0), nrow=M)
-    
+    # apply kernel function to (x-x_i)/h
+    df <- (1/h)*K0((Xi_n-X)/h)
+
     # fhat with i in
     fhat_li <- rowMeans(df)
     # fhat with i out
     fhat_lo <- rowMeans(df[,-i])
     
     # f(x_i)
-    f_xi <- sapply(X[,i],FUN=f_true)
-    
+    f_xi <- f_true(X[,i])
+
     # mse with i in
-    e_li[,i] <- sapply(fhat_li-f_xi, FUN = function(x){x^2})
+    e_li[,i] <- (fhat_li-f_xi)^2
     # mse with i out
-    e_lo[,i] <- sapply(fhat_lo-f_xi, FUN = function(x){x^2})
+    e_lo[,i] <- (fhat_lo-f_xi)^2
   }
   # take mean over M reps and i obs
   out <- c(mean(e_li),mean(e_lo))
+  return(out)
 }
 
 # simulate 1000 times
@@ -114,26 +108,31 @@ M <- 1000
 
 # generate matrix with M rows of sampled data
 set.seed(22)
-X <- matrix(M*dgp(n),nrow=M,ncol=n)
+X <- matrix(dgp(n),nrow=M,ncol=n)
 
 # sequence of h's to test
 hs <- seq(.5,1.5,.1) * h_aimse
-
-# testing for 2 values of h
-hs <- hs[6:7]
 
 # loop through values of h and calculate mean IMSE with i in, out
 ptm <- proc.time()
 means <- lapply(hs, X, FUN = imse)
 proc.time() - ptm
-# runtime for 2 hs: 51 minutes
-# runtime for 11 hs: 
+# runtime 11 minutes
+# my code is wrong somewhere - the average IMSE increases with M; it should not
 
 # format
 df <- means %>% unlist %>% matrix(nrow = length(hs)) %>% data.frame %>%
-  rename(IMSE_LI = X1, IMSE_LO = X2) %>% mutate(h = hs)
+  rename(leavein = X1, leaveout = X2) %>% mutate(h = hs) %>%
+  gather(key = inout, value = imse, -h)
 
 # plot
+p <- ggplot(df, aes(x=h,y=imse,color=inout)) + geom_smooth(se=F) +
+  theme_minimal()
+p
+ggsave('q1_3b_R.png')
+
+###############################################################################
+## Q1.3c
 
 
 ###############################################################################
