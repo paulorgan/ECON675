@@ -1,7 +1,7 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS2
-# Last Update: Oct 7, 2018
+# Last Update: Oct 8, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
@@ -57,7 +57,7 @@ optimal_h <- function(n,mean,sd){
   f <- function(x,mean,sd){norm_2d(x,mean,sd)^2}
   k1 <- .75^2*(2-4/3+2/5)
   k2 <- .75*(2/3-2/5)
-  k3 <- integrate(f, lower = -Inf, upper = Inf, m = mean, s = sd)$val
+  k3 <- integrate(f, lower = -Inf, upper = Inf, mean = mean, sd = sd)$val
   h <- (k1/(k3*k2^2)*(1/n))^(1/5)
   return(h)
 }
@@ -74,31 +74,30 @@ K0 <- function(u){
 
 # function to calculate IMSE
 imse <- function(h,X){
-  # empty matrices to fill with results
-  e_li <- matrix(NA,nrow=M,ncol=n)
-  e_lo <- matrix(NA,nrow=M,ncol=n)
+  # empty vectors to fill with results
+  e_li <- rep(NA,n)
+  e_lo <- rep(NA,n)
   
   # loop over each i to do leave one out
   for(i in 1:n){
     # repeat observation for each simulation
-    Xi_n <- matrix(rep(X[,i],n), nrow=M)
+    Xi_n <- rep(X[i], n)
     # apply kernel function to (x-x_i)/h
     df <- (1/h)*K0((Xi_n-X)/h)
-
+    
     # fhat with i in
-    fhat_li <- rowMeans(df)
+    fhat_li <- mean(df)
     # fhat with i out
-    fhat_lo <- rowMeans(df[,-i])
+    fhat_lo <- mean(df[-i])
     
     # f(x_i)
-    f_xi <- f_true(X[,i])
-
+    f_xi <- f_true(X[i])
+    
     # mse with i in
-    e_li[,i] <- (fhat_li-f_xi)^2
+    e_li[i] <- (fhat_li-f_xi)^2
     # mse with i out
-    e_lo[,i] <- (fhat_lo-f_xi)^2
+    e_lo[i] <- (fhat_lo-f_xi)^2
   }
-  # take mean over M reps and i obs
   out <- c(mean(e_li),mean(e_lo))
   return(out)
 }
@@ -106,23 +105,26 @@ imse <- function(h,X){
 # simulate 1000 times
 M <- 1000
 
-# generate matrix with M rows of sampled data
-set.seed(22)
-X <- matrix(dgp(n),nrow=M,ncol=n)
-
 # sequence of h's to test
 hs <- seq(.5,1.5,.1) * h_aimse
+nh <- length(hs)
 
-# loop through values of h and calculate mean IMSE with i in, out
-ptm <- proc.time()
-means <- lapply(hs, X, FUN = imse)
-proc.time() - ptm
-# runtime 11 minutes
-# my code is wrong somewhere - the average IMSE increases with M; it should not
+# empty matrices to fill
+imse_li <- matrix(NA, nrow=M, ncol=nh)
+imse_lo <- matrix(NA, nrow=M, ncol=nh)
 
-# format
-df <- means %>% unlist %>% matrix(nrow = length(hs)) %>% data.frame %>%
-  rename(leavein = X1, leaveout = X2) %>% mutate(h = hs) %>%
+# generate matrix with M rows of sampled data
+set.seed(22)
+for(m in 1:M){
+  X <- dgp(n)
+  for(j in 1:nh){
+    temp <- imse(hs[j],X)
+    imse_li[m,j] <- temp[1]
+    imse_lo[m,j] <- temp[2]
+  }
+}
+
+df <- data.frame(h = hs, leavein = colMeans(imse_li), leaveout = colMeans(imse_lo)) %>%
   gather(key = inout, value = imse, -h)
 
 # plot
@@ -131,9 +133,23 @@ p <- ggplot(df, aes(x=h,y=imse,color=inout)) + geom_smooth(se=F) +
 p
 ggsave('q1_3b_R.png')
 
-###############################################################################
-## Q1.3c
+# something wrong here
+# IMSE should be minimized at h_aimse, but here it is not!
 
+###############################################################################
+## Q1.3d
+
+opt_hs <- rep(NA,M)
+
+set.seed(22)
+for(m in 1:M){
+  X <- dgp(n)
+  mu <- mean(X)
+  sd <- sd(X)
+  opt_hs[m] <- optimal_h(n,mu,sd)
+}
+
+hbar <- mean(opt_hs)
 
 ###############################################################################
 ## Question 2: Linear Smoothers, Cross-Validation, and Series
