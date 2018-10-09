@@ -1,7 +1,7 @@
 ********************************************************************************
 * Author: Paul R. Organ
 * Purpose: ECON 675, PS2
-* Last Update: Oct 8, 2018
+* Last Update: Oct 9, 2018
 ********************************************************************************
 clear all
 set more off
@@ -16,19 +16,7 @@ set seed 22
 ********************************************************************************
 * Q1.3a
 
-set obs 1000
-
-gen x = .5*rnormal(-1.5,1.5) + .5*rnormal(1,1)
-
-kdensity x, at(x) generate(fx) nograph
-
-forvalues i = 1/1000 {
-	kdensity x if _n != `i', at(x) generate(foo fx`i') kernel(epan2) nograph
-	drop foo
-}
-
 ********************************************************************************
-
 
 ********************************************************************************
 *** Question 2: Linear Smoothers, Cross-Validation, and Series

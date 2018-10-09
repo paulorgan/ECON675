@@ -1,8 +1,8 @@
--------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------
       name:  <unnamed>
        log:  C:\Users\prorgan\Box\Classes\Econ 675\Problem Sets\PS2\ps2.log
   log type:  text
- opened on:   4 Oct 2018, 15:51:40
+ opened on:   9 Oct 2018, 14:48:17
 
 . set seed 22
 
@@ -12,24 +12,44 @@
 . ********************************************************************************
 . * Q1.3a
 . 
-. set obs 1000
-number of observations (_N) was 0, now 1,000
+. timer on 1
+
+. program IMSEsim, rclass
+  1. drop _all
+  2. set obs 1000
+  3. gen x =  rnormal(-1/4, 5/8)
+  4. gen fx = normalden(-1/4, 5/8)
+  5. _kdens x, at(x) generate(fxh) bw(.5) kernel(epan2)
+  6. gen diffLI = (fx-fxh)^2
+  7. gen diffL0 = 0
+  8. gen rng = x
+  9. forvalues i = 1/20 {
+ 10.         replace x = rng
+ 11.         replace x = . if _n == `i'
+ 12.         _kdens x, at(rng) generate(fxh`i') bw(.5) kernel(epan2) 
+ 13.         replace diffL0 = (fx - fxh`i')^2 if _n == `i'
+ 14. }
+ 15. 
+. qui summ diffLI
+ 16. return scalar data1 = r(mean)
+ 17. qui summ diffL0
+ 18. return scalar data2 = r(mean)
+ 19. end
 
 . 
-. gen x = .5*rnormal(-1.5,1.5) + .5*rnormal(1,1)
+. set seed 22
 
-. 
-. kdensity x, at(x) generate(fx) nograph
+. simulate IMSE_LI=r(data1) IMSE_L0 = r(data2), reps(1) nodots: IMSEsim
 
-. 
-end of do-file
+      command:  IMSEsim
+      IMSE_LI:  r(data1)
+      IMSE_L0:  r(data2)
 
-. do "C:\Users\prorgan\AppData\Local\Temp\STD2700_000000.tmp"
 
-. forvalues i = 1/1000 {
-  2.         kdensity x if _n != `i', at(x) generate(foo fx`i') kernel(epan2) nograph
-  3.         drop foo
-  4. }
+. timer off 1
+
+. timer list
+   1:      0.23 /        1 =       0.2330
 
 . 
 end of do-file

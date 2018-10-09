@@ -1,7 +1,7 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS2
-# Last Update: Oct 8, 2018
+# Last Update: Oct 9, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
@@ -52,18 +52,29 @@ f_true <- function(x){dnorm(x,mean=mu_true,sd=sqrt(var_true))}
 norm_2d <- function(u,meanu,sdu){dnorm(u,mean=meanu,sd=sdu)*
                     (((u-meanu)^2/(sdu^4))-(1/(sdu^2)))}
 
-# AIMSE-optimal bandwidth choice
-optimal_h <- function(n,mean,sd){
-  f <- function(x,mean,sd){norm_2d(x,mean,sd)^2}
-  k1 <- .75^2*(2-4/3+2/5)
-  k2 <- .75*(2/3-2/5)
-  k3 <- integrate(f, lower = -Inf, upper = Inf, mean = mean, sd = sd)$val
+# f for integration (theoretical)
+f_int <- function(x){
+  return( (.5*norm_2d(x,-1.5,sqrt(1.5)) + .5*norm_2d(x,1,1))^2 )
+}
+
+optimal_h <- function(x,mu,sd){
+  k1 <- .75^2 * (2- 4/3 + 2/5)
+  k2 <- .75 * (2/3 - 2/5)
+
+  if(x=='theoretical'){
+    f <- f_int
+    k3 <- integrate(f,-Inf,Inf)$val
+  } else{
+    f <- function(x,mu,sd){norm_2d(x,mu,sd)^2}
+    k3 <- integrate(f,-Inf,Inf,mu=mu,sd=sd)$val
+  }
+    
   h <- (k1/(k3*k2^2)*(1/n))^(1/5)
   return(h)
 }
 
 # theoretically optimal h
-h_aimse <- optimal_h(1000,mu_true,sqrt(var_true))
+h_aimse <- optimal_h('theoretical',NA,NA)
 
 ###############################################################################
 ## Q1.3b
