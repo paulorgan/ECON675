@@ -39,16 +39,14 @@ dgp <- function(n){
 }
 
 # true dgp
-f_true <- function(x){.5*dnorm(x,-1.5,1.5)+.5*dnorm(x,1,1)}
+f_true <- function(x){.5*dnorm(x,-1.5,sqrt(1.5))+.5*dnorm(x,1,1)}
 
 # second deriv of normal dist
 norm_2d <- function(u,meanu,sdu){dnorm(u,mean=meanu,sd=sdu)*
                     (((u-meanu)^2/(sdu^4))-(1/(sdu^2)))}
 
 # f for integration (theoretical)
-f_int <- function(x){
-  return( (.5*norm_2d(x,-1.5,sqrt(1.5)) + .5*norm_2d(x,1,1))^2 )
-}
+f_int <- function(x){(.5*norm_2d(x,-1.5,1.5) + .5*norm_2d(x,1,1))^2}
 
 # function to calculate (theoretically or empirical) optimal h
 optimal_h <- function(x,mu,sd){
