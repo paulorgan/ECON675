@@ -38,15 +38,8 @@ dgp <- function(n){
   return(samp)
 }
 
-# mean of mixture
-mu_true <- .5*-1.5 + .5*1
-# sd of mixture
-var_true <- .5*1.5 + .5*1 + (.5*-1.5+.5*1-(.5*-1.5+.5*1)^2)
-# see: https://stats.stackexchange.com/questions/16608/
-# what-is-the-variance-of-the-weighted-mixture-of-two-gaussians
-
 # true dgp
-f_true <- function(x){dnorm(x,mean=mu_true,sd=sqrt(var_true))}
+f_true <- function(x){.5*dnorm(x,-1.5,1.5)+.5*dnorm(x,1,1)}
 
 # second deriv of normal dist
 norm_2d <- function(u,meanu,sdu){dnorm(u,mean=meanu,sd=sdu)*
@@ -57,6 +50,7 @@ f_int <- function(x){
   return( (.5*norm_2d(x,-1.5,sqrt(1.5)) + .5*norm_2d(x,1,1))^2 )
 }
 
+# function to calculate (theoretically or empirical) optimal h
 optimal_h <- function(x,mu,sd){
   k1 <- .75^2 * (2- 4/3 + 2/5)
   k2 <- .75 * (2/3 - 2/5)
@@ -94,12 +88,12 @@ imse <- function(h,X){
     # repeat observation for each simulation
     Xi_n <- rep(X[i], n)
     # apply kernel function to (x-x_i)/h
-    df <- (1/h)*K0((Xi_n-X)/h)
+    df <- K0((Xi_n-X)/h)
     
     # fhat with i in
-    fhat_li <- mean(df)
+    fhat_li <- mean(df)/h
     # fhat with i out
-    fhat_lo <- mean(df[-i])
+    fhat_lo <- mean(df[-i])/h
     
     # f(x_i)
     f_xi <- f_true(X[i])
@@ -144,8 +138,11 @@ p <- ggplot(df, aes(x=h,y=imse,color=inout)) + geom_smooth(se=F) +
 p
 ggsave('q1_3b_R.png')
 
-# something wrong here
-# IMSE should be minimized at h_aimse, but here it is not!
+# averages
+h_hat_li <- df %>% filter(inout == 'leavein') %>%
+  filter(imse == min(imse)) %>% select(h) %>% as.numeric
+h_hat_lo <- df %>% filter(inout == 'leaveout') %>%
+  filter(imse == min(imse)) %>% select(h) %>% as.numeric
 
 ###############################################################################
 ## Q1.3d
