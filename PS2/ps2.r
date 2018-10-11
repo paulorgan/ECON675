@@ -1,7 +1,7 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS2
-# Last Update: Oct 9, 2018
+# Last Update: Oct 11, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
@@ -127,7 +127,8 @@ for(m in 1:M){
   }
 }
 
-df <- data.frame(h = hs, leavein = colMeans(imse_li), leaveout = colMeans(imse_lo)) %>%
+df <- data.frame(h = hs, leavein = colMeans(imse_li),
+                 leaveout = colMeans(imse_lo)) %>%
   gather(key = inout, value = imse, -h)
 
 # plot
@@ -319,7 +320,8 @@ ggsave('q2_5c_R.png')
 # This will reuse my code from above, with new polynomials (taking derivs)
 
 #  true value of derivative of regression function (product rule)
-f1_true <- exp(-.1*(4*grid-1)^2)*5*cos(5*grid) + sin(5*grid)*(-.8*(4*grid-1)*exp(-.1*(4*grid-1)^2))
+f1_true <- exp(-.1*(4*grid-1)^2)*5*cos(5*grid) +
+  sin(5*grid)*(-.8*(4*grid-1)*exp(-.1*(4*grid-1)^2))
 
 # estimate regression function using polynomial basis (7th degree based on (b))
 # generate polynomial basis for grid points, first derivatives of grid_poly
