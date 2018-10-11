@@ -241,7 +241,4 @@ twoway (function y = exp(-0.1*(4*x-1)^2)*sin(5*x), range(-1 1) lcolor(red)) ///
 		(line muhat x, lcolor(gs6)) (line lb x, lcolor(gs6) lpattern(dash)) (line ub x, lcolor(gs6) lpattern(dash)), ///
 		legend(order(1 "True f" 2 "Estimated f" 3 "Confidence Interval") rows(1)) ytitle(Y) xtitle(X)
 graph export q2_5c_S.png, replace
-
-********************************************************************************
-*** Question 3: Semiparametric Semi-Linear Model
 ********************************************************************************
