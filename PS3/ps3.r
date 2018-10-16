@@ -12,6 +12,7 @@ require(magrittr)  # syntax
 require(ggplot2)   # plots
 require(xtable)    # tables for LaTeX
 require(boot)      # bootstrapping
+require(gmm)       # GMM estimation
 
 setwd('C:/Users/prorgan/Box/Classes/Econ 675/Problem Sets/PS3')
 
@@ -123,12 +124,91 @@ gc()
 # read in data
 df <- read_csv('pisofirme.csv')
 
+# add variable to indicate having outcome data
+df %<>% mutate(s = 1-dmissing)
+
+# add log variable for us in regression [log(S_incomepc + 1)]
+df %<>% mutate(log_SincpcP1 = log(S_incomepc + 1))
+
 ###############################################################################
 # Q2.2b - feasible estimator
 
+# since we are using the logistic CDF as our F, we have simplified instruments
+# here we construct the moment condition 0=E[g*m] which is just
+# (instruments)*(y_i - F(t\theta+x\gamma))
+# function of theta and gamma (parameters) and t and X (data)
+gm <- function(beta, data){
+  theta <- beta[1]
+  gamma <- beta[2:4]
+  # constructing the F(t\theta+x\gamma) term
+  F_component <- plogis(data$dpisofirme * theta +
+                          data$S_age * gamma[1] +
+                          data$S_HHpeople * gamma[2] +
+                          data$log_SincpcP1 * gamma[3])
+  
+  vars <- c('dpisofirme', 'S_age', 'S_HHpeople', 'log_SincpcP1')
+  Zvars <- paste0('Z_', vars)
+  
+  for(i in 1:length(vars)){
+    data[,Zvars[i]] <- data[,vars[i]]*(data$danemia - F_component)
+  }
+  
+  out <- data[,Zvars] %>% as.matrix
+  
+  return(out)
+}
+
+# bootstrap statistic
+boot_stat <- function(dat, i){
+  gmm(gm, dat[i,], t0=c(0,0,0,0), wmatrix='ident', vcov='iid')$coef
+}
+
+# some incomplete values seem to be messing things up (drops three observations)
+df <- df[complete.cases(df[,c('dpisofirme','S_age','S_HHpeople','log_SincpcP1')]),]
+
+# run bootstrap, 999 replications
+ptm <- proc.time()
+set.seed(22)
+boot_results <- boot(data=df[df$s==1, ], R=999, statistic = boot_stat, stype = "i")
+proc.time() - ptm
+# runtime is 24 minutes
+
+# generate table of desired results (showing same results as in Q1)
+t3 <- matrix(NA, nrow=4, ncol=6) %>% as.data.frame
+names(t3) <- c('Coefficient', 'StdError', 'tValue', 'pValue', 'CIlow', 'CIhigh')
+
+t3$Coefficient <- boot_results$t0
+t3$StdError    <- apply(boot_results$t, 2, sd)
+t3$tValue      <- t3$Coefficient / t3$StdError
+
+# define function to calculate pvalue from bootstrap results
+getPval <- function(coef, coef_b){
+  2 * max( mean( (coef_b-coef) >= abs(coef) ), mean( (coef_b-coef) <= -1*abs(coef) ) )
+}
+
+# apply over covariates, also get confidence intervals
+for(i in 1:nrow(t3)){
+  t3$pValue[i] <- getPval(boot_results$t0[i], boot_results$t[,i])
+  
+  t3$CIlow[i]  <- quantile(boot_results$t[,i], .025)
+  t3$CIhigh[i] <- quantile(boot_results$t[,i], .975)
+}
+
+# add rownames
+row.names(t3) <- c('dpisofirme', 'S_age', 'S_HHpeople', 'log(S_incomepc+1)')
+
+# output for LaTeX
+xtable(t3, digits = c(0,3,3,3,4,3,3))
 
 ###############################################################################
 # Q2.3c - feasible estimator
+
+# will be similar to 2.2b above
+# but need to first estimate propensity score
+# then plug that into the gmm
+
+###############################################################################
+# Q2.3d - feasible estimator, with trimming
 
 ###############################################################################
 ### Question 3: When Bootstrap Fails
