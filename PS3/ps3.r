@@ -379,7 +379,73 @@ gc()
 ###############################################################################
 # Q3.1 - nonparametric bootstrap
 
+# sample size
+n <- 1000
+
+# generate sample
+set.seed(123)
+x <- runif(n,0,1)
+
+# replications to run
+reps <- 599
+
+# empty vector to fill with bootstrap results
+np_stats <- rep(NA,reps)
+
+# nonparametric bootstrap
+for(i in 1:reps){
+  # pick 1000 times from x, with sampling
+  x_star <- sample(x, n, replace = T)
+  
+  # calculate the statistic as specified
+  stat <- n * (max(x) - max(x_star))
+  
+  # save stat and move to next i
+  np_stats[i] <- stat
+}
+
+# data for plot
+np_df <- data.frame(statistic_value = np_stats)
+
+# plot our bootstrapped stats vs. exp(1) distribution
+p3.1 <- ggplot(np_df) +
+  geom_histogram(aes(x = statistic_value, y=..density..)) +
+  stat_function(fun = function(x) dexp(x), size = 1, color = 'red') +
+  theme_minimal()
+p3.1
+
+ggsave('q3_1_R.png')
+
 ###############################################################################
 # Q3.2 - parametric bootstrap
+
+# use same x as before
+
+# empty vector to fill with bootstrap results
+p_stats <- rep(NA,reps)
+
+# parametric bootstrap
+for(i in 1:reps){
+  # generate sample of 1000 from uniform(0,max(x))
+  x_star <- runif(n, 0, max(x))
+  
+  # calculate the statistic as specified
+  stat <- n * (max(x) - max(x_star))
+  
+  # save stat and move to next i
+  p_stats[i] <- stat
+}
+
+# data for plot
+p_df <- data.frame(statistic_value = p_stats)
+
+# plot our bootstrapped stats vs. exp(1) distribution
+p3.2 <- ggplot(p_df) +
+  geom_histogram(aes(x = statistic_value, y=..density..)) +
+  stat_function(fun = function(x) dexp(x), size = 1, color = 'red') +
+  theme_minimal()
+p3.2
+
+ggsave('q3_2_R.png')
 
 ###############################################################################
