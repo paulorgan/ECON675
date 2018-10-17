@@ -1,7 +1,7 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS3
-# Last Update: Oct 16, 2018
+# Last Update: Oct 17, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
@@ -137,7 +137,7 @@ df %<>% mutate(log_SincpcP1 = log(S_incomepc + 1))
 # here we construct the moment condition 0=E[g*m] which is just
 # (instruments)*(y_i - F(t\theta+x\gamma))
 # function of theta and gamma (parameters) and t and X (data)
-gm <- function(beta, data){
+g_mcar <- function(beta, data){
   theta <- beta[1]
   gamma <- beta[2:4]
   # constructing the F(t\theta+x\gamma) term
@@ -160,7 +160,7 @@ gm <- function(beta, data){
 
 # bootstrap statistic
 boot_stat <- function(dat, i){
-  gmm(gm, dat[i,], t0=c(0,0,0,0), wmatrix='ident', vcov='iid')$coef
+  gmm(g_mcar, dat[i,], t0=c(0,0,0,0), wmatrix='ident', vcov='iid')$coef
 }
 
 # some incomplete values seem to be messing things up (drops three observations)
@@ -203,15 +203,179 @@ xtable(t3, digits = c(0,3,3,3,4,3,3))
 ###############################################################################
 # Q2.3c - feasible estimator
 
-# will be similar to 2.2b above
-# but need to first estimate propensity score
-# then plug that into the gmm
+# similar to above, but first estimate propensity score then plug into gmm
+# only difference in this function is to add (*ipw) (weighting observations)
+g_mar <- function(beta, data){
+  # restrict to nonmissing data
+  data <- data[data$s==1,]
+  
+  # beta has two components
+  theta <- beta[1]
+  gamma <- beta[2:4]
+  
+  # constructing the F(t\theta+x\gamma) term
+  F_component <- plogis(data$dpisofirme * theta +
+                          data$S_age * gamma[1] +
+                          data$S_HHpeople * gamma[2] +
+                          data$log_SincpcP1 * gamma[3])
+  
+  vars <- c('dpisofirme', 'S_age', 'S_HHpeople', 'log_SincpcP1')
+  Zvars <- paste0('Z_', vars)
+  
+  for(i in 1:length(vars)){
+    data[,Zvars[i]] <- data[,vars[i]]*(data$danemia - F_component)*data$ipw
+  }
+  
+  out <- data[,Zvars] %>% as.matrix
+  
+  return(out)
+}
+
+# bootstrap statistic
+# this has more changes - need to estimate p using logit
+# then plug that into our data as "ipw" and run gmm
+boot_stat <- function(dat, i){
+  boot_data <- dat[i,]
+  
+  # estimate p using logit
+  reg <- glm(s ~ dpisofirme + S_age + S_HHpeople + log_SincpcP1 - 1,
+             data = boot_data, family = binomial(link = 'logit'))
+  
+  # get fitted values
+  predicted_p <- reg$fitted
+  
+  # construct inverse prob weights
+  boot_data$ipw <- 1 / predicted_p
+  
+  # run GMM using the constructed weights
+  gmm(g_mar, boot_data, t0=c(0,0,0,0), wmatrix='ident', vcov='iid')$coef
+}
+
+# some incomplete values seem to be messing things up (drops three observations)
+df <- df[complete.cases(df[,c('dpisofirme','S_age','S_HHpeople','log_SincpcP1')]),]
+
+# run bootstrap, 999 replications
+ptm <- proc.time()
+set.seed(22)
+boot_results <- boot(data=df, R=999, statistic = boot_stat, stype = "i")
+proc.time() - ptm
+# runtime is 35mins
+
+# generate table of desired results (showing same results as in Q1)
+t4 <- matrix(NA, nrow=4, ncol=6) %>% as.data.frame
+names(t4) <- c('Coefficient', 'StdError', 'tValue', 'pValue', 'CIlow', 'CIhigh')
+
+t4$Coefficient <- boot_results$t0
+t4$StdError    <- apply(boot_results$t, 2, sd)
+t4$tValue      <- t4$Coefficient / t4$StdError
+
+# define function to calculate pvalue from bootstrap results
+getPval <- function(coef, coef_b){
+  2 * max( mean( (coef_b-coef) >= abs(coef) ), mean( (coef_b-coef) <= -1*abs(coef) ) )
+}
+
+# apply over covariates, also get confidence intervals
+for(i in 1:nrow(t4)){
+  t4$pValue[i] <- getPval(boot_results$t0[i], boot_results$t[,i])
+  
+  t4$CIlow[i]  <- quantile(boot_results$t[,i], .025)
+  t4$CIhigh[i] <- quantile(boot_results$t[,i], .975)
+}
+
+# add rownames
+row.names(t4) <- c('dpisofirme', 'S_age', 'S_HHpeople', 'log(S_incomepc+1)')
+
+# output for LaTeX
+xtable(t4, digits = c(0,3,3,3,4,3,3))
 
 ###############################################################################
 # Q2.3d - feasible estimator, with trimming
 
+# same as above, but trimming observations with p<.1 (1/p>10)
+g_mar_trim <- function(beta, data){
+  # restrict to nonmissing data
+  data <- data[data$s==1,]
+  
+  # trim observations
+  data <- data[data$ipw<=10,]
+  
+  # beta has two components
+  theta <- beta[1]
+  gamma <- beta[2:4]
+  
+  # constructing the F(t\theta+x\gamma) term
+  F_component <- plogis(data$dpisofirme * theta +
+                          data$S_age * gamma[1] +
+                          data$S_HHpeople * gamma[2] +
+                          data$log_SincpcP1 * gamma[3])
+  
+  vars <- c('dpisofirme', 'S_age', 'S_HHpeople', 'log_SincpcP1')
+  Zvars <- paste0('Z_', vars)
+  
+  for(i in 1:length(vars)){
+    data[,Zvars[i]] <- data[,vars[i]]*(data$danemia - F_component)*data$ipw
+  }
+  
+  out <- data[,Zvars] %>% as.matrix
+  
+  return(out)
+}
+
+# bootstrap statistic
+# only change is to use the g_mar_trim function instead of g_mar
+boot_stat_trim <- function(dat, i){
+  boot_data <- dat[i,]
+  
+  # estimate p using logit
+  reg <- glm(s ~ dpisofirme + S_age + S_HHpeople + log_SincpcP1 - 1,
+             data = boot_data, family = binomial(link = 'logit'))
+  
+  # get fitted values
+  predicted_p <- reg$fitted
+  
+  # construct inverse prob weights
+  boot_data$ipw <- 1 / predicted_p
+  
+  # run GMM using the constructed weights
+  gmm(g_mar_trim, boot_data, t0=c(0,0,0,0), wmatrix='ident', vcov='iid')$coef
+}
+
+# run bootstrap, 999 replications
+ptm <- proc.time()
+set.seed(22)
+boot_results <- boot(data=df, R=999, statistic = boot_stat_trim, stype = "i")
+proc.time() - ptm
+# runtime is 39mins
+
+# generate table of desired results (showing same results as in Q1)
+t5 <- matrix(NA, nrow=4, ncol=6) %>% as.data.frame
+names(t5) <- c('Coefficient', 'StdError', 'tValue', 'pValue', 'CIlow', 'CIhigh')
+
+t5$Coefficient <- boot_results$t0
+t5$StdError    <- apply(boot_results$t, 2, sd)
+t5$tValue      <- t5$Coefficient / t5$StdError
+
+# apply over covariates, also get confidence intervals
+for(i in 1:nrow(t5)){
+  t5$pValue[i] <- getPval(boot_results$t0[i], boot_results$t[,i])
+  
+  t5$CIlow[i]  <- quantile(boot_results$t[,i], .025)
+  t5$CIhigh[i] <- quantile(boot_results$t[,i], .975)
+}
+
+# add rownames
+row.names(t5) <- c('dpisofirme', 'S_age', 'S_HHpeople', 'log(S_incomepc+1)')
+
+# output for LaTeX
+xtable(t5, digits = c(0,3,3,3,4,3,3))
+
 ###############################################################################
 ### Question 3: When Bootstrap Fails
+###############################################################################
+# clean up
+rm(list = ls())
+gc()
+
 ###############################################################################
 # Q3.1 - nonparametric bootstrap
 
