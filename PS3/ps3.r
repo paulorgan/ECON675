@@ -1,7 +1,7 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS3
-# Last Update: Oct 17, 2018
+# Last Update: Oct 19, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
@@ -10,6 +10,7 @@ options(stringsAsFactors = F)
 require(tidyverse) # data cleaning and manipulation
 require(magrittr)  # syntax
 require(ggplot2)   # plots
+require(sandwich)  # robust standard errors
 require(xtable)    # tables for LaTeX
 require(boot)      # bootstrapping
 require(gmm)       # GMM estimation
@@ -27,7 +28,7 @@ df <- read_csv('pisofirme.csv')
 # add variable to indicate having outcome data
 df %<>% mutate(s = 1-dmissing)
 
-# add log variable for us in regression [log(S_incomepc + 1)]
+# add log variable for use in regression [log(S_incomepc + 1)]
 df %<>% mutate(log_SincpcP1 = log(S_incomepc + 1))
 
 # logistic regression model
@@ -36,14 +37,25 @@ reg <- glm(s ~ S_age + S_HHpeople + log_SincpcP1,
 
 # Q1.9a - estimates and statistics
 # extract coef, var, t-stat, p-val, 95% CI
-t1 <- xtable(reg)
-names(t1) <- c('Coefficient', 'StdError', 'zValue', 'pValue')
 
-# add confidence interval
-t1$CIlow  <- t1$Coefficient - 1.96*t1$StdError
-t1$CIhigh <- t1$Coefficient + 1.96*t1$StdError
+# robust standard errors
+cov <- vcovHC(reg, type = "HC0")
+std.err <- sqrt(diag(cov))
 
-# output to LaTeX
+# for CI
+q.val <- qnorm(0.975)
+
+# create table
+t1 <- cbind(
+  Estimate = coef(reg)
+  , 'Robust SE' = std.err
+  , 'Z-value' = (coef(reg)/std.err)
+  , 'p-Value' =  2 * pnorm(abs(coef(reg)/std.err), lower.tail = FALSE)
+  , 'CI-low' = coef(reg) - q.val  * std.err
+  , 'CI-high' = coef(reg) + q.val  * std.err
+)
+
+# output for LaTeX
 xtable(t1, digits = c(0,3,3,3,4,3,3))
 
 ###############################################################################
