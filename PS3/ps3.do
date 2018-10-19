@@ -1,7 +1,7 @@
 ********************************************************************************
 * Author: Paul R. Organ
 * Purpose: ECON 675, PS3
-* Last Update: Oct 11, 2018
+* Last Update: Oct 19, 2018
 ********************************************************************************
 clear all
 set more off
@@ -32,8 +32,67 @@ log using ps3.log, replace
 *** Question 3: When Bootstrap Fails
 ********************************************************************************
 * Q3.1 - nonparametric bootstrap
+clear all
 
+* generate sample
+set seed 123
+set obs 1000
+gen X = runiform()
+
+* save actual max
+sum X
+local maxX=r(max)
+
+* run nonparametric bootstrap of max
+bootstrap stat=r(max), reps(599) saving(nonpar_results, replace): summarize X
+
+* load results
+use nonpar_results, clear
+
+* generate statistic
+gen nonpar_stat = 1000*(`maxX'-stat)
+
+* plot
+hist nonpar_stat, ///
+ plot(function exponential = 1-exponential(1,x), range(0 5) color(red))
+graph export q3_1_S.png, replace
+
+********************************************************************************
 * Q3.2 - parametric bootstrap
+clear all
+
+tempname memhold
+tempfile para_results
+
+* generate sample
+set seed 123
+set obs 1000
+gen X = runiform()
+
+* save actual max
+sum X
+local maxX=r(max)
+
+* parametric bootstrap
+postfile `memhold' max using `para_results'
+forvalues i = 1/599{
+	capture drop sample
+	gen sample = runiform(0,`maxX')
+	sum sample
+	post `memhold' (r(max))
+}
+postclose `memhold'
+
+* load results
+use `para_results', clear
+
+* generate statistic
+gen para_stat = 1000*(`maxX'-max)
+
+* plot
+hist para_stat, ///
+ plot(function exponential = 1-exponential(1,x), range(0 5) color(red))
+graph export q3_2_S.png, replace
 
 ********************************************************************************
 log close
