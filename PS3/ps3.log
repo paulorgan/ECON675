@@ -2,7 +2,7 @@
       name:  <unnamed>
        log:  C:\Users\prorgan\Box\Classes\Econ 675\Problem Sets\PS3\ps3.log
   log type:  text
- opened on:  19 Oct 2018, 19:31:48
+ opened on:  22 Oct 2018, 15:57:40
 
 . 
 . ********************************************************************************
@@ -23,7 +23,7 @@
 
 . 
 . * Q1.9a - estimates and statistics
-. * logit regression, robuse standard errors
+. * logit regression, robust standard errors
 . logit s S_age S_HHpeople log_SincpcP1, vce(robust)
 
 Iteration 0:   log pseudolikelihood = -1154.1918  
@@ -86,7 +86,7 @@ Bootstrap replications (999)
 
 Logistic regression                             Number of obs     =      4,089
                                                 Replications      =        999
-                                                Wald chi2(3)      =     120.15
+                                                Wald chi2(3)      =     126.11
                                                 Prob > chi2       =     0.0000
 Log likelihood =  -799.1594                     Pseudo R2         =     0.3076
 
@@ -94,10 +94,10 @@ Log likelihood =  -799.1594                     Pseudo R2         =     0.3076
              |   Observed   Bootstrap                         Normal-based
            s |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
 -------------+----------------------------------------------------------------
-       S_age |   1.333361   .1311692    10.17   0.000     1.076274    1.590448
-  S_HHpeople |  -.0665942    .023702    -2.81   0.005    -.1130492   -.0201391
-log_SincpcP1 |   -.118689   .0456251    -2.60   0.009    -.2081124   -.0292655
-       _cons |   1.755024   .3442683     5.10   0.000     1.080271    2.429778
+       S_age |   1.333361   .1283594    10.39   0.000     1.081781    1.584941
+  S_HHpeople |  -.0665942   .0232207    -2.87   0.004    -.1121059   -.0210825
+log_SincpcP1 |   -.118689   .0455274    -2.61   0.009    -.2079211   -.0294569
+       _cons |   1.755024   .3466733     5.06   0.000     1.075557    2.434491
 ------------------------------------------------------------------------------
 
 . 
@@ -108,10 +108,8 @@ q1_9b.tex
 dir : seeout
 
 . 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD27a0_000000.tmp"
-
+. * Q1.9c - propensity scores
+. * logit regression, robust standard errors
 . logit s S_age S_HHpeople log_SincpcP1, vce(robust)
 
 Iteration 0:   log pseudolikelihood = -1154.1918  
@@ -144,231 +142,7 @@ log_SincpcP1 |   -.118689   .0438226    -2.71   0.007    -.2045796   -.0327983
 (3 missing values generated)
 
 . 
-end of do-file
-
-. sum p
-
-    Variable |        Obs        Mean    Std. Dev.       Min        Max
--------------+---------------------------------------------------------
-           p |      4,089     .918562    .1245655   .4411936   .9997487
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD27a0_000000.tmp"
-
-. twoway histogram p || kdensity p
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD27a0_000000.tmp"
-
-. twoway histogram p || kdensity p, k(gaussian) || ///
->  kdensity p, k(epanechnikov) || kdensity p, k(triangle)
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD27a0_000000.tmp"
-
-. twoway histogram p || kdensity p, k(gaussian) || ///
->  kdensity p, k(epanechnikov) || kdensity p, k(triangle) lab(Triangle)
-option lab() not allowed
-r(198);
-
-end of do-file
-
-r(198);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD27a0_000000.tmp"
-
 . * plot histogram, overlay kernel density
-. twoway histogram p || kdensity p, k(gaussian) || ///
->  kdensity p, k(epanechnikov) || kdensity p, k(triangle) label(Triangle)
-option label() not allowed
-r(198);
-
-end of do-file
-
-r(198);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD27a0_000000.tmp"
-
-. twoway histogram p || kdensity p, k(gaussian) || ///
->  kdensity p, k(epanechnikov) || kdensity p, k(triangle) leg(label(Triangle))
-Triangle not an integer in option label()
-r(198);
-
-end of do-file
-
-r(198);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD27a0_000000.tmp"
-
-. twoway histogram p || kdensity p, k(gaussian) || ///
->  kdensity p, k(epanechnikov) || kdensity p, k(triangle) ///
->  leg(lab(1, "Propensity Score") lab(2,"Gaussian"))
-1, not an integer in option label()
-r(198);
-
-end of do-file
-
-r(198);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD27a0_000000.tmp"
-
-. twoway histogram p || kdensity p, k(gaussian) || ///
->  kdensity p, k(epanechnikov) || kdensity p, k(triangle) ///
->  leg(lab(1 "Propensity Score") lab(2 "Gaussian"))
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD27a0_000000.tmp"
-
-. twoway histogram p || kdensity p, k(gaussian) || ///
->  kdensity p, k(epanechnikov) || kdensity p, k(triangle) ///
->  leg(lab(1 "Propensity Score") lab(2 "Gaussian") ///
->          lab(3 "Epanechnikov") lab(4 "Triangle")
-parentheses do not balance
-r(198);
-
-end of do-file
-
-r(198);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD27a0_000000.tmp"
-
-. twoway histogram p || kdensity p, k(gaussian) || ///
->  kdensity p, k(epanechnikov) || kdensity p, k(triangle) ///
->  leg(lab(1 "Propensity Score") lab(2 "Gaussian") ///
->          lab(3 "Epanechnikov") lab(4 "Triangle"))
-
-. 
-end of do-file
-
-. help scheme
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD27a0_000000.tmp"
-
-. set scheme s1color
-
-. 
-. * plot histogram, overlay kernel density
-. twoway histogram p || kdensity p, k(gaussian) || ///
->  kdensity p, k(epanechnikov) || kdensity p, k(triangle) ///
->  leg(lab(1 "Propensity Score") lab(2 "Gaussian") ///
->          lab(3 "Epanechnikov") lab(4 "Triangle"))
-
-. 
-end of do-file
-
-. graph query, schemes
-
-Available schemes are
-
-    s2color        see help scheme_s2color
-    s2mono         see help scheme_s2mono
-    s2manual       see help scheme_s2manual
-    s2gmanual      see help scheme_s2gmanual
-    s2gcolor       see help scheme_s2gcolor
-    s1color        see help scheme_s1color
-    s1mono         see help scheme_s1mono
-    s1rcolor       see help scheme_s1rcolor
-    s1manual       see help scheme_s1manual
-    sj             see help scheme_sj
-    economist      see help scheme_economist
-    s2color8       see help scheme_s2color8
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD27a0_000000.tmp"
-
-. set scheme plotplain
-scheme plotplain not found
-r(111);
-
-end of do-file
-
-r(111);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD27a0_000000.tmp"
-
-. set scheme s2color
-
-. 
-. * plot histogram, overlay kernel density
-. twoway histogram p || kdensity p, k(gaussian) || ///
->  kdensity p, k(epanechnikov) || kdensity p, k(triangle) ///
->  leg(lab(1 "Propensity Score") lab(2 "Gaussian") ///
->          lab(3 "Epanechnikov") lab(4 "Triangle"))
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD27a0_000000.tmp"
-
-. set scheme s1color
-
-. 
-. * plot histogram, overlay kernel density
-. twoway histogram p || kdensity p, k(gaussian) || ///
->  kdensity p, k(epanechnikov) || kdensity p, k(triangle) ///
->  leg(lab(1 "Propensity Score") lab(2 "Gaussian") ///
->          lab(3 "Epanechnikov") lab(4 "Triangle"))
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD27a0_000000.tmp"
-
-. set scheme s2color
-
-. 
-. * plot histogram, overlay kernel density
-. twoway histogram p || kdensity p, k(gaussian) || ///
->  kdensity p, k(epanechnikov) || kdensity p, k(triangle) ///
->  leg(lab(1 "Propensity Score") lab(2 "Gaussian") ///
->          lab(3 "Epanechnikov") lab(4 "Triangle"))
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD27a0_000000.tmp"
-
-. logit s S_age S_HHpeople log_SincpcP1, vce(robust)
-
-Iteration 0:   log pseudolikelihood = -1154.1918  
-Iteration 1:   log pseudolikelihood = -913.49548  
-Iteration 2:   log pseudolikelihood = -808.12736  
-Iteration 3:   log pseudolikelihood = -799.30907  
-Iteration 4:   log pseudolikelihood = -799.15953  
-Iteration 5:   log pseudolikelihood =  -799.1594  
-Iteration 6:   log pseudolikelihood =  -799.1594  
-
-Logistic regression                             Number of obs     =      4,089
-                                                Wald chi2(3)      =     136.38
-                                                Prob > chi2       =     0.0000
-Log pseudolikelihood =  -799.1594               Pseudo R2         =     0.3076
-
-------------------------------------------------------------------------------
-             |               Robust
-           s |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-       S_age |   1.333361   .1230986    10.83   0.000     1.092092     1.57463
-  S_HHpeople |  -.0665942   .0231898    -2.87   0.004    -.1120454   -.0211429
-log_SincpcP1 |   -.118689   .0438226    -2.71   0.007    -.2045796   -.0327983
-       _cons |   1.755024   .3344889     5.25   0.000     1.099438     2.41061
-------------------------------------------------------------------------------
-
-. 
-. * predict propensity score
-. predict p
-variable p already defined
-r(110);
-
-end of do-file
-
-r(110);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD27a0_000000.tmp"
-
 . twoway histogram p || kdensity p, k(gaussian) || ///
 >  kdensity p, k(epanechnikov) || kdensity p, k(triangle) ///
 >  leg(lab(1 "Propensity Score") lab(2 "Gaussian") ///
@@ -377,10 +151,332 @@ r(110);
 .          
 . * save
 . graph export q1_9c_S.png, replace
-(note: file q1_9c_S.png not found)
 (file q1_9c_S.png written in PNG format)
 
 . 
 end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
+
+. gmm ( (danemia - invlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_Sincp
+> cP1*{b4})) )
+note: 336 missing values returned for equation 1 at initial values
+model is not identified; there are more parameters, 4, than instruments, 1
+r(481);
+
+end of do-file
+
+r(481);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
+
+. gmm ( (danemia - invlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_Sincp
+> cP1*{b4})) ),///
+/ / / not allowed with interactive version
+r(198);
+
+end of do-file
+
+r(198);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
+
+. gmm ( (danemia - invlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_Sincp
+> cP1*{b4})) ),///
+/ / / not allowed with interactive version
+r(198);
+
+end of do-file
+
+r(198);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
+
+. gmm ( (danemia - invlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_Sincp
+> cP1*{b4})) ),instruments(dpisofirme S_age S_HHpeople log_SincpcP1)
+note: 333 missing values returned for equation 1 at initial values
+
+Step 1
+Iteration 0:   GMM criterion Q(b) =  .02405255  
+Iteration 1:   GMM criterion Q(b) =  .00029422  
+Iteration 2:   GMM criterion Q(b) =  .00024681  
+Iteration 3:   GMM criterion Q(b) =   .0002468  
+
+Step 2
+Iteration 0:   GMM criterion Q(b) =  .00110718  
+Iteration 1:   GMM criterion Q(b) =  .00110483  
+Iteration 2:   GMM criterion Q(b) =  .00110483  
+
+GMM estimation 
+
+Number of parameters =   4
+Number of moments    =   5
+Initial weight matrix: Unadjusted                 Number of obs   =      3,756
+GMM weight matrix:     Robust
+
+------------------------------------------------------------------------------
+             |               Robust
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         /b1 |  -.3143876   .0673902    -4.67   0.000      -.44647   -.1823053
+         /b2 |   -.244175   .0202672   -12.05   0.000     -.283898   -.2044521
+         /b3 |    .022826   .0131821     1.73   0.083    -.0030105    .0486625
+         /b4 |    .033113   .0137676     2.41   0.016      .006129     .060097
+------------------------------------------------------------------------------
+Instruments for equation 1: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
+
+. gmm ( (danemia - invlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_Sincp
+> cP1*{b4})) ), instruments(dpisofirme S_age S_HHpeople log_SincpcP1) vce(bootstrap)
+(running gmm on estimation sample)
+
+Bootstrap replications (50)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+
+GMM estimation 
+
+Number of parameters =   4
+Number of moments    =   5
+Initial weight matrix: Unadjusted                 Number of obs   =      3,756
+GMM weight matrix:     Robust
+
+Bootstrap results
+------------------------------------------------------------------------------
+             |   Observed   Bootstrap                         Normal-based
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         /b1 |  -.3143876   .0585344    -5.37   0.000    -.4291129   -.1996623
+         /b2 |   -.244175   .0211259   -11.56   0.000     -.285581    -.202769
+         /b3 |    .022826   .0134864     1.69   0.091    -.0036068    .0492588
+         /b4 |    .033113   .0152733     2.17   0.030     .0031778    .0630482
+------------------------------------------------------------------------------
+Instruments for equation 1: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
+
+. local f = logit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_SincpcP1*{b4})
+{b1} invalid name
+r(198);
+
+end of do-file
+
+r(198);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
+
+. gmm ( (danemia - invlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_Sincp
+> cP1*{b4}))*(logit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_SincpcP1*{b4}
+> )/(invlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_SincpcP1*{b4})*(1-i
+> nvlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_SincpcP1*{b4})))) ), in
+> struments(dpisofirme S_age S_HHpeople log_SincpcP1) vce(bootstrap)
+(running gmm on estimation sample)
+no non-missing values returned for equation 1 at initial values
+an error occurred when bootstrap executed gmm
+r(498);
+
+end of do-file
+
+r(498);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
+
+. gmm ( (danemia - invlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_Sincp
+> cP1*{b4}))*(logit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_SincpcP1*{b4}
+> )/(invlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_SincpcP1*{b4})*(1-i
+> nvlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_SincpcP1*{b4})))) ), in
+> struments(dpisofirme S_age S_HHpeople log_SincpcP1)
+no non-missing values returned for equation 1 at initial values
+r(498);
+
+end of do-file
+
+r(498);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
+
+. local vars = dpisofirme S_age S_HHpeople log_SincpcP1
+invalid 'S_age' 
+r(198);
+
+end of do-file
+
+r(198);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
+
+. gmm ( (danemia - invlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_Sincp
+> cP1*{b4})) ), instruments(dpisofirme S_age S_HHpeople log_SincpcP1) vce(bootstrap)
+(running gmm on estimation sample)
+
+Bootstrap replications (50)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+
+GMM estimation 
+
+Number of parameters =   4
+Number of moments    =   5
+Initial weight matrix: Unadjusted                 Number of obs   =      3,756
+GMM weight matrix:     Robust
+
+Bootstrap results
+------------------------------------------------------------------------------
+             |   Observed   Bootstrap                         Normal-based
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         /b1 |  -.3143876   .0681847    -4.61   0.000    -.4480272    -.180748
+         /b2 |   -.244175   .0208417   -11.72   0.000     -.285024    -.203326
+         /b3 |    .022826    .015516     1.47   0.141    -.0075848    .0532368
+         /b4 |    .033113   .0129295     2.56   0.010     .0077716    .0584544
+------------------------------------------------------------------------------
+Instruments for equation 1: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
+
+. local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
+
+. gmm (danemia-invlogit({xb:`vars'})), instruments(`vars') vce(boot)
+(running gmm on estimation sample)
+
+Bootstrap replications (50)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+
+GMM estimation 
+
+Number of parameters =   4
+Number of moments    =   5
+Initial weight matrix: Unadjusted                 Number of obs   =      3,756
+GMM weight matrix:     Robust
+
+Bootstrap results
+------------------------------------------------------------------------------
+             |   Observed   Bootstrap                         Normal-based
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  dpisofirme |  -.3143876   .0630389    -4.99   0.000    -.4379416   -.1908336
+       S_age |   -.244175   .0224746   -10.86   0.000    -.2882245   -.2001256
+  S_HHpeople |    .022826   .0141983     1.61   0.108    -.0050022    .0506542
+log_SincpcP1 |    .033113   .0148237     2.23   0.025     .0040591    .0621669
+------------------------------------------------------------------------------
+Instruments for equation 1: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
+
+. * try writing it out:
+. local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
+
+. gmm ( (danemia - invlogit({xb:`vars'}))*(logit({xb:`vars'})/(invlogit({xb:`vars'})*
+> (1-invlogit({xb:`vars'})))) ), instruments(dpisofirme S_age S_HHpeople log_SincpcP1
+> )
+equation 1 is invalid; linear form xb is declared more than once
+    The moment expression is incorrectly specified.
+r(198);
+
+end of do-file
+
+r(198);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
+
+. * try writing it out:
+. local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
+
+. gmm ( (danemia - invlogit({xb:`vars'}))*(logit({xb:`vars'})/(invlogit({xb:`vars'})*
+> (1-invlogit({xb:`vars'})))) ), instruments(dpisofirme S_age S_HHpeople log_SincpcP1
+> )
+equation 1 is invalid; linear form xb is declared more than once
+    The moment expression is incorrectly specified.
+r(198);
+
+end of do-file
+
+r(198);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
+
+. local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
+
+. local f = logit({xb:`vars'})
+{xb:dpisofirmeS_ageS_HHpeoplelog_SincpcP1} invalid name
+r(198);
+
+end of do-file
+
+r(198);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
+
+. local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
+
+. gmm (danemia-invlogit({xb:`vars'})), instruments(`vars') vce(boot)
+(running gmm on estimation sample)
+
+Bootstrap replications (50)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+
+GMM estimation 
+
+Number of parameters =   4
+Number of moments    =   5
+Initial weight matrix: Unadjusted                 Number of obs   =      3,756
+GMM weight matrix:     Robust
+
+Bootstrap results
+------------------------------------------------------------------------------
+             |   Observed   Bootstrap                         Normal-based
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  dpisofirme |  -.3143876   .0787559    -3.99   0.000    -.4687463   -.1600289
+       S_age |   -.244175   .0191809   -12.73   0.000    -.2817689   -.2065812
+  S_HHpeople |    .022826   .0119708     1.91   0.057    -.0006363    .0462883
+log_SincpcP1 |    .033113   .0126389     2.62   0.009     .0083412    .0578848
+------------------------------------------------------------------------------
+Instruments for equation 1: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+
+. 
+end of do-file
+
+. help gmm
+
+. help gmm
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
+
+. outreg2 using q2_2b.tex, side stats(coef se tstat pval ci) ///
+>  noaster noparen nor2 noobs dec(3) replace
+q2_2b.tex
+dir : seeout
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
+
+. local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
+
+. gmm ( (danemia - invlogit({xb:`vars'}))*(logit({xb:})/(invlogit({xb:})*(1-invlogit(
+> {xb:})))) ), instruments(`vars')
+no non-missing values returned for equation 1 at initial values
+r(498);
+
+end of do-file
+
+r(498);
 
 . exit, clear

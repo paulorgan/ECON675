@@ -1,7 +1,7 @@
 ********************************************************************************
 * Author: Paul R. Organ
 * Purpose: ECON 675, PS3
-* Last Update: Oct 19, 2018
+* Last Update: Oct 22, 2018
 ********************************************************************************
 clear all
 set more off
@@ -58,8 +58,40 @@ graph export q1_9c_S.png, replace
 *** Question 2: Semiparametric GMM with Missing Data
 ********************************************************************************
 * Q2.2b - feasible estimator
+* since we assume F is logistic, we can drop the g_0 term
+local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
+gmm (danemia-invlogit({xb:`vars'})), instruments(`vars') vce(boot)
+
+* output for LaTeX
+outreg2 using q2_2b.tex, side stats(coef se tstat pval ci) ///
+ noaster noparen nor2 noobs dec(3) replace
 
 * Q2.3c - feasible estimator
+
+
+
+
+
+*** other stuff from first attempts below, in case useful
+* this runs and is close to my R results, but is not the moment condition we want
+* but may actually be right? the g function is based on 
+
+* need to somehow include the g_0 function in there, and account for conditional on s=1
+local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
+local f = logit({xb:`vars'})
+local F = invlogit({xb:`vars'})
+gmm ( (danemia - `F')*(`f'/(`F'*(1-`F'))) ), instruments(`vars') vce(bootstrap)
+
+* doesn't work
+* maybe define a program for g, then build it into the gmm moment condition?
+
+* try writing it out:
+local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
+gmm ( (danemia - invlogit({xb:`vars'}))*(logit({xb:})/(invlogit({xb:})*(1-invlogit({xb:})))) ), instruments(`vars')
+
+* also doesn't work
+
+* might be able to use teffects?
 
 ********************************************************************************
 *** Question 3: When Bootstrap Fails
