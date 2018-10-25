@@ -33,13 +33,13 @@ df %<>% mutate(logre74 = log(re74 + 1), logre75 = log(re75 + 1),
                age2 = age^2, educ2 = educ^2, age3 = age^3,
                bXu74 = black * u74, eXre74 = educ * logre74)
 
-# empty table to fill with results (1 + 6*3)
+# empty s to fill with results (1 + 6*3)
 ate <- matrix(NA, nrow=19,ncol=8) %>% as.data.frame
 
 # add headings
 names(ate) <- c('e_tau', 'e_se', 'e_CI_l', 'e_CI_h', 'p_tau', 'p_se', 'p_CI_l', 'p_CI_h')
 
-# add empty table for att
+# we need one for ATE, one for ATT
 att <- ate
 
 # define three model specifications
