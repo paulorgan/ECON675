@@ -2,7 +2,7 @@
       name:  <unnamed>
        log:  C:\Users\prorgan\Box\Classes\Econ 675\Problem Sets\PS4\ps4.log
   log type:  text
- opened on:  25 Oct 2018, 13:11:57
+ opened on:  25 Oct 2018, 14:12:17
 
 . 
 . ********************************************************************************
@@ -137,14 +137,244 @@ convergence not achieved
 . qui teffects ipw (re78) (t `c', probit) if (treat != 2), atet iterate(50)
 
 . 
+. * predicted propensity scores for PSID data are too close to 0 or 1
+. * so we need to predict, then only use interior data
+. * note new if condition (keep if treated, or PSID and interior prop score)
+. 
+. * three ways, PSID data, ate and att
+. qui probit t `a' if (treat != 0)
+
+. capture: drop prop
+
+. predict prop
+(option pr assumed; Pr(t))
+
+. qui teffects ipw (re78) (t `a', probit) ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
+
+.  
+. qui teffects ipw (re78) (t `a', probit) ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
+
+.  
+. qui probit t `b' if (treat != 0)
+
+. capture: drop prop
+
+. predict prop
+(option pr assumed; Pr(t))
+
+. qui teffects ipw (re78) (t `b', probit) ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
+
+.  
+. qui teffects ipw (re78) (t `b', probit) ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
+
+.  
+. qui probit t `c' if (treat != 0)
+
+. capture: drop prop
+
+. predict prop
+(option pr assumed; Pr(t))
+
+. qui teffects ipw (re78) (t `c', probit) ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
+convergence not achieved
+    The Gauss-Newton stopping criterion has been met but missing standard errors
+    indicate some of the parameters are not identified.
+
+. 
+. qui teffects ipw (re78) (t `c', probit) ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
+
+. 
+. ********************************************************************************
+. * Q2.5: Doubly Robust
+. 
+. * ate, experiemental data, three ways
+. qui teffects ipwra (re78 `a') (t `a', probit) if (treat != 2), ate iterate(50)
+
+. qui teffects ipwra (re78 `b') (t `b', probit) if (treat != 2), ate iterate(50)
+
+. qui teffects ipwra (re78 `c') (t `c', probit) if (treat != 2), ate iterate(50)
+convergence not achieved
+    The Gauss-Newton stopping criterion has been met but missing standard errors
+    indicate some of the parameters are not identified.
+
+. 
+. * att, experiemental data, three ways
+. qui teffects ipwra (re78 `a') (t `a', probit) if (treat != 2), atet iterate(50)
+
+. qui teffects ipwra (re78 `b') (t `b', probit) if (treat != 2), atet iterate(50)
+
+. qui teffects ipwra (re78 `c') (t `c', probit) if (treat != 2), atet iterate(50)
+convergence not achieved
+    The Gauss-Newton stopping criterion has been met but missing standard errors
+    indicate some of the parameters are not identified.
+
+. 
+. * predicted propensity scores for PSID data are too close to 0 or 1
+. * so we need to predict, then only use interior data
+. 
+. * three ways, PSID data, ate and att
+. qui probit t `a' if (treat != 0)
+
+. capture: drop prop
+
+. predict prop
+(option pr assumed; Pr(t))
+
+. qui teffects ipwra (re78 `a') (t `a', probit) ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
+
+.  
+. qui teffects ipwra (re78 `a') (t `a', probit) ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
+
+.  
+. qui probit t `b' if (treat != 0)
+
+. capture: drop prop
+
+. predict prop
+(option pr assumed; Pr(t))
+
+. qui teffects ipwra (re78 `b') (t `b', probit) ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
+convergence not achieved
+    The Gauss-Newton stopping criterion has been met but missing standard errors
+    indicate some of the parameters are not identified.
+
+.  
+. qui teffects ipwra (re78 `b') (t `b', probit) ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
+convergence not achieved
+    The Gauss-Newton stopping criterion has been met but missing standard errors
+    indicate some of the parameters are not identified.
+
+.  
+. qui probit t `c' if (treat != 0)
+
+. capture: drop prop
+
+. predict prop
+(option pr assumed; Pr(t))
+
+. qui teffects ipwra (re78 `c') (t `c', probit) ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
+convergence not achieved
+    The Gauss-Newton stopping criterion has been met but missing standard errors
+    indicate some of the parameters are not identified.
+
+. 
+. qui teffects ipwra (re78 `c') (t `c', probit) ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
+convergence not achieved
+    The Gauss-Newton stopping criterion has been met but missing standard errors
+    indicate some of the parameters are not identified.
+
+. 
+. ********************************************************************************
+. * Q2.6: Nearest Neighbor Matching
+. 
+. * ate, experiemental data, three ways
+. qui teffects nnmatch (re78 `a') (t) if (treat != 2), ate nneighbor(1) metric(maha)
+
+. qui teffects nnmatch (re78 `b') (t) if (treat != 2), ate nneighbor(1) metric(maha)
+
+. qui teffects nnmatch (re78 `c') (t) if (treat != 2), ate nneighbor(1) metric(maha)
+
+. 
+. * att, experiemental data, three ways
+. qui teffects nnmatch (re78 `a') (t) if (treat != 2), atet nneighbor(1) metric(maha)
+
+. qui teffects nnmatch (re78 `b') (t) if (treat != 2), atet nneighbor(1) metric(maha)
+
+. qui teffects nnmatch (re78 `c') (t) if (treat != 2), atet nneighbor(1) metric(maha)
+
+. 
 . * ate, PSID data, three ways
-. qui teffects ipw (re78) (t `a', probit) if (treat != 0), ate iterate(50)
-treatment 1 has 512 propensity scores less than 1.00e-05
-treatment overlap assumption has been violated; use option osample() to identify the
-overlap violators
-r(498);
+. qui teffects nnmatch (re78 `a') (t) if (treat != 0), ate nneighbor(1) metric(maha)
 
+. qui teffects nnmatch (re78 `b') (t) if (treat != 0), ate nneighbor(1) metric(maha)
+
+. qui teffects nnmatch (re78 `c') (t) if (treat != 0), ate nneighbor(1) metric(maha)
+
+. 
+. * att, PSID data, three ways
+. qui teffects nnmatch (re78 `a') (t) if (treat != 0), atet nneighbor(1) metric(maha)
+
+. qui teffects nnmatch (re78 `b') (t) if (treat != 0), atet nneighbor(1) metric(maha)
+
+. qui teffects nnmatch (re78 `c') (t) if (treat != 0), atet nneighbor(1) metric(maha)
+
+. 
+. ********************************************************************************
+. * Q2.7: Propensity Score Matching
+. 
+. * ate, experiemental data, three ways
+. qui teffects psmatch (re78) (t `a', probit) if (treat != 2), ate
+
+. qui teffects psmatch (re78) (t `b', probit) if (treat != 2), ate
+
+. qui teffects psmatch (re78) (t `c', probit) if (treat != 2), ate
+
+. 
+. * att, experiemental data, three ways
+. qui teffects psmatch (re78) (t `a', probit) if (treat != 2), atet
+
+. qui teffects psmatch (re78) (t `b', probit) if (treat != 2), atet
+
+. qui teffects psmatch (re78) (t `c', probit) if (treat != 2), atet
+
+. 
+. * three ways, PSID data, ate and att
+. qui probit t `a' if (treat != 0)
+
+. capture: drop prop
+
+. predict prop
+(option pr assumed; Pr(t))
+
+. qui teffects psmatch (re78) (t `a', probit) ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate
+
+.  
+. qui teffects psmatch (re78) (t `a', probit) ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet
+
+.  
+. qui probit t `b' if (treat != 0)
+
+. capture: drop prop
+
+. predict prop
+(option pr assumed; Pr(t))
+
+. qui teffects psmatch (re78) (t `b', probit) ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate
+
+.  
+. qui teffects psmatch (re78) (t `b', probit) ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet
+
+.  
+. qui probit t `c' if (treat != 0)
+
+. capture: drop prop
+
+. predict prop
+(option pr assumed; Pr(t))
+
+. qui teffects psmatch (re78) (t `c', probit) ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate
+
+. 
+. qui teffects psmatch (re78) (t `c', probit) ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet
+
+. 
 end of do-file
-
-r(498);
 

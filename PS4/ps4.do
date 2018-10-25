@@ -61,12 +61,12 @@ qui reg re78 t `c' if (treat != 0), vce(r)
 ********************************************************************************
 * Q2.3: Regression Imputation
 
-* ate, experiemental data, three ways
+* ate, experimental data, three ways
 qui teffects ra (re78 `a') (t) if (treat != 2), ate
 qui teffects ra (re78 `b') (t) if (treat != 2), ate
 qui teffects ra (re78 `c') (t) if (treat != 2), ate
 
-* att, experiemental data, three ways
+* att, experimental data, three ways
 qui teffects ra (re78 `a') (t) if (treat != 2), atet
 qui teffects ra (re78 `b') (t) if (treat != 2), atet
 qui teffects ra (re78 `c') (t) if (treat != 2), atet
@@ -84,61 +84,101 @@ qui teffects ra (re78 `c') (t) if (treat != 0), atet
 ********************************************************************************
 * Q2.4: Inverse Probability Weighting
 
-* ate, experiemental data, three ways
+* ate, experimental data, three ways
 qui teffects ipw (re78) (t `a', probit) if (treat != 2), ate iterate(50)
 qui teffects ipw (re78) (t `b', probit) if (treat != 2), ate iterate(50)
 qui teffects ipw (re78) (t `c', probit) if (treat != 2), ate iterate(50)
 
-* att, experiemental data, three ways
+* att, experimental data, three ways
 qui teffects ipw (re78) (t `a', probit) if (treat != 2), atet iterate(50)
 qui teffects ipw (re78) (t `b', probit) if (treat != 2), atet iterate(50)
 qui teffects ipw (re78) (t `c', probit) if (treat != 2), atet iterate(50)
 
 * predicted propensity scores for PSID data are too close to 0 or 1
 * so we need to predict, then only use interior data
+* note new if condition (keep if treated, or PSID and interior prop score)
 
-* ate, PSID data, three ways
-qui teffects ipw (re78) (t `a', probit) if (treat != 0), ate iterate(50)
-qui teffects ipw (re78) (t `b', probit) if (treat != 0), ate iterate(50)
-qui teffects ipw (re78) (t `c', probit) if (treat != 0), ate iterate(50)
+* three ways, PSID data, ate and att
+qui probit t `a' if (treat != 0)
+capture: drop prop
+predict prop
+qui teffects ipw (re78) (t `a', probit) ///
+ if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
+ 
+qui teffects ipw (re78) (t `a', probit) ///
+ if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
+ 
+qui probit t `b' if (treat != 0)
+capture: drop prop
+predict prop
+qui teffects ipw (re78) (t `b', probit) ///
+ if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
+ 
+qui teffects ipw (re78) (t `b', probit) ///
+ if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
+ 
+qui probit t `c' if (treat != 0)
+capture: drop prop
+predict prop
+qui teffects ipw (re78) (t `c', probit) ///
+ if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
 
-* att, PSID data, three ways
-qui teffects ipw (re78) (t `a', probit) if (treat != 0), atet iterate(50)
-qui teffects ipw (re78) (t `b', probit) if (treat != 0), atet iterate(50)
-qui teffects ipw (re78) (t `c', probit) if (treat != 0), atet iterate(50)
+qui teffects ipw (re78) (t `c', probit) ///
+ if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
 
 ********************************************************************************
 * Q2.5: Doubly Robust
 
-* ate, experiemental data, three ways
-qui teffects ipwra (re78 `a') (t `a', probit) if (treat != 2), ate
-qui teffects ipwra (re78 `b') (t `b', probit) if (treat != 2), ate
-qui teffects ipwra (re78 `c') (t `c', probit) if (treat != 2), ate
+* ate, experimental data, three ways
+qui teffects ipwra (re78 `a') (t `a', probit) if (treat != 2), ate iterate(50)
+qui teffects ipwra (re78 `b') (t `b', probit) if (treat != 2), ate iterate(50)
+qui teffects ipwra (re78 `c') (t `c', probit) if (treat != 2), ate iterate(50)
 
-* att, experiemental data, three ways
-qui teffects ipwra (re78 `a') (t `a', probit) if (treat != 2), atet
-qui teffects ipwra (re78 `b') (t `b', probit) if (treat != 2), atet
-qui teffects ipwra (re78 `c') (t `c', probit) if (treat != 2), atet
+* att, experimental data, three ways
+qui teffects ipwra (re78 `a') (t `a', probit) if (treat != 2), atet iterate(50)
+qui teffects ipwra (re78 `b') (t `b', probit) if (treat != 2), atet iterate(50)
+qui teffects ipwra (re78 `c') (t `c', probit) if (treat != 2), atet iterate(50)
 
-* ate, PSID data, three ways
-qui teffects ipwra (re78 `a') (t `a', probit) if (treat != 0), ate
-qui teffects ipwra (re78 `b') (t `b', probit) if (treat != 0), ate
-qui teffects ipwra (re78 `c') (t `c', probit) if (treat != 0), ate
+* predicted propensity scores for PSID data are too close to 0 or 1
+* so we need to predict, then only use interior data
 
-* att, PSID data, three ways
-qui teffects ipwra (re78 `a') (t `a', probit) if (treat != 0), atet
-qui teffects ipwra (re78 `b') (t `b', probit) if (treat != 0), atet
-qui teffects ipwra (re78 `c') (t `c', probit) if (treat != 0), atet
+* three ways, PSID data, ate and att
+qui probit t `a' if (treat != 0)
+capture: drop prop
+predict prop
+qui teffects ipwra (re78 `a') (t `a', probit) ///
+ if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
+ 
+qui teffects ipwra (re78 `a') (t `a', probit) ///
+ if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
+ 
+qui probit t `b' if (treat != 0)
+capture: drop prop
+predict prop
+qui teffects ipwra (re78 `b') (t `b', probit) ///
+ if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
+ 
+qui teffects ipwra (re78 `b') (t `b', probit) ///
+ if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
+ 
+qui probit t `c' if (treat != 0)
+capture: drop prop
+predict prop
+qui teffects ipwra (re78 `c') (t `c', probit) ///
+ if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
+
+qui teffects ipwra (re78 `c') (t `c', probit) ///
+ if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
 
 ********************************************************************************
 * Q2.6: Nearest Neighbor Matching
 
-* ate, experiemental data, three ways
+* ate, experimental data, three ways
 qui teffects nnmatch (re78 `a') (t) if (treat != 2), ate nneighbor(1) metric(maha)
 qui teffects nnmatch (re78 `b') (t) if (treat != 2), ate nneighbor(1) metric(maha)
 qui teffects nnmatch (re78 `c') (t) if (treat != 2), ate nneighbor(1) metric(maha)
 
-* att, experiemental data, three ways
+* att, experimental data, three ways
 qui teffects nnmatch (re78 `a') (t) if (treat != 2), atet nneighbor(1) metric(maha)
 qui teffects nnmatch (re78 `b') (t) if (treat != 2), atet nneighbor(1) metric(maha)
 qui teffects nnmatch (re78 `c') (t) if (treat != 2), atet nneighbor(1) metric(maha)
@@ -156,25 +196,43 @@ qui teffects nnmatch (re78 `c') (t) if (treat != 0), atet nneighbor(1) metric(ma
 ********************************************************************************
 * Q2.7: Propensity Score Matching
 
-* ate, experiemental data, three ways
+* ate, experimental data, three ways
 qui teffects psmatch (re78) (t `a', probit) if (treat != 2), ate
 qui teffects psmatch (re78) (t `b', probit) if (treat != 2), ate
 qui teffects psmatch (re78) (t `c', probit) if (treat != 2), ate
 
-* att, experiemental data, three ways
+* att, experimental data, three ways
 qui teffects psmatch (re78) (t `a', probit) if (treat != 2), atet
 qui teffects psmatch (re78) (t `b', probit) if (treat != 2), atet
 qui teffects psmatch (re78) (t `c', probit) if (treat != 2), atet
 
-* ate, PSID data, three ways
-qui teffects psmatch (re78) (t `a', probit) if (treat != 0), ate
-qui teffects psmatch (re78) (t `b', probit) if (treat != 0), ate
-qui teffects psmatch (re78) (t `c', probit) if (treat != 0), ate
+* three ways, PSID data, ate and att
+qui probit t `a' if (treat != 0)
+capture: drop prop
+predict prop
+qui teffects psmatch (re78) (t `a', probit) ///
+ if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate
+ 
+qui teffects psmatch (re78) (t `a', probit) ///
+ if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet
+ 
+qui probit t `b' if (treat != 0)
+capture: drop prop
+predict prop
+qui teffects psmatch (re78) (t `b', probit) ///
+ if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate
+ 
+qui teffects psmatch (re78) (t `b', probit) ///
+ if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet
+ 
+qui probit t `c' if (treat != 0)
+capture: drop prop
+predict prop
+qui teffects psmatch (re78) (t `c', probit) ///
+ if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate
 
-* att, PSID data, three ways
-qui teffects psmatch (re78) (t `a', probit) if (treat != 0), atet
-qui teffects psmatch (re78) (t `b', probit) if (treat != 0), atet
-qui teffects psmatch (re78) (t `c', probit) if (treat != 0), atet
+qui teffects psmatch (re78) (t `c', probit) ///
+ if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet
 
 ********************************************************************************
 *** Question 3: Post-model Selection Inference
