@@ -1,0 +1,150 @@
+-------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:\Users\prorgan\Box\Classes\Econ 675\Problem Sets\PS4\ps4.log
+  log type:  text
+ opened on:  25 Oct 2018, 13:11:57
+
+. 
+. ********************************************************************************
+. *** Question 2: Estimating Average Treatment Effects
+. ********************************************************************************
+. * Q2 setup
+. 
+. * load data
+. import delimited "LaLonde_all.csv"
+(12 vars, 2,935 obs)
+
+. 
+. * add treatment variable in expanded dataset
+. gen t = 0
+
+. replace t = 1 if treat == 1
+(185 real changes made)
+
+. 
+. * add other variables we will use in the analysis
+. gen logre74 = log(re74 + 1)
+
+. gen logre75 = log(re75 + 1)
+
+. gen age2 = age^2
+
+. gen educ2 = educ^2
+
+. gen age3 = age^3
+
+. gen bXu74 = black * u74
+
+. gen eXre74 = educ * logre74
+
+. 
+. * define vars for model specifications
+. local a = "age educ black hisp married nodegr logre74 logre75"
+
+. local b = "age educ black hisp married nodegr logre74 logre75 age2 educ2 u74 u75"
+
+. local c = "age educ black hisp married nodegr logre74 logre75 age2 educ2 u74 u75 ag
+> e3 bXu74 eXre74"
+
+. 
+. ********************************************************************************
+. * Q2.1: Difference-in-Means
+. 
+. * experimental data
+. qui reg re78 t if (treat != 2), vce(hc2)
+
+. 
+. * PSID data
+. qui reg re78 t if (treat != 0), vce(hc2)
+
+. 
+. ********************************************************************************
+. * Q2.2: Linear Least-Squares
+. 
+. * experimental data, three ways
+. qui reg re78 t `a' if (treat != 2), vce(r)
+
+. qui reg re78 t `b' if (treat != 2), vce(r)
+
+. qui reg re78 t `c' if (treat != 2), vce(r)
+
+. 
+. * PSID data
+. qui reg re78 t `a' if (treat != 0), vce(r)
+
+. qui reg re78 t `b' if (treat != 0), vce(r)
+
+. qui reg re78 t `c' if (treat != 0), vce(r)
+
+. 
+. ********************************************************************************
+. * Q2.3: Regression Imputation
+. 
+. * ate, experiemental data, three ways
+. qui teffects ra (re78 `a') (t) if (treat != 2), ate
+
+. qui teffects ra (re78 `b') (t) if (treat != 2), ate
+
+. qui teffects ra (re78 `c') (t) if (treat != 2), ate
+
+. 
+. * att, experiemental data, three ways
+. qui teffects ra (re78 `a') (t) if (treat != 2), atet
+
+. qui teffects ra (re78 `b') (t) if (treat != 2), atet
+
+. qui teffects ra (re78 `c') (t) if (treat != 2), atet
+
+. 
+. * ate, PSID data, three ways
+. qui teffects ra (re78 `a') (t) if (treat != 0), ate
+
+. qui teffects ra (re78 `b') (t) if (treat != 0), ate
+
+. qui teffects ra (re78 `c') (t) if (treat != 0), ate
+convergence not achieved
+    The Gauss-Newton stopping criterion has been met but missing standard errors
+    indicate some of the parameters are not identified.
+
+. 
+. * att, PSID data, three ways
+. qui teffects ra (re78 `a') (t) if (treat != 0), atet
+
+. qui teffects ra (re78 `b') (t) if (treat != 0), atet
+
+. qui teffects ra (re78 `c') (t) if (treat != 0), atet
+convergence not achieved
+    The Gauss-Newton stopping criterion has been met but missing standard errors
+    indicate some of the parameters are not identified.
+
+. 
+. ********************************************************************************
+. * Q2.4: Inverse Probability Weighting
+. 
+. * ate, experiemental data, three ways
+. qui teffects ipw (re78) (t `a', probit) if (treat != 2), ate iterate(50)
+
+. qui teffects ipw (re78) (t `b', probit) if (treat != 2), ate iterate(50)
+
+. qui teffects ipw (re78) (t `c', probit) if (treat != 2), ate iterate(50)
+
+. 
+. * att, experiemental data, three ways
+. qui teffects ipw (re78) (t `a', probit) if (treat != 2), atet iterate(50)
+
+. qui teffects ipw (re78) (t `b', probit) if (treat != 2), atet iterate(50)
+
+. qui teffects ipw (re78) (t `c', probit) if (treat != 2), atet iterate(50)
+
+. 
+. * ate, PSID data, three ways
+. qui teffects ipw (re78) (t `a', probit) if (treat != 0), ate iterate(50)
+treatment 1 has 512 propensity scores less than 1.00e-05
+treatment overlap assumption has been violated; use option osample() to identify the
+overlap violators
+r(498);
+
+end of do-file
+
+r(498);
+

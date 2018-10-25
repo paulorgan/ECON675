@@ -1,7 +1,7 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS4
-# Last Update: Oct 24, 2018
+# Last Update: Oct 25, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
@@ -26,9 +26,9 @@ setwd('C:/Users/prorgan/Box/Classes/Econ 675/Problem Sets/PS4')
 df <- read_csv('LaLonde_all.csv')
 
 # add treatment variable in expanded dataset
-df %<>% mutate(treat_full = ifelse(treat == 1, 1, 0))
+df %<>% mutate(t = ifelse(treat == 1, 1, 0))
 
-# add other variable we will use in the analysis
+# add other variables we will use in the analysis
 df %<>% mutate(logre74 = log(re74 + 1), logre75 = log(re75 + 1),
                age2 = age^2, educ2 = educ^2, age3 = age^3,
                bXu74 = black * u74, eXre74 = educ * logre74)
@@ -48,39 +48,39 @@ va <- c('age', 'educ', 'black', 'hisp', 'married',
 vb <- c(va, 'age2', 'educ2', 'u74', 'u75')
 vc <- c(vb, 'age3', 'bXu74', 'eXre74')
 
-a <- paste('re78', paste(c('treat_full', va),
+a <- paste('re78', paste(c('t', va),
                          collapse = ' + '), sep = ' ~ ') %>% as.formula()
-b <- paste('re78', paste(c('treat_full', vb),
+b <- paste('re78', paste(c('t', vb),
                          collapse = ' + '), sep = ' ~ ') %>% as.formula()
-c <- paste('re78', paste(c('treat_full', vc),
+c <- paste('re78', paste(c('t', vc),
                          collapse = ' + '), sep = ' ~ ') %>% as.formula()
 
-ta <- paste('treat_full', paste(va,collapse = ' + '), sep = ' ~ ') %>% as.formula()
-ta <- paste('treat_full', paste(vb, collapse = ' + '), sep = ' ~ ') %>% as.formula()
-ta <- paste('treat_full', paste(vc, collapse = ' + '), sep = ' ~ ') %>% as.formula()
+ta <- paste('t', paste(va,collapse = ' + '), sep = ' ~ ') %>% as.formula()
+ta <- paste('t', paste(vb, collapse = ' + '), sep = ' ~ ') %>% as.formula()
+ta <- paste('t', paste(vc, collapse = ' + '), sep = ' ~ ') %>% as.formula()
   
 rm(va, vb, vc)
 
 ###############################################################################
 # Q2.1: Difference-in-Means
 
-# difference in means for experimental data
-r1e <- lm(re78 ~ treat_full, data = df %>% filter(treat != 2))
+# experimental data
+r1e <- lm(re78 ~ t, data = df %>% filter(treat != 2))
 
 # extract tau
-ate$e_tau[1]  <- r1e$coefficients['treat_full']
+ate$e_tau[1]  <- r1e$coefficients['t']
 
-# robust standard errors (HC1 is equivalent to Stata robust)
-ate$e_se[1]   <- diag(vcovHC(r1e, type = "HC1")) %>% sqrt() %>% .['treat_full']
+# hederosketastic robust standard errors
+ate$e_se[1]   <- diag(vcovHC(r1e, type = "HC2")) %>% sqrt() %>% .['t']
 
-# difference in means for PSID data
-r1p <- lm(re78 ~ treat_full, data = df %>% filter(treat != 0))
+# PSID data
+r1p <- lm(re78 ~ t, data = df %>% filter(treat != 0))
 
 # extract tau
-ate$p_tau[1]  <- r1p$coefficients['treat_full']
+ate$p_tau[1]  <- r1p$coefficients['t']
 
-# robust standard errors
-ate$p_se[1]   <- diag(vcovHC(r1p, type = "HC1")) %>% sqrt() %>% .['treat_full']
+# hederosketastic robust standard errors
+ate$p_se[1]   <- diag(vcovHC(r1p, type = "HC2")) %>% sqrt() %>% .['t']
 
 # ATE and ATT are same here
 att[1,] <- ate[1,]
@@ -96,14 +96,14 @@ r2eb <- lm(b, data = df %>% filter(treat != 2))
 r2ec <- lm(c, data = df %>% filter(treat != 2))
 
 # extract tau
-ate$e_tau[2]  <- r2ea$coefficients['treat_full']
-ate$e_tau[3]  <- r2eb$coefficients['treat_full']
-ate$e_tau[4]  <- r2ec$coefficients['treat_full']
+ate$e_tau[2]  <- r2ea$coefficients['t']
+ate$e_tau[3]  <- r2eb$coefficients['t']
+ate$e_tau[4]  <- r2ec$coefficients['t']
 
 # robust standard errors 
-ate$e_se[2]   <- diag(vcovHC(r2ea, type = "HC1")) %>% sqrt() %>% .['treat_full']
-ate$e_se[3]   <- diag(vcovHC(r2eb, type = "HC1")) %>% sqrt() %>% .['treat_full']
-ate$e_se[4]   <- diag(vcovHC(r2ec, type = "HC1")) %>% sqrt() %>% .['treat_full']
+ate$e_se[2]   <- diag(vcovHC(r2ea, type = "HC1")) %>% sqrt() %>% .['t']
+ate$e_se[3]   <- diag(vcovHC(r2eb, type = "HC1")) %>% sqrt() %>% .['t']
+ate$e_se[4]   <- diag(vcovHC(r2ec, type = "HC1")) %>% sqrt() %>% .['t']
 
 # OLS for PSID data
 r2pa <- lm(a, data = df %>% filter(treat != 0))
@@ -111,14 +111,14 @@ r2pb <- lm(b, data = df %>% filter(treat != 0))
 r2pc <- lm(c, data = df %>% filter(treat != 0))
 
 # extract tau
-ate$p_tau[2]  <- r2pa$coefficients['treat_full']
-ate$p_tau[3]  <- r2pb$coefficients['treat_full']
-ate$p_tau[4]  <- r2pc$coefficients['treat_full']
+ate$p_tau[2]  <- r2pa$coefficients['t']
+ate$p_tau[3]  <- r2pb$coefficients['t']
+ate$p_tau[4]  <- r2pc$coefficients['t']
 
 # robust standard errors 
-ate$p_se[2]   <- diag(vcovHC(r2pa, type = "HC1")) %>% sqrt() %>% .['treat_full']
-ate$p_se[3]   <- diag(vcovHC(r2pb, type = "HC1")) %>% sqrt() %>% .['treat_full']
-ate$p_se[4]   <- diag(vcovHC(r2pc, type = "HC1")) %>% sqrt() %>% .['treat_full']
+ate$p_se[2]   <- diag(vcovHC(r2pa, type = "HC1")) %>% sqrt() %>% .['t']
+ate$p_se[3]   <- diag(vcovHC(r2pb, type = "HC1")) %>% sqrt() %>% .['t']
+ate$p_se[4]   <- diag(vcovHC(r2pc, type = "HC1")) %>% sqrt() %>% .['t']
 
 # again, ATE is same as ATT here
 att[2:4,] <- ate[2:4,]
@@ -145,8 +145,8 @@ att[2:4,] <- ate[2:4,]
 # don't think this is right...
 r6ea_p <- matchit(ta, data = df %>% filter(treat != 2), method = 'nearest')
 df_r6ea <- match.data(r6ea_p)
-mean(df_r6ea$re78[df_r6ea$treat_full==1])-mean(df_r6ea$re78[df_r6ea$treat_full==0])
-t.test(df_r6ea$re78[df_r6ea$treat_full==1],df_r6ea$re78[df_r6ea$treat_full==0])
+mean(df_r6ea$re78[df_r6ea$t==1])-mean(df_r6ea$re78[df_r6ea$t==0])
+t.test(df_r6ea$re78[df_r6ea$t==1],df_r6ea$re78[df_r6ea$t==0])
 
 ###############################################################################
 # Q2.7: Propensity Score Matching
