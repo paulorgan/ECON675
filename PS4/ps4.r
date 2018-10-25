@@ -169,11 +169,98 @@ att %<>% mutate(e_CI_l = e_tau - 1.96*e_se,
 ### Question 3: Post-model Selection Inference
 ###############################################################################
 # Q3 setup
+rm(list = ls())
+gc()
 
 ###############################################################################
 # Q3.1: Summary Statistics and Kernel Density Plots
 
+# replications
+M <- 1000
+
+# sample size
+n <- 50
+
+# define data generating process
+dgp <- function(n){
+  x   <- rnorm(n,0,1)
+  z   <- .85*x + sqrt(1-.85)*rnorm(n,0,1)
+  eps <- rnorm(n,0,1)
+  
+  y = 1 + .5*x + z + eps
+  
+  out = data.frame(y=y,x=x,z=z)
+  
+  return(out)
+}
+
+# empty matrix to store estimates
+est <- matrix(NA, nrow=M, ncol = 3)
+
+# replicate M times and save estimates
+set.seed(22)
+for(i in 1:M){
+  # generate sample
+  df <- dgp(n)
+  
+  # run 'long' regression: Equation (2)
+  long <- lm(y ~ x + z, data = df)
+  
+  # extract first estimate
+  beta_hat <- long$coefficients['x']
+  est[i,1] <- beta_hat
+  
+  # save gamma over se gamma (using robust std errors)
+  gamma_hat <- long$coefficients['z']
+  gamma_se  <- sqrt(vcovHC(long, 'HC1')['z','z'])
+  tstat <- gamma_hat/gamma_se
+  
+  # run 'short' regression: Equation (3)
+  short <- lm(y ~ x, data = df)
+  
+  # extract second estimate
+  beta_tilde <- short$coefficients['x']
+  est[i,2]   <- beta_tilde
+  
+  # save third estimate (beta_check) based on t-stat on gamma
+  est[i,3] <- ifelse(tstat >= 1.96, beta_hat, beta_tilde)
+}
+
+# summary statistic of distribution of each of the estimators
+tab <- matrix(NA,nrow=4,ncol=3)
+for(i in 1:3){
+  tab[1,i] <- min(est[,i])
+  tab[2,i] <- mean(est[,i])
+  tab[3,i] <- median(est[,i])
+  tab[4,i] <- max(est[,i])
+}
+
+# add labels
+rownames(tab) <- c('min', 'mean', 'median', 'max')
+colnames(tab) <- c('beta_hat', 'beta_tilde', 'beta_check')
+
+# write to LaTeX
+xtable(tab %>% round(3))
+
+# kernel density plots
+est %<>% as.data.frame
+names(est) <- c('beta_hat', 'beta_tilde', 'beta_check')
+est <- gather(est, key = 'Estimator', value = 'x')
+
+# plot kernel densities
+p <- ggplot(est, aes(x = x, group = Estimator, color = Estimator)) +
+  geom_density(kernel = 'epanechnikov', size = 1) +
+  theme_minimal() +
+  labs(x = '', y = 'Density')
+p
+
+# save for LaTeX
+ggsave('q3_1_R.png')
+
 ###############################################################################
 # Q3.2: Empirical Coverage Rates
+
+# tbd, think maybe need to do this in the for-loop above
+# each iteration, check coverage?
 
 ###############################################################################

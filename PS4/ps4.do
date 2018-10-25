@@ -642,6 +642,7 @@ putexcel close
 *** Question 3: Post-model Selection Inference
 ********************************************************************************
 * Q3 setup
+clear all
 
 ********************************************************************************
 * Q3.1: Summary Statistics and Kernel Density Plots
