@@ -2,7 +2,7 @@
       name:  <unnamed>
        log:  C:\Users\prorgan\Box\Classes\Econ 675\Problem Sets\PS3\ps3.log
   log type:  text
- opened on:  22 Oct 2018, 15:57:40
+ opened on:  26 Oct 2018, 11:49:45
 
 . 
 . ********************************************************************************
@@ -86,7 +86,7 @@ Bootstrap replications (999)
 
 Logistic regression                             Number of obs     =      4,089
                                                 Replications      =        999
-                                                Wald chi2(3)      =     126.11
+                                                Wald chi2(3)      =     128.08
                                                 Prob > chi2       =     0.0000
 Log likelihood =  -799.1594                     Pseudo R2         =     0.3076
 
@@ -94,10 +94,10 @@ Log likelihood =  -799.1594                     Pseudo R2         =     0.3076
              |   Observed   Bootstrap                         Normal-based
            s |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
 -------------+----------------------------------------------------------------
-       S_age |   1.333361   .1283594    10.39   0.000     1.081781    1.584941
-  S_HHpeople |  -.0665942   .0232207    -2.87   0.004    -.1121059   -.0210825
-log_SincpcP1 |   -.118689   .0455274    -2.61   0.009    -.2079211   -.0294569
-       _cons |   1.755024   .3466733     5.06   0.000     1.075557    2.434491
+       S_age |   1.333361   .1275848    10.45   0.000     1.083299    1.583423
+  S_HHpeople |  -.0665942    .022908    -2.91   0.004    -.1114931   -.0216952
+log_SincpcP1 |   -.118689   .0455944    -2.60   0.009    -.2080523   -.0293256
+       _cons |   1.755024   .3413161     5.14   0.000     1.086057    2.423991
 ------------------------------------------------------------------------------
 
 . 
@@ -154,84 +154,23 @@ log_SincpcP1 |   -.118689   .0438226    -2.71   0.007    -.2045796   -.0327983
 (file q1_9c_S.png written in PNG format)
 
 . 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
-
-. gmm ( (danemia - invlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_Sincp
-> cP1*{b4})) )
-note: 336 missing values returned for equation 1 at initial values
-model is not identified; there are more parameters, 4, than instruments, 1
-r(481);
-
-end of do-file
-
-r(481);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
-
-. gmm ( (danemia - invlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_Sincp
-> cP1*{b4})) ),///
-/ / / not allowed with interactive version
-r(198);
-
-end of do-file
-
-r(198);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
-
-. gmm ( (danemia - invlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_Sincp
-> cP1*{b4})) ),///
-/ / / not allowed with interactive version
-r(198);
-
-end of do-file
-
-r(198);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
-
-. gmm ( (danemia - invlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_Sincp
-> cP1*{b4})) ),instruments(dpisofirme S_age S_HHpeople log_SincpcP1)
-note: 333 missing values returned for equation 1 at initial values
-
-Step 1
-Iteration 0:   GMM criterion Q(b) =  .02405255  
-Iteration 1:   GMM criterion Q(b) =  .00029422  
-Iteration 2:   GMM criterion Q(b) =  .00024681  
-Iteration 3:   GMM criterion Q(b) =   .0002468  
-
-Step 2
-Iteration 0:   GMM criterion Q(b) =  .00110718  
-Iteration 1:   GMM criterion Q(b) =  .00110483  
-Iteration 2:   GMM criterion Q(b) =  .00110483  
-
-GMM estimation 
-
-Number of parameters =   4
-Number of moments    =   5
-Initial weight matrix: Unadjusted                 Number of obs   =      3,756
-GMM weight matrix:     Robust
-
-------------------------------------------------------------------------------
-             |               Robust
-             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-         /b1 |  -.3143876   .0673902    -4.67   0.000      -.44647   -.1823053
-         /b2 |   -.244175   .0202672   -12.05   0.000     -.283898   -.2044521
-         /b3 |    .022826   .0131821     1.73   0.083    -.0030105    .0486625
-         /b4 |    .033113   .0137676     2.41   0.016      .006129     .060097
-------------------------------------------------------------------------------
-Instruments for equation 1: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
-
+. ********************************************************************************
+. *** Question 2: Semiparametric GMM with Missing Data
+. ********************************************************************************
+. * Q2.2b(MCAR)- feasible estimator
 . 
-end of do-file
+. * gmm, four moment conditions
+. local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
 
-. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
-
-. gmm ( (danemia - invlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_Sincp
-> cP1*{b4})) ), instruments(dpisofirme S_age S_HHpeople log_SincpcP1) vce(bootstrap)
+. gmm ((danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log
+> _SincpcP1*{gamma3})))*dpisofirme) ///
+> ((danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_Sin
+> cpcP1*{gamma3})))*S_age) ///
+> ((danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_Sin
+> cpcP1*{gamma3})))*S_HHpeople) ///
+> ((danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_Sin
+> cpcP1*{gamma3})))*log_SincpcP1), ///
+> instruments(dpisofirme `vars') winitial(identity) vce(boot)
 (running gmm on estimation sample)
 
 Bootstrap replications (50)
@@ -241,8 +180,8 @@ Bootstrap replications (50)
 GMM estimation 
 
 Number of parameters =   4
-Number of moments    =   5
-Initial weight matrix: Unadjusted                 Number of obs   =      3,756
+Number of moments    =  20
+Initial weight matrix: Identity                   Number of obs   =      3,756
 GMM weight matrix:     Robust
 
 Bootstrap results
@@ -250,70 +189,41 @@ Bootstrap results
              |   Observed   Bootstrap                         Normal-based
              |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
 -------------+----------------------------------------------------------------
-         /b1 |  -.3143876   .0585344    -5.37   0.000    -.4291129   -.1996623
-         /b2 |   -.244175   .0211259   -11.56   0.000     -.285581    -.202769
-         /b3 |    .022826   .0134864     1.69   0.091    -.0036068    .0492588
-         /b4 |    .033113   .0152733     2.17   0.030     .0031778    .0630482
+      /theta |  -.3156225   .0790692    -3.99   0.000    -.4705952   -.1606498
+     /gamma1 |  -.2461921   .0192962   -12.76   0.000     -.284012   -.2083723
+     /gamma2 |    .021306   .0128563     1.66   0.097    -.0038919    .0465039
+     /gamma3 |   .0349737   .0134333     2.60   0.009     .0086449    .0613025
 ------------------------------------------------------------------------------
-Instruments for equation 1: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+Instruments for equation 1: dpisofirme o.dpisofirme S_age S_HHpeople log_SincpcP1
+    _cons
+Instruments for equation 2: dpisofirme o.dpisofirme S_age S_HHpeople log_SincpcP1
+    _cons
+Instruments for equation 3: dpisofirme o.dpisofirme S_age S_HHpeople log_SincpcP1
+    _cons
+Instruments for equation 4: dpisofirme o.dpisofirme S_age S_HHpeople log_SincpcP1
+    _cons
+
+.  
+. * output for LaTeX
+. outreg2 using q2_2b.tex, side stats(coef se tstat pval ci) ///
+>  noaster noparen nor2 noobs dec(3) replace
+q2_2b.tex
+dir : seeout
 
 . 
-end of do-file
+. * Q2.3c (MAR)- feasible estimator
+. * we predicted p before, and have s, so add that before the moment conditions
+. local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
 
-. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
-
-. local f = logit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_SincpcP1*{b4})
-{b1} invalid name
-r(198);
-
-end of do-file
-
-r(198);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
-
-. gmm ( (danemia - invlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_Sincp
-> cP1*{b4}))*(logit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_SincpcP1*{b4}
-> )/(invlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_SincpcP1*{b4})*(1-i
-> nvlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_SincpcP1*{b4})))) ), in
-> struments(dpisofirme S_age S_HHpeople log_SincpcP1) vce(bootstrap)
-(running gmm on estimation sample)
-no non-missing values returned for equation 1 at initial values
-an error occurred when bootstrap executed gmm
-r(498);
-
-end of do-file
-
-r(498);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
-
-. gmm ( (danemia - invlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_Sincp
-> cP1*{b4}))*(logit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_SincpcP1*{b4}
-> )/(invlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_SincpcP1*{b4})*(1-i
-> nvlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_SincpcP1*{b4})))) ), in
-> struments(dpisofirme S_age S_HHpeople log_SincpcP1)
-no non-missing values returned for equation 1 at initial values
-r(498);
-
-end of do-file
-
-r(498);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
-
-. local vars = dpisofirme S_age S_HHpeople log_SincpcP1
-invalid 'S_age' 
-r(198);
-
-end of do-file
-
-r(198);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
-
-. gmm ( (danemia - invlogit(dpisofirme*{b1} +S_age*{b2} + S_HHpeople*{b3} + log_Sincp
-> cP1*{b4})) ), instruments(dpisofirme S_age S_HHpeople log_SincpcP1) vce(bootstrap)
+. gmm ((s/p)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma
+> 2}+log_SincpcP1*{gamma3})))*dpisofirme) ///
+> ((s/p)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+l
+> og_SincpcP1*{gamma3})))*S_age) ///
+> ((s/p)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+l
+> og_SincpcP1*{gamma3})))*S_HHpeople) ///
+> ((s/p)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+l
+> og_SincpcP1*{gamma3})))*log_SincpcP1), ///
+> instruments(dpisofirme `vars') winitial(identity) vce(boot)
 (running gmm on estimation sample)
 
 Bootstrap replications (50)
@@ -323,8 +233,8 @@ Bootstrap replications (50)
 GMM estimation 
 
 Number of parameters =   4
-Number of moments    =   5
-Initial weight matrix: Unadjusted                 Number of obs   =      3,756
+Number of moments    =  20
+Initial weight matrix: Identity                   Number of obs   =      3,756
 GMM weight matrix:     Robust
 
 Bootstrap results
@@ -332,132 +242,133 @@ Bootstrap results
              |   Observed   Bootstrap                         Normal-based
              |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
 -------------+----------------------------------------------------------------
-         /b1 |  -.3143876   .0681847    -4.61   0.000    -.4480272    -.180748
-         /b2 |   -.244175   .0208417   -11.72   0.000     -.285024    -.203326
-         /b3 |    .022826    .015516     1.47   0.141    -.0075848    .0532368
-         /b4 |    .033113   .0129295     2.56   0.010     .0077716    .0584544
+      /theta |   -.308574   .0586547    -5.26   0.000    -.4235351    -.193613
+     /gamma1 |  -.2451679   .0191595   -12.80   0.000    -.2827197    -.207616
+     /gamma2 |   .0213377   .0140332     1.52   0.128    -.0061668    .0488423
+     /gamma3 |   .0340163   .0134515     2.53   0.011     .0076519    .0603807
 ------------------------------------------------------------------------------
-Instruments for equation 1: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+Instruments for equation 1: dpisofirme o.dpisofirme S_age S_HHpeople log_SincpcP1
+    _cons
+Instruments for equation 2: dpisofirme o.dpisofirme S_age S_HHpeople log_SincpcP1
+    _cons
+Instruments for equation 3: dpisofirme o.dpisofirme S_age S_HHpeople log_SincpcP1
+    _cons
+Instruments for equation 4: dpisofirme o.dpisofirme S_age S_HHpeople log_SincpcP1
+    _cons
 
 . 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
-
-. local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
-
-. gmm (danemia-invlogit({xb:`vars'})), instruments(`vars') vce(boot)
-(running gmm on estimation sample)
-
-Bootstrap replications (50)
-----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
-..................................................    50
-
-GMM estimation 
-
-Number of parameters =   4
-Number of moments    =   5
-Initial weight matrix: Unadjusted                 Number of obs   =      3,756
-GMM weight matrix:     Robust
-
-Bootstrap results
-------------------------------------------------------------------------------
-             |   Observed   Bootstrap                         Normal-based
-             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-  dpisofirme |  -.3143876   .0630389    -4.99   0.000    -.4379416   -.1908336
-       S_age |   -.244175   .0224746   -10.86   0.000    -.2882245   -.2001256
-  S_HHpeople |    .022826   .0141983     1.61   0.108    -.0050022    .0506542
-log_SincpcP1 |    .033113   .0148237     2.23   0.025     .0040591    .0621669
-------------------------------------------------------------------------------
-Instruments for equation 1: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
-
-. * try writing it out:
-. local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
-
-. gmm ( (danemia - invlogit({xb:`vars'}))*(logit({xb:`vars'})/(invlogit({xb:`vars'})*
-> (1-invlogit({xb:`vars'})))) ), instruments(dpisofirme S_age S_HHpeople log_SincpcP1
-> )
-equation 1 is invalid; linear form xb is declared more than once
-    The moment expression is incorrectly specified.
-r(198);
-
-end of do-file
-
-r(198);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
-
-. * try writing it out:
-. local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
-
-. gmm ( (danemia - invlogit({xb:`vars'}))*(logit({xb:`vars'})/(invlogit({xb:`vars'})*
-> (1-invlogit({xb:`vars'})))) ), instruments(dpisofirme S_age S_HHpeople log_SincpcP1
-> )
-equation 1 is invalid; linear form xb is declared more than once
-    The moment expression is incorrectly specified.
-r(198);
-
-end of do-file
-
-r(198);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
-
-. local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
-
-. local f = logit({xb:`vars'})
-{xb:dpisofirmeS_ageS_HHpeoplelog_SincpcP1} invalid name
-r(198);
-
-end of do-file
-
-r(198);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
-
-. local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
-
-. gmm (danemia-invlogit({xb:`vars'})), instruments(`vars') vce(boot)
-(running gmm on estimation sample)
-
-Bootstrap replications (50)
-----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
-..................................................    50
-
-GMM estimation 
-
-Number of parameters =   4
-Number of moments    =   5
-Initial weight matrix: Unadjusted                 Number of obs   =      3,756
-GMM weight matrix:     Robust
-
-Bootstrap results
-------------------------------------------------------------------------------
-             |   Observed   Bootstrap                         Normal-based
-             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-  dpisofirme |  -.3143876   .0787559    -3.99   0.000    -.4687463   -.1600289
-       S_age |   -.244175   .0191809   -12.73   0.000    -.2817689   -.2065812
-  S_HHpeople |    .022826   .0119708     1.91   0.057    -.0006363    .0462883
-log_SincpcP1 |    .033113   .0126389     2.62   0.009     .0083412    .0578848
-------------------------------------------------------------------------------
-Instruments for equation 1: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+. * output for LaTeX
+. outreg2 using q2_3c.tex, side stats(coef se tstat pval ci) ///
+>  noaster noparen nor2 noobs dec(3) replace
+q2_3c.tex
+dir : seeout
 
 . 
 end of do-file
 
 . help gmm
 
-. help gmm
+. do "C:\Users\prorgan\AppData\Local\Temp\STD2b0c_000000.tmp"
 
-. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
+. local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
 
+. gmm ((s/p)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma
+> 2}+log_SincpcP1*{gamma3})))*dpisofirme) ///
+> ((s/p)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+l
+> og_SincpcP1*{gamma3})))*S_age) ///
+> ((s/p)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+l
+> og_SincpcP1*{gamma3})))*S_HHpeople) ///
+> ((s/p)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+l
+> og_SincpcP1*{gamma3})))*log_SincpcP1) ///
+> if p >= 0.1, instruments(dpisofirme `vars') winitial(identity) vce(boot)
+(running gmm on estimation sample)
+
+Bootstrap replications (50)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+
+GMM estimation 
+
+Number of parameters =   4
+Number of moments    =  20
+Initial weight matrix: Identity                   Number of obs   =      3,756
+GMM weight matrix:     Robust
+
+Bootstrap results
+------------------------------------------------------------------------------
+             |   Observed   Bootstrap                         Normal-based
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      /theta |   -.308574     .07655    -4.03   0.000    -.4586094   -.1585387
+     /gamma1 |  -.2451679    .022309   -10.99   0.000    -.2888928   -.2014429
+     /gamma2 |   .0213377   .0139393     1.53   0.126    -.0059829    .0486583
+     /gamma3 |   .0340163   .0153573     2.21   0.027     .0039166     .064116
+------------------------------------------------------------------------------
+Instruments for equation 1: dpisofirme o.dpisofirme S_age S_HHpeople log_SincpcP1
+    _cons
+Instruments for equation 2: dpisofirme o.dpisofirme S_age S_HHpeople log_SincpcP1
+    _cons
+Instruments for equation 3: dpisofirme o.dpisofirme S_age S_HHpeople log_SincpcP1
+    _cons
+Instruments for equation 4: dpisofirme o.dpisofirme S_age S_HHpeople log_SincpcP1
+    _cons
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD2b0c_000000.tmp"
+
+. outreg2 using q2_3d.tex, side stats(coef se tstat pval ci) ///
+>  noaster noparen nor2 noobs dec(3) replace
+q2_3d.tex
+dir : seeout
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD2b0c_000000.tmp"
+
+. local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
+
+. gmm ((danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log
+> _SincpcP1*{gamma3})))*dpisofirme) ///
+> ((danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_Sin
+> cpcP1*{gamma3})))*S_age) ///
+> ((danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_Sin
+> cpcP1*{gamma3})))*S_HHpeople) ///
+> ((danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_Sin
+> cpcP1*{gamma3})))*log_SincpcP1), ///
+> instruments(`vars') winitial(identity) vce(boot)
+(running gmm on estimation sample)
+
+Bootstrap replications (50)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+
+GMM estimation 
+
+Number of parameters =   4
+Number of moments    =  20
+Initial weight matrix: Identity                   Number of obs   =      3,756
+GMM weight matrix:     Robust
+
+Bootstrap results
+------------------------------------------------------------------------------
+             |   Observed   Bootstrap                         Normal-based
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      /theta |  -.3156225   .0609013    -5.18   0.000    -.4349869   -.1962581
+     /gamma1 |  -.2461921   .0202114   -12.18   0.000    -.2858057   -.2065786
+     /gamma2 |    .021306   .0139408     1.53   0.126    -.0060175    .0486295
+     /gamma3 |   .0349737   .0118544     2.95   0.003     .0117395    .0582079
+------------------------------------------------------------------------------
+Instruments for equation 1: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+Instruments for equation 2: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+Instruments for equation 3: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+Instruments for equation 4: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+
+.  
+. * output for LaTeX
 . outreg2 using q2_2b.tex, side stats(coef se tstat pval ci) ///
 >  noaster noparen nor2 noobs dec(3) replace
 q2_2b.tex
@@ -466,17 +377,486 @@ dir : seeout
 . 
 end of do-file
 
-. do "C:\Users\prorgan\AppData\Local\Temp\STDe40_000000.tmp"
+. return list
+
+macros:
+                 r(fn) : "c:\ado\plus/o/outreg2.pref"
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD2b0c_000000.tmp"
 
 . local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
 
-. gmm ( (danemia - invlogit({xb:`vars'}))*(logit({xb:})/(invlogit({xb:})*(1-invlogit(
-> {xb:})))) ), instruments(`vars')
-no non-missing values returned for equation 1 at initial values
+. gmm ((danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log
+> _SincpcP1*{gamma3})))*dpisofirme) ///
+> ((danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_Sin
+> cpcP1*{gamma3})))*S_age) ///
+> ((danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_Sin
+> cpcP1*{gamma3})))*S_HHpeople) ///
+> ((danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_Sin
+> cpcP1*{gamma3})))*log_SincpcP1), ///
+> instruments(`vars') winitial(identity) vce(boot)
+(running gmm on estimation sample)
+
+Bootstrap replications (50)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+
+GMM estimation 
+
+Number of parameters =   4
+Number of moments    =  20
+Initial weight matrix: Identity                   Number of obs   =      3,756
+GMM weight matrix:     Robust
+
+Bootstrap results
+------------------------------------------------------------------------------
+             |   Observed   Bootstrap                         Normal-based
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      /theta |  -.3156225   .0694982    -4.54   0.000    -.4518365   -.1794085
+     /gamma1 |  -.2461921   .0214009   -11.50   0.000    -.2881371   -.2042471
+     /gamma2 |    .021306   .0154219     1.38   0.167    -.0089205    .0515324
+     /gamma3 |   .0349737   .0149498     2.34   0.019     .0056727    .0642747
+------------------------------------------------------------------------------
+Instruments for equation 1: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+Instruments for equation 2: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+Instruments for equation 3: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+Instruments for equation 4: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+
+.  
+. * output for LaTeX
+.  mata: 
+------------------------------------------------- mata (type end to exit) -----------
+:         coef = st_matrix("e(b)")'
+
+:         se = st_matrix("e(se)")'
+
+:         
+:         tstat = coef:/se
+
+:                 
+:         CI_low = coef - 1.96:*se
+
+:         CI_high = coef - 1.96:*se
+
+:          
+:         stats = round((coef,se,tstat,CI_low,CI_high),.001)
+
+:                 
+:         st_matrix("stats",stats)
+
+: end
+-------------------------------------------------------------------------------------
+
+. mat rownames stats = dpisofirme `vars'
+conformability error
+r(503);
+
+end of do-file
+
+r(503);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD2b0c_000000.tmp"
+
+. mat rownames stats = `vars'
+
+. mat colnames stats = coef se tstat CI_low CI_high
+
+. outtable using q2_2b, mat(stats) replace nobox
+command outtable is unrecognized
+r(199);
+
+end of do-file
+
+r(199);
+
+. ssc install outtable
+checking outtable consistency and verifying not already installed...
+installing into c:\ado\plus\...
+installation complete.
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD2b0c_000000.tmp"
+
+. outtable using q2_2b, mat(stats) replace nobox
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD2b0c_000000.tmp"
+
+. local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
+
+. gmm ((s/p)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma
+> 2}+log_SincpcP1*{gamma3})))*dpisofirme) ///
+> ((s/p)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+l
+> og_SincpcP1*{gamma3})))*S_age) ///
+> ((s/p)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+l
+> og_SincpcP1*{gamma3})))*S_HHpeople) ///
+> ((s/p)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+l
+> og_SincpcP1*{gamma3})))*log_SincpcP1), ///
+> instruments(`vars') winitial(identity) vce(boot)
+(running gmm on estimation sample)
+
+Bootstrap replications (50)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+
+GMM estimation 
+
+Number of parameters =   4
+Number of moments    =  20
+Initial weight matrix: Identity                   Number of obs   =      3,756
+GMM weight matrix:     Robust
+
+Bootstrap results
+------------------------------------------------------------------------------
+             |   Observed   Bootstrap                         Normal-based
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      /theta |   -.308574   .0574827    -5.37   0.000    -.4212381     -.19591
+     /gamma1 |  -.2451679   .0217237   -11.29   0.000    -.2877456   -.2025901
+     /gamma2 |   .0213377    .013687     1.56   0.119    -.0054882    .0481637
+     /gamma3 |   .0340163    .012943     2.63   0.009     .0086486    .0593841
+------------------------------------------------------------------------------
+Instruments for equation 1: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+Instruments for equation 2: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+Instruments for equation 3: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+Instruments for equation 4: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+
+. 
+. * output for LaTeX
+.  mata: 
+------------------------------------------------- mata (type end to exit) -----------
+:         coef = st_matrix("e(b)")'
+
+:         se = st_matrix("e(se)")'
+
+:         
+:         tstat = coef:/se
+
+:                 
+:         CI_low = coef - 1.96:*se
+
+:         CI_high = coef - 1.96:*se
+
+:          
+:         stats = round((coef,se,tstat,CI_low,CI_high),.001)
+
+:                 
+:         st_matrix("stats",stats)
+
+: end
+-------------------------------------------------------------------------------------
+
+. mat rownames stats = `vars'
+
+. mat colnames stats = coef se tstat CI_low CI_high
+
+. outtable using q2_3c, mat(stats) replace nobox
+
+. 
+. * Q2.3d (MAR)- feasible estimator, trimmed
+. * we predicted p before, and have s, so add that before the moment conditions
+. local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
+
+. gmm ((s/p)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma
+> 2}+log_SincpcP1*{gamma3})))*dpisofirme) ///
+> ((s/p)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+l
+> og_SincpcP1*{gamma3})))*S_age) ///
+> ((s/p)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+l
+> og_SincpcP1*{gamma3})))*S_HHpeople) ///
+> ((s/p)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+l
+> og_SincpcP1*{gamma3})))*log_SincpcP1) ///
+> if p >= 0.1, instruments(`vars') winitial(identity) vce(boot)
+(running gmm on estimation sample)
+
+Bootstrap replications (50)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+.....--Break--
+r(1);
+
+end of do-file
+
+--Break--
+r(1);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD2b0c_000000.tmp"
+
+. local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
+
+. gmm ((danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log
+> _SincpcP1*{gamma3})))*dpisofirme) ///
+> ((danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_Sin
+> cpcP1*{gamma3})))*S_age) ///
+> ((danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_Sin
+> cpcP1*{gamma3})))*S_HHpeople) ///
+> ((danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_Sin
+> cpcP1*{gamma3})))*log_SincpcP1), ///
+> instruments(`vars') winitial(identity) vce(boot)
+(running gmm on estimation sample)
+
+Bootstrap replications (50)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+
+GMM estimation 
+
+Number of parameters =   4
+Number of moments    =  20
+Initial weight matrix: Identity                   Number of obs   =      3,756
+GMM weight matrix:     Robust
+
+Bootstrap results
+------------------------------------------------------------------------------
+             |   Observed   Bootstrap                         Normal-based
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      /theta |  -.3156225   .0659648    -4.78   0.000    -.4449112   -.1863339
+     /gamma1 |  -.2461921   .0158324   -15.55   0.000    -.2772231   -.2151612
+     /gamma2 |    .021306   .0167499     1.27   0.203    -.0115232    .0541351
+     /gamma3 |   .0349737    .015016     2.33   0.020     .0055429    .0644045
+------------------------------------------------------------------------------
+Instruments for equation 1: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+Instruments for equation 2: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+Instruments for equation 3: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+Instruments for equation 4: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+
+.  
+. * output for LaTeX
+.  mata: 
+------------------------------------------------- mata (type end to exit) -----------
+:         coef = st_matrix("e(b)")'
+
+:         se = st_matrix("e(se)")'
+
+:         
+:         tstat = coef:/se
+
+:                 
+:         CI_low = coef - 1.96:*se
+
+:         CI_high = coef + 1.96:*se
+
+:          
+:         stats = round((coef,se,tstat,CI_low,CI_high),.001)
+
+:                 
+:         st_matrix("stats",stats)
+
+: end
+-------------------------------------------------------------------------------------
+
+. mat rownames stats = `vars'
+
+. mat colnames stats = coef se tstat CI_low CI_high
+
+. outtable using q2_2b, mat(stats) replace nobox
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD2b0c_000000.tmp"
+
+. local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
+
+. gmm ((s/p_witht)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*
+> {gamma2}+log_SincpcP1*{gamma3})))*dpisofirme) ///
+> ((s/p_witht)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gam
+> ma2}+log_SincpcP1*{gamma3})))*S_age) ///
+> ((s/p_witht)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gam
+> ma2}+log_SincpcP1*{gamma3})))*S_HHpeople) ///
+> ((s/p_witht)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gam
+> ma2}+log_SincpcP1*{gamma3})))*log_SincpcP1), ///
+> instruments(`vars') winitial(identity) vce(boot)
+(running gmm on estimation sample)
+could not evaluate equation 1
+an error occurred when bootstrap executed gmm
 r(498);
 
 end of do-file
 
 r(498);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD2b0c_000000.tmp"
+
+. logit s dpisofirme S_age S_HHpeople log_SincpcP1, vce(robust)
+
+Iteration 0:   log pseudolikelihood = -1154.1918  
+Iteration 1:   log pseudolikelihood = -912.38852  
+Iteration 2:   log pseudolikelihood = -806.16633  
+Iteration 3:   log pseudolikelihood = -797.23358  
+Iteration 4:   log pseudolikelihood = -797.07996  
+Iteration 5:   log pseudolikelihood = -797.07982  
+Iteration 6:   log pseudolikelihood = -797.07982  
+
+Logistic regression                             Number of obs     =      4,089
+                                                Wald chi2(4)      =     147.49
+                                                Prob > chi2       =     0.0000
+Log pseudolikelihood = -797.07982               Pseudo R2         =     0.3094
+
+------------------------------------------------------------------------------
+             |               Robust
+           s |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  dpisofirme |  -.2624445   .1206583    -2.18   0.030    -.4989305   -.0259585
+       S_age |   1.336654   .1229741    10.87   0.000     1.095629    1.577679
+  S_HHpeople |  -.0672788   .0229891    -2.93   0.003    -.1123366    -.022221
+log_SincpcP1 |  -.1159235   .0441075    -2.63   0.009    -.2023726   -.0294744
+       _cons |   1.867756   .3428188     5.45   0.000     1.195843    2.539668
+------------------------------------------------------------------------------
+
+. 
+. * predict propensity score
+. predict p_witht
+(option pr assumed; Pr(s))
+(3 missing values generated)
+
+. 
+. * now run gmm adding in new term s/p
+. local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
+
+. gmm ((s/p_witht)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*
+> {gamma2}+log_SincpcP1*{gamma3})))*dpisofirme) ///
+> ((s/p_witht)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gam
+> ma2}+log_SincpcP1*{gamma3})))*S_age) ///
+> ((s/p_witht)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gam
+> ma2}+log_SincpcP1*{gamma3})))*S_HHpeople) ///
+> ((s/p_witht)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gam
+> ma2}+log_SincpcP1*{gamma3})))*log_SincpcP1), ///
+> instruments(`vars') winitial(identity) vce(boot)
+(running gmm on estimation sample)
+
+Bootstrap replications (50)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+
+GMM estimation 
+
+Number of parameters =   4
+Number of moments    =  20
+Initial weight matrix: Identity                   Number of obs   =      3,756
+GMM weight matrix:     Robust
+
+Bootstrap results
+------------------------------------------------------------------------------
+             |   Observed   Bootstrap                         Normal-based
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      /theta |  -.3083549   .0649611    -4.75   0.000    -.4356764   -.1810334
+     /gamma1 |  -.2454066   .0222321   -11.04   0.000    -.2889808   -.2018324
+     /gamma2 |   .0216057    .015374     1.41   0.160    -.0085268    .0517381
+     /gamma3 |   .0338743    .014739     2.30   0.022     .0049864    .0627622
+------------------------------------------------------------------------------
+Instruments for equation 1: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+Instruments for equation 2: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+Instruments for equation 3: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+Instruments for equation 4: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+
+. 
+. * output for LaTeX
+.  mata: 
+------------------------------------------------- mata (type end to exit) -----------
+:         coef = st_matrix("e(b)")'
+
+:         se = st_matrix("e(se)")'
+
+:         
+:         tstat = coef:/se
+
+:                 
+:         CI_low = coef - 1.96:*se
+
+:         CI_high = coef + 1.96:*se
+
+:          
+:         stats = round((coef,se,tstat,CI_low,CI_high),.001)
+
+:                 
+:         st_matrix("stats",stats)
+
+: end
+-------------------------------------------------------------------------------------
+
+. mat rownames stats = `vars'
+
+. mat colnames stats = coef se tstat CI_low CI_high
+
+. outtable using q2_3c, mat(stats) replace nobox
+
+. 
+. * Q2.3d (MAR)- feasible estimator, trimmed
+. * we predicted p before, and have s, so add that before the moment conditions
+. local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
+
+. gmm ((s/p_witht)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*
+> {gamma2}+log_SincpcP1*{gamma3})))*dpisofirme) ///
+> ((s/p_witht)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gam
+> ma2}+log_SincpcP1*{gamma3})))*S_age) ///
+> ((s/p_witht)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gam
+> ma2}+log_SincpcP1*{gamma3})))*S_HHpeople) ///
+> ((s/p_witht)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gam
+> ma2}+log_SincpcP1*{gamma3})))*log_SincpcP1) ///
+> if p_witht >= 0.1, instruments(`vars') winitial(identity) vce(boot)
+(running gmm on estimation sample)
+
+Bootstrap replications (50)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+
+GMM estimation 
+
+Number of parameters =   4
+Number of moments    =  20
+Initial weight matrix: Identity                   Number of obs   =      3,756
+GMM weight matrix:     Robust
+
+Bootstrap results
+------------------------------------------------------------------------------
+             |   Observed   Bootstrap                         Normal-based
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      /theta |  -.3083549   .0629279    -4.90   0.000    -.4316913   -.1850186
+     /gamma1 |  -.2454066   .0200782   -12.22   0.000    -.2847592    -.206054
+     /gamma2 |   .0216057   .0150211     1.44   0.150    -.0078352    .0510466
+     /gamma3 |   .0338743    .015644     2.17   0.030     .0032126     .064536
+------------------------------------------------------------------------------
+Instruments for equation 1: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+Instruments for equation 2: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+Instruments for equation 3: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+Instruments for equation 4: dpisofirme S_age S_HHpeople log_SincpcP1 _cons
+
+. 
+. * output for LaTeX
+.  mata: 
+------------------------------------------------- mata (type end to exit) -----------
+:         coef = st_matrix("e(b)")'
+
+:         se = st_matrix("e(se)")'
+
+:         
+:         tstat = coef:/se
+
+:                 
+:         CI_low = coef - 1.96:*se
+
+:         CI_high = coef + 1.96:*se
+
+:          
+:         stats = round((coef,se,tstat,CI_low,CI_high),.001)
+
+:                 
+:         st_matrix("stats",stats)
+
+: end
+-------------------------------------------------------------------------------------
+
+. mat rownames stats = `vars'
+
+. mat colnames stats = coef se tstat CI_low CI_high
+
+. outtable using q2_3d, mat(stats) replace nobox
+
+. 
+end of do-file
 
 . exit, clear

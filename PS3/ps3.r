@@ -1,7 +1,7 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS3
-# Last Update: Oct 19, 2018
+# Last Update: Oct 26, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)

@@ -1,7 +1,7 @@
 ********************************************************************************
 * Author: Paul R. Organ
 * Purpose: ECON 675, PS3
-* Last Update: Oct 22, 2018
+* Last Update: Oct 26, 2018
 ********************************************************************************
 clear all
 set more off
@@ -57,41 +57,94 @@ graph export q1_9c_S.png, replace
 ********************************************************************************
 *** Question 2: Semiparametric GMM with Missing Data
 ********************************************************************************
-* Q2.2b - feasible estimator
-* since we assume F is logistic, we can drop the g_0 term
+* Q2.2b(MCAR)- feasible estimator
+
+* gmm, four moment conditions
 local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
-gmm (danemia-invlogit({xb:`vars'})), instruments(`vars') vce(boot)
+gmm ((danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_SincpcP1*{gamma3})))*dpisofirme) ///
+((danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_SincpcP1*{gamma3})))*S_age) ///
+((danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_SincpcP1*{gamma3})))*S_HHpeople) ///
+((danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_SincpcP1*{gamma3})))*log_SincpcP1), ///
+instruments(`vars') winitial(identity) vce(boot)
+ 
+* output for LaTeX
+ mata: 
+	coef = st_matrix("e(b)")'
+	se = st_matrix("e(se)")'
+	
+	tstat = coef:/se
+		
+	CI_low = coef - 1.96:*se
+	CI_high = coef + 1.96:*se
+	 
+	stats = round((coef,se,tstat,CI_low,CI_high),.001)
+		
+	st_matrix("stats",stats)
+end
+mat rownames stats = `vars'
+mat colnames stats = coef se tstat CI_low CI_high
+outtable using q2_2b, mat(stats) replace nobox
+
+* Q2.3c (MAR)- feasible estimator
+* we predicted p before, but did not use t, so do that now:
+* logit regression, robust standard errors
+logit s dpisofirme S_age S_HHpeople log_SincpcP1, vce(robust)
+
+* predict propensity score
+predict p_witht
+
+* now run gmm adding in new term s/p
+local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
+gmm ((s/p_witht)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_SincpcP1*{gamma3})))*dpisofirme) ///
+((s/p_witht)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_SincpcP1*{gamma3})))*S_age) ///
+((s/p_witht)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_SincpcP1*{gamma3})))*S_HHpeople) ///
+((s/p_witht)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_SincpcP1*{gamma3})))*log_SincpcP1), ///
+instruments(`vars') winitial(identity) vce(boot)
 
 * output for LaTeX
-outreg2 using q2_2b.tex, side stats(coef se tstat pval ci) ///
- noaster noparen nor2 noobs dec(3) replace
+ mata: 
+	coef = st_matrix("e(b)")'
+	se = st_matrix("e(se)")'
+	
+	tstat = coef:/se
+		
+	CI_low = coef - 1.96:*se
+	CI_high = coef + 1.96:*se
+	 
+	stats = round((coef,se,tstat,CI_low,CI_high),.001)
+		
+	st_matrix("stats",stats)
+end
+mat rownames stats = `vars'
+mat colnames stats = coef se tstat CI_low CI_high
+outtable using q2_3c, mat(stats) replace nobox
 
-* Q2.3c - feasible estimator
-
-
-
-
-
-*** other stuff from first attempts below, in case useful
-* this runs and is close to my R results, but is not the moment condition we want
-* but may actually be right? the g function is based on 
-
-* need to somehow include the g_0 function in there, and account for conditional on s=1
+* Q2.3d (MAR)- feasible estimator, trimmed
+* we predicted p before, and have s, so add that before the moment conditions
 local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
-local f = logit({xb:`vars'})
-local F = invlogit({xb:`vars'})
-gmm ( (danemia - `F')*(`f'/(`F'*(1-`F'))) ), instruments(`vars') vce(bootstrap)
+gmm ((s/p_witht)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_SincpcP1*{gamma3})))*dpisofirme) ///
+((s/p_witht)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_SincpcP1*{gamma3})))*S_age) ///
+((s/p_witht)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_SincpcP1*{gamma3})))*S_HHpeople) ///
+((s/p_witht)*(danemia - invlogit((dpisofirme*{theta}+S_age*{gamma1}+S_HHpeople*{gamma2}+log_SincpcP1*{gamma3})))*log_SincpcP1) ///
+if p_witht >= 0.1, instruments(`vars') winitial(identity) vce(boot)
 
-* doesn't work
-* maybe define a program for g, then build it into the gmm moment condition?
-
-* try writing it out:
-local vars = "dpisofirme S_age S_HHpeople log_SincpcP1"
-gmm ( (danemia - invlogit({xb:`vars'}))*(logit({xb:})/(invlogit({xb:})*(1-invlogit({xb:})))) ), instruments(`vars')
-
-* also doesn't work
-
-* might be able to use teffects?
+* output for LaTeX
+ mata: 
+	coef = st_matrix("e(b)")'
+	se = st_matrix("e(se)")'
+	
+	tstat = coef:/se
+		
+	CI_low = coef - 1.96:*se
+	CI_high = coef + 1.96:*se
+	 
+	stats = round((coef,se,tstat,CI_low,CI_high),.001)
+		
+	st_matrix("stats",stats)
+end
+mat rownames stats = `vars'
+mat colnames stats = coef se tstat CI_low CI_high
+outtable using q2_3d, mat(stats) replace nobox
 
 ********************************************************************************
 *** Question 3: When Bootstrap Fails
