@@ -29,8 +29,52 @@ log using ps5.log, replace
 * Q3 setup
 clear all
 
+use Angrist_Krueger
+
 ********************************************************************************
 * Q3.1: Angrist and Krueger (1991)
+
+* variables for use in regressions
+local ols_short = "educ non_white SMSA married"
+local iv_short = "non_white SMSA married"
+local ols_long = "educ non_white SMSA married age_q age_sq"
+local iv_long  = "non_white SMSA married age_q age_sq"
+
+* note going out of order from PS to match with A&K(1991)
+
+* OLS 1 (these SEs match the table, so I don't think they use robust SEs)
+reg l_w_wage `ols_short' i.region i.YoB_ld
+
+* output for LaTeX
+outreg2 using q3.tex, stats(coef se) keep(`ols_short') noaster dec(4) replace ///
+	addtext(9 Year-of-birth dummies, Yes, 8 Region-of-residence dummies, Yes) ///
+	ctitle(OLS 1) nor2 noobs
+
+* 2SLS 1
+ivregress2 2sls l_w_wage `iv_short' i.region i.YoB_ld ///
+	(educ = i.YoB_ld##i.QoB)
+
+* output for LaTeX
+outreg2 using q3.tex, stats(coef se) keep(`ols_short') noaster dec(4) append ///
+	addtext(9 Year-of-birth dummies, Yes, 8 Region-of-residence dummies, Yes) ///
+	ctitle(2SLS 1) nor2 noobs
+			
+* OLS 2
+reg l_w_wage `ols_long' i.region i.YoB_ld
+
+* output for LaTeX
+outreg2 using q3.tex, stats(coef se) keep(`ols_long') noaster dec(4) append ///
+	addtext(9 Year-of-birth dummies, Yes, 8 Region-of-residence dummies, Yes) ///
+	ctitle(OLS 2) nor2 noobs
+
+* 2SLS 2
+ivregress2 2sls l_w_wage `iv_long' i.region i.YoB_ld ///
+    (educ = i.YoB_ld##i.QoB)
+	
+* output for LaTeX
+outreg2 using q3.tex, stats(coef se) keep(`ols_long') noaster dec(4) append ///
+	addtext(9 Year-of-birth dummies, Yes, 8 Region-of-residence dummies, Yes) ///
+	ctitle(2SLS 2) nor2 noobs
 
 ********************************************************************************
 * Q3.2: Bound, Jaeger, and Baker (1995)

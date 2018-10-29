@@ -1,0 +1,27 @@
+\documentclass[]{article}
+\setlength{\pdfpagewidth}{8.5in} \setlength{\pdfpageheight}{11in}
+\begin{document}
+\begin{tabular}{lcccc} \hline
+ & (1) & (2) & (3) & (4) \\
+VARIABLES & OLS 1 & 2SLS 1 & OLS 2 & 2SLS 2 \\ \hline
+ &  &  &  &  \\
+educ & 0.0632 & 0.0806 & 0.0632 & 0.0600 \\
+ & (0.0003) & (0.0164) & (0.0003) & (0.0290) \\
+non\_white & -0.2575 & -0.2302 & -0.2575 & -0.2626 \\
+ & (0.0040) & (0.0261) & (0.0040) & (0.0458) \\
+SMSA & -0.1763 & -0.1581 & -0.1763 & -0.1797 \\
+ & (0.0029) & (0.0174) & (0.0029) & (0.0305) \\
+married & 0.2479 & 0.2440 & 0.2479 & 0.2486 \\
+ & (0.0032) & (0.0049) & (0.0032) & (0.0073) \\
+age\_q &  &  & -0.0760 & -0.0741 \\
+ &  &  & (0.0604) & (0.0626) \\
+age\_sq &  &  & 0.0008 & 0.0007 \\
+ &  &  & (0.0007) & (0.0007) \\
+Constant & 5.0164 & 4.7850 & 6.8896 & 6.9095 \\
+ & (0.0069) & (0.2192) & (1.3570) & (1.3684) \\
+ &  &  &  &  \\
+9 Year-of-birth dummies & Yes & Yes & Yes & Yes \\
+ 8 Region-of-residence dummies & Yes & Yes & Yes & Yes \\ \hline
+\multicolumn{5}{c}{ Standard errors in parentheses} \\
+\end{tabular}
+\end{document}
