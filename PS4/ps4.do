@@ -644,8 +644,57 @@ putexcel close
 * Q3 setup
 clear all
 
+set seed 22
+set obs 50
+
 ********************************************************************************
 * Q3.1: Summary Statistics and Kernel Density Plots
+
+* this doesn't work...can we use bootstrap somehow? or do in mata?
+
+* make empty matrix (test with 10 iterations)
+matrix ests = J(10,3,.)
+
+gen x = rnormal(0,1) 
+gen z = .85*x + sqrt(1-.85)*rnormal(0,1)
+gen eps = rnormal(0,1)
+gen y = 1 + .5*x + z + eps
+
+* loop for M replications
+forvalues i = 1/10{
+	qui replace x = rnormal(0,1) 
+	qui replace z = .85*x + sqrt(1-.85)*rnormal(0,1)
+	qui replace eps = rnormal(0,1)
+	qui replace y = 1 + .5*x + z + eps
+	
+	* long regression
+	reg y x z, r
+	matrix temp = r(table)
+	local beta_hat = temp["b","x"]
+	
+	* save gamma over se gamma
+	local gamma_hat = temp["b","z"]
+	local gamma_se  = temp["se","z"]
+	local tstat = `gamma_hat'/`gamma_se'
+	
+	matrix drop temp
+	
+	* short regression
+	reg y x, r
+	matrix temp = r(table)
+	local beta_tilde = temp["b","x"]
+	
+	matrix drop temp
+	
+	* third estimate
+	local beta_check = cond(`tstat' >= 1.96, `beta_hat', `beta_tilde')
+		
+	matrix ests[`i',1] = `beta_hat'
+	matrix ests[`i',2] = `beta_tilde'
+	matrix ests[`i',3] = `beta_check'
+}
+
+matrix list ests
 
 ********************************************************************************
 * Q3.2: Empirical Coverage Rates
