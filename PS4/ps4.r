@@ -156,6 +156,11 @@ ate[5,2] <- sd(tauhat_e)/sqrt(n_e) # not right!
 ate[5,5] <- mean(tauhat_p)
 ate[5,6] <- sd(tauhat_p)/sqrt(n_p) # not right!
 
+# save results (att)
+att[5,1] <- mean(tauhat_e[df_e$t==1])
+
+att[5,5] <- mean(tauhat_p[df_p$t==1])
+
 ## covariates b
 # treated
 beta1 <- lm(yb, data = df %>% filter(treat == 1)) %>% .$coefficients
@@ -178,6 +183,11 @@ ate[6,2] <- sd(tauhat_e)/sqrt(n_e) # not right!
 ate[6,5] <- mean(tauhat_p)
 ate[6,6] <- sd(tauhat_p)/sqrt(n_p) # not right!
 
+# save results (att)
+att[6,1] <- mean(tauhat_e[df_e$t==1])
+
+att[6,5] <- mean(tauhat_p[df_p$t==1])
+
 ## covariates c
 # treated
 beta1 <- lm(yc, data = df %>% filter(treat == 1)) %>% .$coefficients
@@ -193,15 +203,80 @@ tauhat_e <- Z_e %*% (beta1-beta0_e)
 Z_p <- as.matrix(df_p[,vc]) %>% cbind(1,.)
 tauhat_p <- Z_p %*% (beta1-beta0_p)
 
-# save results
+# save results (ate)
 ate[7,1] <- mean(tauhat_e)
 ate[7,2] <- sd(tauhat_e)/sqrt(n_e) # not right!
 
 ate[7,5] <- mean(tauhat_p)
 ate[7,6] <- sd(tauhat_p)/sqrt(n_p) # not right!
 
+# save results (att)
+att[7,1] <- mean(tauhat_e[df_e$t==1])
+
+att[7,5] <- mean(tauhat_p[df_p$t==1])
+
 ###############################################################################
-# Q2.4: Inverse Probability Weighting
+# Q2.4: Inverse Probability Weighting (rows 8-10)
+
+# trimming for PSID data drops a lot of observations
+# not yet matching my Stata results
+
+# first estimate propensity scores (we use a probit here)
+r4ae <- glm(ta, data = df_e, family = binomial(link = 'probit'))
+r4be <- glm(tb, data = df_e, family = binomial(link = 'probit'))
+r4ce <- glm(tc, data = df_e, family = binomial(link = 'probit'))
+df_e %<>% mutate(prop_a = predict(r4ae, df_e, type='response'),
+                 prop_b = predict(r4be, df_e, type='response'),
+                 prop_c = predict(r4ce, df_e, type='response'))
+
+r4ap <- glm(ta, data = df_p, family = binomial(link = 'probit'))
+r4bp <- glm(tb, data = df_p, family = binomial(link = 'probit'))
+r4cp <- glm(tc, data = df_p, family = binomial(link = 'probit'))
+df_p %<>% mutate(prop_a = predict(r4ap, df_p, type='response'),
+                 prop_b = predict(r4bp, df_p, type='response'),
+                 prop_c = predict(r4cp, df_p, type='response'))
+
+# trim df_p
+df_p %<>% filter(prop_a >= .001, prop_b >= .001, prop_c >= .001,
+                 prop_a <= .999, prop_b <= .999, prop_c <= .999)
+
+# calculate probability of treatment
+n_p <- nrow(df_p)
+
+phat_e = sum(df_e$t==1)/n_e
+phat_p = sum(df_p$t==1)/n_p
+
+# build components for ATE
+df_e %<>% mutate(left_a = t*re78/prop_a, right_a = (1-t)*re78/(1-prop_a),
+                 left_b = t*re78/prop_b, right_b = (1-t)*re78/(1-prop_b),
+                 left_c = t*re78/prop_c, right_c = (1-t)*re78/(1-prop_c))
+df_p %<>% mutate(left_a = t*re78/prop_a, right_a = (1-t)*re78/(1-prop_a),
+                 left_b = t*re78/prop_b, right_b = (1-t)*re78/(1-prop_b),
+                 left_c = t*re78/prop_c, right_c = (1-t)*re78/(1-prop_c))
+
+# calculate ATEs
+ate[8,1]  <- mean(df_e$left_a) - mean(df_e$right_a)
+ate[8,5]  <- mean(df_p$left_a) - mean(df_p$right_a)
+ate[9,1]  <- mean(df_e$left_b) - mean(df_e$right_b)
+ate[9,5]  <- mean(df_p$left_b) - mean(df_p$right_b)
+ate[10,1] <- mean(df_e$left_c) - mean(df_e$right_c)
+ate[10,5] <- mean(df_p$left_c) - mean(df_p$right_c)
+
+# build components for ATT
+df_e %<>% mutate(left_a = t*re78/phat_e, right_a = (prop_a/phat_e)*(1-t)*re78/(1-prop_a),
+                 left_b = t*re78/phat_e, right_b = (prop_b/phat_e)*(1-t)*re78/(1-prop_b),
+                 left_c = t*re78/phat_e, right_c = (prop_c/phat_e)*(1-t)*re78/(1-prop_c))
+df_p %<>% mutate(left_a = t*re78/phat_p, right_a = (prop_a/phat_p)*(1-t)*re78/(1-prop_a),
+                 left_b = t*re78/phat_p, right_b = (prop_b/phat_p)*(1-t)*re78/(1-prop_b),
+                 left_c = t*re78/phat_p, right_c = (prop_c/phat_p)*(1-t)*re78/(1-prop_c))
+
+# calculate ATTs
+att[8,1]  <- mean(df_e$left_a) - mean(df_e$right_a)
+att[8,5]  <- mean(df_p$left_a) - mean(df_p$right_a)
+att[9,1]  <- mean(df_e$left_b) - mean(df_e$right_b)
+att[9,5]  <- mean(df_p$left_b) - mean(df_p$right_b)
+att[10,1] <- mean(df_e$left_c) - mean(df_e$right_c)
+att[10,5] <- mean(df_p$left_c) - mean(df_p$right_c)
 
 ###############################################################################
 # Q2.5: Doubly Robust
