@@ -342,8 +342,9 @@ dgp <- function(n){
   return(out)
 }
 
-# empty matrix to store estimates
+# empty matrices to store estimates and indicator of coverage
 est <- matrix(NA, nrow=M, ncol = 3)
+cov <- matrix(NA, nrow=M, ncol = 3)
 
 # replicate M times and save estimates
 set.seed(22)
@@ -358,6 +359,12 @@ for(i in 1:M){
   beta_hat <- long$coefficients['x']
   est[i,1] <- beta_hat
   
+  # get se to calculate confidence interval and check coverage
+  se_hat <- sqrt(vcovHC(long, 'HC1')['x','x'])
+  lb_hat <- beta_hat - 1.96*se_hat
+  ub_hat <- beta_hat + 1.96*se_hat
+  cov[i,1] <- lb_hat <= .5 & ub_hat >= .5
+  
   # save gamma over se gamma (using robust std errors)
   gamma_hat <- long$coefficients['z']
   gamma_se  <- sqrt(vcovHC(long, 'HC1')['z','z'])
@@ -370,8 +377,15 @@ for(i in 1:M){
   beta_tilde <- short$coefficients['x']
   est[i,2]   <- beta_tilde
   
+  # get se to calculate confidence interval
+  se_tilde <- sqrt(vcovHC(short, 'HC1')['x','x'])
+  lb_tilde <- beta_tilde - 1.96*se_hat
+  ub_tilde <- beta_tilde + 1.96*se_hat
+  cov[i,2] <- lb_tilde <= .5 & ub_tilde >= .5
+  
   # save third estimate (beta_check) based on t-stat on gamma
   est[i,3] <- ifelse(tstat >= 1.96, beta_hat, beta_tilde)
+  cov[i,3] <- ifelse(tstat >= 1.96, cov[i,1], cov[i,2])
 }
 
 # summary statistic of distribution of each of the estimators
@@ -408,7 +422,12 @@ ggsave('q3_1_R.png')
 ###############################################################################
 # Q3.2: Empirical Coverage Rates
 
-# tbd, think maybe need to do this in the for-loop above
-# each iteration, check coverage?
+# we know beta_0 is actually .5, how often do we cover that?
+# in the loop above, we calculated coverage for each replication
+# now, summarize for each estimator:
+
+cov_hat   <- mean(cov[,1])
+cov_tilde <- mean(cov[,2])
+cov_check <- mean(cov[,3])
 
 ###############################################################################
