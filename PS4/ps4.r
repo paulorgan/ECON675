@@ -1,7 +1,7 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS4
-# Last Update: Oct 25, 2018
+# Last Update: Oct 29, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
@@ -55,11 +55,13 @@ b <- paste('re78', paste(c('t', vb),
 c <- paste('re78', paste(c('t', vc),
                          collapse = ' + '), sep = ' ~ ') %>% as.formula()
 
-ta <- paste('t', paste(va,collapse = ' + '), sep = ' ~ ') %>% as.formula()
-ta <- paste('t', paste(vb, collapse = ' + '), sep = ' ~ ') %>% as.formula()
-ta <- paste('t', paste(vc, collapse = ' + '), sep = ' ~ ') %>% as.formula()
-  
-rm(va, vb, vc)
+ta <- paste('t', paste(va, collapse = ' + '), sep = ' ~ ') %>% as.formula()
+tb <- paste('t', paste(vb, collapse = ' + '), sep = ' ~ ') %>% as.formula()
+tc <- paste('t', paste(vc, collapse = ' + '), sep = ' ~ ') %>% as.formula()
+
+ya <- paste('re78', paste(va, collapse = ' + '), sep = ' ~ ') %>% as.formula()
+yb <- paste('re78', paste(vb, collapse = ' + '), sep = ' ~ ') %>% as.formula()
+yc <- paste('re78', paste(vc, collapse = ' + '), sep = ' ~ ') %>% as.formula()
 
 ###############################################################################
 # Q2.1: Difference-in-Means
@@ -124,8 +126,79 @@ ate$p_se[4]   <- diag(vcovHC(r2pc, type = "HC1")) %>% sqrt() %>% .['t']
 att[2:4,] <- ate[2:4,]
 
 ###############################################################################
-# Q2.3: Regression Imputation
+# Q2.3: Regression Imputation (rows 5-7)
 
+df_e <- df %>% filter(treat != 2)
+df_p <- df %>% filter(treat != 0)
+
+n_e <- nrow(df_e)
+n_p <- nrow(df_p)
+
+## covariates a
+# treated
+beta1 <- lm(ya, data = df %>% filter(treat == 1)) %>% .$coefficients
+# untreated experimental
+beta0_e <- lm(ya, data = df %>% filter(treat == 0)) %>% .$coefficients
+# untreated PSID
+beta0_p <- lm(ya, data = df %>% filter(treat == 2)) %>% .$coefficients
+
+# tauhat for each
+Z_e <- as.matrix(df_e[,va]) %>% cbind(1,.)
+tauhat_e <- Z_e %*% (beta1-beta0_e)
+
+Z_p <- as.matrix(df_p[,va]) %>% cbind(1,.)
+tauhat_p <- Z_p %*% (beta1-beta0_p)
+
+# save results
+ate[5,1] <- mean(tauhat_e)
+ate[5,2] <- sd(tauhat_e)/sqrt(n_e) # not right!
+
+ate[5,5] <- mean(tauhat_p)
+ate[5,6] <- sd(tauhat_p)/sqrt(n_p) # not right!
+
+## covariates b
+# treated
+beta1 <- lm(yb, data = df %>% filter(treat == 1)) %>% .$coefficients
+# untreated experimental
+beta0_e <- lm(yb, data = df %>% filter(treat == 0)) %>% .$coefficients
+# untreated PSID
+beta0_p <- lm(yb, data = df %>% filter(treat == 2)) %>% .$coefficients
+
+# tauhat for each
+Z_e <- as.matrix(df_e[,vb]) %>% cbind(1,.)
+tauhat_e <- Z_e %*% (beta1-beta0_e)
+
+Z_p <- as.matrix(df_p[,vb]) %>% cbind(1,.)
+tauhat_p <- Z_p %*% (beta1-beta0_p)
+
+# save results
+ate[6,1] <- mean(tauhat_e)
+ate[6,2] <- sd(tauhat_e)/sqrt(n_e) # not right!
+
+ate[6,5] <- mean(tauhat_p)
+ate[6,6] <- sd(tauhat_p)/sqrt(n_p) # not right!
+
+## covariates c
+# treated
+beta1 <- lm(yc, data = df %>% filter(treat == 1)) %>% .$coefficients
+# untreated experimental
+beta0_e <- lm(yc, data = df %>% filter(treat == 0)) %>% .$coefficients
+# untreated PSID
+beta0_p <- lm(yc, data = df %>% filter(treat == 2)) %>% .$coefficients
+
+# tauhat for each
+Z_e <- as.matrix(df_e[,vc]) %>% cbind(1,.)
+tauhat_e <- Z_e %*% (beta1-beta0_e)
+
+Z_p <- as.matrix(df_p[,vc]) %>% cbind(1,.)
+tauhat_p <- Z_p %*% (beta1-beta0_p)
+
+# save results
+ate[7,1] <- mean(tauhat_e)
+ate[7,2] <- sd(tauhat_e)/sqrt(n_e) # not right!
+
+ate[7,5] <- mean(tauhat_p)
+ate[7,6] <- sd(tauhat_p)/sqrt(n_p) # not right!
 
 ###############################################################################
 # Q2.4: Inverse Probability Weighting
