@@ -1,7 +1,7 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS4
-# Last Update: Oct 29, 2018
+# Last Update: Oct 30, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
@@ -236,7 +236,7 @@ df_p %<>% mutate(prop_a = predict(r4ap, df_p, type='response'),
                  prop_b = predict(r4bp, df_p, type='response'),
                  prop_c = predict(r4cp, df_p, type='response'))
 
-# trim df_p
+# trim df_p for interior predicted propensities
 df_p %<>% filter(prop_a >= .001, prop_b >= .001, prop_c >= .001,
                  prop_a <= .999, prop_b <= .999, prop_c <= .999)
 
@@ -282,7 +282,7 @@ att[10,5] <- mean(df_p$left_c) - mean(df_p$right_c)
 # Q2.5: Doubly Robust
 
 ###############################################################################
-# Q2.6: Nearest Neighbor Matching
+# Q2.6: Nearest Neighbor Matching (rows 14-16)
 
 # this may be useful:
 # https://cran.r-project.org/web/packages/MatchIt/vignettes/matchit.pdf
@@ -295,6 +295,113 @@ r6ea_p <- matchit(ta, data = df %>% filter(treat != 2), method = 'nearest')
 df_r6ea <- match.data(r6ea_p)
 mean(df_r6ea$re78[df_r6ea$t==1])-mean(df_r6ea$re78[df_r6ea$t==0])
 t.test(df_r6ea$re78[df_r6ea$t==1],df_r6ea$re78[df_r6ea$t==0])
+
+# redefine dataframes
+df_e <- df %>% filter(treat != 2)
+df_p <- df %>% filter(treat != 0)
+
+# see https://r.iq.harvard.edu/docs/matchit/2.4-20/Examples2.html
+# function to calculate ate and att using NN methods
+# can't figure out how to pass a dataframe to the matchit command
+# tried a million ways but none working, so writing two functions...
+nnResultsE <- function(tmodel, ymodel, est){
+    # using MatchIt
+  reg_match <- matchit(tmodel, df_e, method = 'nearest')
+  
+  df_t <- match.data(reg_match, 'treat')
+  df_c <- match.data(reg_match, 'control')
+  
+  # predict values and treatment effects
+  reg_t       <- lm(ymodel, df_t)
+  df_c$y_pred <- predict(reg_t, df_c)
+  
+  df_c %<>% mutate(teffect = y_pred-re78)
+  
+  reg_c <- lm(ymodel, df_c)
+  df_t$y_pred  <- predict(reg_c, df_t)
+  
+  df_t %<>% mutate(teffect = re78-y_pred)
+  
+  # stack and predict treatment effects, etc.
+  comb <- bind_rows(df_c, df_t)
+  
+  ate <- mean(comb$teffect)
+  att <- mean(comb$teffect[comb$t==1])
+  
+  n_att = nrow(df_t)
+  n_ate = n_att*2
+  
+  ate_se <- sd(comb$teffect)/sqrt(n_ate)
+  att_se <- sd(comb$teffect[comb$t==1])/sqrt(att)
+  
+  out_ate = matrix(c(ate, ate_se, NA, NA),1,4)
+  out_att = matrix(c(att, att_se, NA, NA),1,4)
+  
+  if(est == 'ate'){
+    return(out_ate)
+  } else {
+    return(out_att)
+  }
+}
+
+nnResultsP <- function(tmodel, ymodel, est){
+  # using MatchIt
+  reg_match <- matchit(tmodel, df_p, method = 'nearest')
+  
+  df_t <- match.data(reg_match, 'treat')
+  df_c <- match.data(reg_match, 'control')
+  
+  # predict values and treatment effects
+  reg_t       <- lm(ymodel, df_t)
+  df_c$y_pred <- predict(reg_t, df_c)
+  
+  df_c %<>% mutate(teffect = y_pred-re78)
+  
+  reg_c <- lm(ymodel, df_c)
+  df_t$y_pred  <- predict(reg_c, df_t)
+  
+  df_t %<>% mutate(teffect = re78-y_pred)
+  
+  # stack and predict treatment effects, etc.
+  comb <- bind_rows(df_c, df_t)
+  
+  ate <- mean(comb$teffect)
+  att <- mean(comb$teffect[comb$t==1])
+  
+  n_att = nrow(df_t)
+  n_ate = n_att*2
+  
+  ate_se <- sd(comb$teffect)/sqrt(n_ate)
+  att_se <- sd(comb$teffect[comb$t==1])/sqrt(att)
+  
+  out_ate = matrix(c(ate, ate_se, NA, NA),1,4)
+  out_att = matrix(c(att, att_se, NA, NA),1,4)
+  
+  if(est == 'ate'){
+    return(out_ate)
+  } else {
+    return(out_att)
+  }
+}
+
+# save results
+ate[14,1:4] <- nnResultsE(ta, ya, 'ate')
+ate[14,5:8] <- nnResultsP(ta, ya, 'ate')
+
+ate[15,1:4] <- nnResultsE(tb, yb, 'ate')
+ate[15,5:8] <- nnResultsP(tb, yb, 'ate')
+
+ate[16,1:4] <- nnResultsE(tc, yc, 'ate')
+ate[16,5:8] <- nnResultsP(tc, yc, 'ate')
+
+att[14,1:4] <- nnResultsE(ta, ya, 'att')
+att[14,5:8] <- nnResultsP(ta, ya, 'att')
+
+att[15,1:4] <- nnResultsE(tb, yb, 'att')
+att[15,5:8] <- nnResultsP(tb, yb, 'att')
+
+att[16,1:4] <- nnResultsE(tc, yc, 'att')
+att[16,5:8] <- nnResultsP(tc, yc, 'att')
 
 ###############################################################################
 # Q2.7: Propensity Score Matching
