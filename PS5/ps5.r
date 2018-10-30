@@ -1,7 +1,7 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS5
-# Last Update: Oct 29, 2018
+# Last Update: Oct 30, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
@@ -125,14 +125,32 @@ summarizeResults <- function(data, gamma){
   return(out)
 }
 
-# apply functions, combine, write to csv to make LaTeX table
+# apply functions for each gamma
 summ1 <- summarizeResults(results1, gammas[1])
 summ2 <- summarizeResults(results2, gammas[2])
 summ3 <- summarizeResults(results3, gammas[3])
 summ4 <- summarizeResults(results4, gammas[4])
 
-summ <- bind_rows(summ1, summ2, summ3, summ4)
-summ %>% write_csv('q2_r.csv')
+# output for LaTeX
+summ1 %<>% select(-gamma)
+rownames(summ1) <- c('OLS_Beta','OLS_seBeta','OLS_1Rej',
+                     '2SLS_Beta','2SLS_seBeta','2SLS_1Rej','2SLS_F')
+xtable(summ1, digits=c(0,3,3,3,3,3))
+
+summ2 %<>% select(-gamma)
+rownames(summ2) <- c('OLS_Beta','OLS_seBeta','OLS_1Rej',
+                     '2SLS_Beta','2SLS_seBeta','2SLS_1Rej','2SLS_F')
+xtable(summ2, digits=c(0,3,3,3,3,3))
+
+summ3 %<>% select(-gamma)
+rownames(summ3) <- c('OLS_Beta','OLS_seBeta','OLS_1Rej',
+                     '2SLS_Beta','2SLS_seBeta','2SLS_1Rej','2SLS_F')
+xtable(summ3, digits=c(0,3,3,3,3,3))
+
+summ4 %<>% select(-gamma)
+rownames(summ4) <- c('OLS_Beta','OLS_seBeta','OLS_1Rej',
+                     '2SLS_Beta','2SLS_seBeta','2SLS_1Rej','2SLS_F')
+xtable(summ4, digits=c(0,3,3,3,3,3))
 
 ###############################################################################
 # Question 3: Weak Instrument - Empirical Study
