@@ -149,17 +149,19 @@ tauhat_e <- Z_e %*% (beta1-beta0_e)
 Z_p <- as.matrix(df_p[,va]) %>% cbind(1,.)
 tauhat_p <- Z_p %*% (beta1-beta0_p)
 
-# save results
+# save results (ATE)
 ate[5,1] <- mean(tauhat_e)
 ate[5,2] <- sd(tauhat_e)/sqrt(n_e) # not right!
 
 ate[5,5] <- mean(tauhat_p)
 ate[5,6] <- sd(tauhat_p)/sqrt(n_p) # not right!
 
-# save results (att)
+# save results (ATT)
 att[5,1] <- mean(tauhat_e[df_e$t==1])
+att[5,2] <- sd(tauhat_e[df_e$t==1])/sqrt(sum(df_e$t==1)) # not right!
 
 att[5,5] <- mean(tauhat_p[df_p$t==1])
+att[5,6] <- sd(tauhat_p[df_p$t==1])/sqrt(sum(df_p$t==1)) # not right!
 
 ## covariates b
 # treated
@@ -176,17 +178,19 @@ tauhat_e <- Z_e %*% (beta1-beta0_e)
 Z_p <- as.matrix(df_p[,vb]) %>% cbind(1,.)
 tauhat_p <- Z_p %*% (beta1-beta0_p)
 
-# save results
+# save results (ATE)
 ate[6,1] <- mean(tauhat_e)
 ate[6,2] <- sd(tauhat_e)/sqrt(n_e) # not right!
 
 ate[6,5] <- mean(tauhat_p)
 ate[6,6] <- sd(tauhat_p)/sqrt(n_p) # not right!
 
-# save results (att)
+# save results (ATT)
 att[6,1] <- mean(tauhat_e[df_e$t==1])
+att[6,2] <- sd(tauhat_e[df_e$t==1])/sqrt(sum(df_e$t==1)) # not right!
 
 att[6,5] <- mean(tauhat_p[df_p$t==1])
+att[6,6] <- sd(tauhat_p[df_p$t==1])/sqrt(sum(df_p$t==1)) # not right!
 
 ## covariates c
 # treated
@@ -203,17 +207,19 @@ tauhat_e <- Z_e %*% (beta1-beta0_e)
 Z_p <- as.matrix(df_p[,vc]) %>% cbind(1,.)
 tauhat_p <- Z_p %*% (beta1-beta0_p)
 
-# save results (ate)
+# save results (ATE)
 ate[7,1] <- mean(tauhat_e)
 ate[7,2] <- sd(tauhat_e)/sqrt(n_e) # not right!
 
 ate[7,5] <- mean(tauhat_p)
 ate[7,6] <- sd(tauhat_p)/sqrt(n_p) # not right!
 
-# save results (att)
+# save results (ATT)
 att[7,1] <- mean(tauhat_e[df_e$t==1])
+att[7,2] <- sd(tauhat_e[df_e$t==1])/sqrt(sum(df_e$t==1)) # not right!
 
 att[7,5] <- mean(tauhat_p[df_p$t==1])
+att[7,6] <- sd(tauhat_p[df_p$t==1])/sqrt(sum(df_p$t==1)) # not right!
 
 ###############################################################################
 # Q2.4: Inverse Probability Weighting (rows 8-10)
@@ -517,6 +523,22 @@ att %<>% mutate(e_CI_l = e_tau - 1.96*e_se,
                 e_CI_h = e_tau + 1.96*e_se,
                 p_CI_l = p_tau - 1.96*p_se,
                 p_CI_h = p_tau + 1.96*p_se)
+
+rownames(ate) <- c(
+  'Diff-in-Means',
+  'OLS: a', 'OLS: b', 'OLS: c',
+  'RI: a', 'RI: b', 'RI: c',
+  'IPW: a', 'IPW: b', 'IPW: c',
+  'DR: a', 'DR: b', 'DR: c',
+  'NN: a', 'NN: b', 'NN: c',
+  'Propensity: a', 'Propensity: b', 'Propensity: c'
+)
+
+rownames(att) <- rownames(ate)
+
+# write to LaTeX
+xtable(ate)
+xtable(att)
 
 ###############################################################################
 ### Question 3: Post-model Selection Inference
