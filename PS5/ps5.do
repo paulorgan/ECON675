@@ -1,7 +1,7 @@
 ********************************************************************************
 * Author: Paul R. Organ
 * Purpose: ECON 675, PS5
-* Last Update: Oct 29, 2018
+* Last Update: Oct 30, 2018
 ********************************************************************************
 clear all
 set more off
@@ -46,7 +46,7 @@ local iv_long  = "non_white SMSA married age_q age_sq"
 reg l_w_wage `ols_short' i.region i.YoB_ld
 
 * output for LaTeX
-outreg2 using q3.tex, stats(coef se) keep(`ols_short') noaster dec(4) replace ///
+outreg2 using q3_1.tex, stats(coef se) keep(`ols_short') noaster dec(4) replace ///
 	addtext(9 Year-of-birth dummies, Yes, 8 Region-of-residence dummies, Yes) ///
 	ctitle(OLS 1) nor2 noobs
 
@@ -55,7 +55,7 @@ ivregress2 2sls l_w_wage `iv_short' i.region i.YoB_ld ///
 	(educ = i.YoB_ld##i.QoB)
 
 * output for LaTeX
-outreg2 using q3.tex, stats(coef se) keep(`ols_short') noaster dec(4) append ///
+outreg2 using q3_1.tex, stats(coef se) keep(`ols_short') noaster dec(4) append ///
 	addtext(9 Year-of-birth dummies, Yes, 8 Region-of-residence dummies, Yes) ///
 	ctitle(2SLS 1) nor2 noobs
 			
@@ -63,7 +63,7 @@ outreg2 using q3.tex, stats(coef se) keep(`ols_short') noaster dec(4) append ///
 reg l_w_wage `ols_long' i.region i.YoB_ld
 
 * output for LaTeX
-outreg2 using q3.tex, stats(coef se) keep(`ols_long') noaster dec(4) append ///
+outreg2 using q3_1.tex, stats(coef se) keep(`ols_long') noaster dec(4) append ///
 	addtext(9 Year-of-birth dummies, Yes, 8 Region-of-residence dummies, Yes) ///
 	ctitle(OLS 2) nor2 noobs
 
@@ -72,13 +72,25 @@ ivregress2 2sls l_w_wage `iv_long' i.region i.YoB_ld ///
     (educ = i.YoB_ld##i.QoB)
 	
 * output for LaTeX
-outreg2 using q3.tex, stats(coef se) keep(`ols_long') noaster dec(4) append ///
+outreg2 using q3_1.tex, stats(coef se) keep(`ols_long') noaster dec(4) append ///
 	addtext(9 Year-of-birth dummies, Yes, 8 Region-of-residence dummies, Yes) ///
 	ctitle(2SLS 2) nor2 noobs
 
 ********************************************************************************
 * Q3.2: Bound, Jaeger, and Baker (1995)
 
+* somehow use the permute command (we used it in PS1 with this code:)
+* Fisher permutation
+* permute treat diffmean=(r(mu_2)-r(mu_1)), reps(999) nowarn: ttest earn78, by(treat)
+
+local iv_short = "non_white SMSA married"
+permute QoB beta = _b["educ"], reps(25) seed(22): ///
+	ivregress2 2sls l_w_wage `iv_short' i.region i.YoB_ld ///
+	(educ = i.YoB_ld##i.QoB)
+
+* not sure this is best way to do it
+* maybe store results along the way, then collapse?
+	
 ********************************************************************************
 log close
 ********************************************************************************
