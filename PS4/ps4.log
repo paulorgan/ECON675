@@ -2,1145 +2,633 @@
       name:  <unnamed>
        log:  C:\Users\prorgan\Box\Classes\Econ 675\Problem Sets\PS4\ps4.log
   log type:  text
- opened on:  25 Oct 2018, 17:42:29
+ opened on:  30 Oct 2018, 16:36:21
 
 . 
-. ********************************************************************************
-. *** Question 2: Estimating Average Treatment Effects
-. ********************************************************************************
-. * Q2 setup
-. 
-. * load data
-. import delimited "LaLonde_all.csv"
-(12 vars, 2,935 obs)
-
-. 
-. * add treatment variable in expanded dataset
-. gen t = 0
-
-. replace t = 1 if treat == 1
-(185 real changes made)
-
-. 
-. * add other variables we will use in the analysis
-. gen logre74 = log(re74 + 1)
-
-. gen logre75 = log(re75 + 1)
-
-. gen age2 = age^2
-
-. gen educ2 = educ^2
-
-. gen age3 = age^3
-
-. gen bXu74 = black * u74
-
-. gen eXre74 = educ * logre74
-
-. 
-. * define vars for model specifications
-. local a = "age educ black hisp married nodegr logre74 logre75"
-
-. local b = "age educ black hisp married nodegr logre74 logre75 age2 educ2 u74 u75"
-
-. local c = "age educ black hisp married nodegr logre74 logre75 age2 educ2 u74 u75 ag
-> e3 bXu74 eXre74"
-
-. 
-. * empty tables to fill with results (1+6*3)
-. matrix ate = J(19,8,.)
-
-. matrix att = J(19,8,.)
-
-. 
-. ********************************************************************************
-. * Q2.1: Difference-in-Means (row 1)
-. 
-. * experimental data
-. qui reg re78 t if (treat != 2), vce(hc2)
-
-. 
-. * pull out results, and assign them to our empty table for ATE
-. matrix out = r(table)
-
-. matrix ate[1,1] = out["b","t"]
-
-. matrix ate[1,2] = out["se","t"]
-
-. matrix ate[1,3] = out["ll","t"]
-
-. matrix ate[1,4] = out["ul","t"]
-
-. 
-. * PSID data
-. qui reg re78 t if (treat != 0), vce(hc2)
-
-. 
-. * pull out results, and assign them to our empty table for ATE
-. matrix out = r(table)
-
-. matrix ate[1,5] = out["b","t"]
-
-. matrix ate[1,6] = out["se","t"]
-
-. matrix ate[1,7] = out["ll","t"]
-
-. matrix ate[1,8] = out["ul","t"]
-
-. 
-. * same for ATT
-. forvalues j = 1/8{
-  2.         matrix att[1,`j'] = ate[1,`j']
-  3. }
-
-. 
-. ********************************************************************************
-. * Q2.2: Linear Least-Squares (rows 2-4)
-. 
-. * experimental data, three ways
-. qui reg re78 t `a' if (treat != 2), vce(r)
-
-. matrix out = r(table)
-
-. matrix ate[2,1] = out["b","t"]
-
-. matrix ate[2,2] = out["se","t"]
-
-. matrix ate[2,3] = out["ll","t"]
-
-. matrix ate[2,4] = out["ul","t"]
-
-. 
-. qui reg re78 t `b' if (treat != 2), vce(r)
-
-. matrix out = r(table)
-
-. matrix ate[3,1] = out["b","t"]
-
-. matrix ate[3,2] = out["se","t"]
-
-. matrix ate[3,3] = out["ll","t"]
-
-. matrix ate[3,4] = out["ul","t"]
-
-. 
-. qui reg re78 t `c' if (treat != 2), vce(r)
-
-. matrix out = r(table)
-
-. matrix ate[4,1] = out["b","t"]
-
-. matrix ate[4,2] = out["se","t"]
-
-. matrix ate[4,3] = out["ll","t"]
-
-. matrix ate[4,4] = out["ul","t"]
-
-. 
-. * PSID data
-. qui reg re78 t `a' if (treat != 0), vce(r)
-
-. matrix out = r(table)
-
-. matrix ate[2,5] = out["b","t"]
-
-. matrix ate[2,6] = out["se","t"]
-
-. matrix ate[2,7] = out["ll","t"]
-
-. matrix ate[2,8] = out["ul","t"]
-
-. 
-. qui reg re78 t `b' if (treat != 0), vce(r)
-
-. matrix out = r(table)
-
-. matrix ate[3,5] = out["b","t"]
-
-. matrix ate[3,6] = out["se","t"]
-
-. matrix ate[3,7] = out["ll","t"]
-
-. matrix ate[3,8] = out["ul","t"]
-
-. 
-. qui reg re78 t `c' if (treat != 0), vce(r)
-
-. matrix out = r(table)
-
-. matrix ate[4,5] = out["b","t"]
-
-. matrix ate[4,6] = out["se","t"]
-
-. matrix ate[4,7] = out["ll","t"]
-
-. matrix ate[4,8] = out["ul","t"]
-
-. 
-. * same for ATT
-. forvalues i = 2/4{
-  2.         forvalues j = 1/8{
-  3.                 matrix att[`i',`j'] = ate[`i',`j']
-  4.         }
-  5. }
-
-. 
-. ********************************************************************************
-. * Q2.3: Regression Imputation (rows 5-7)
-. 
-. * ate, experimental data, three ways
-. qui teffects ra (re78 `a') (t) if (treat != 2), ate
-
-. matrix out = r(table)
-
-. matrix ate[5,1] = out["b",1]
-
-. matrix ate[5,2] = out["se",1]
-
-. matrix ate[5,3] = out["ll",1]
-
-. matrix ate[5,4] = out["ul",1]
-
-. 
-. qui teffects ra (re78 `b') (t) if (treat != 2), ate
-
-. matrix out = r(table)
-
-. matrix ate[6,1] = out["b",1]
-
-. matrix ate[6,2] = out["se",1]
-
-. matrix ate[6,3] = out["ll",1]
-
-. matrix ate[6,4] = out["ul",1]
-
-. 
-. qui teffects ra (re78 `c') (t) if (treat != 2), ate
-
-. matrix out = r(table)
-
-. matrix ate[7,1] = out["b",1]
-
-. matrix ate[7,2] = out["se",1]
-
-. matrix ate[7,3] = out["ll",1]
-
-. matrix ate[7,4] = out["ul",1]
-
-. 
-. * att, experimental data, three ways
-. qui teffects ra (re78 `a') (t) if (treat != 2), atet
-
-. matrix out = r(table)
-
-. matrix att[5,1] = out["b",1]
-
-. matrix att[5,2] = out["se",1]
-
-. matrix att[5,3] = out["ll",1]
-
-. matrix att[5,4] = out["ul",1]
-
-. 
-. qui teffects ra (re78 `b') (t) if (treat != 2), atet
-
-. matrix out = r(table)
-
-. matrix att[6,1] = out["b",1]
-
-. matrix att[6,2] = out["se",1]
-
-. matrix att[6,3] = out["ll",1]
-
-. matrix att[6,4] = out["ul",1]
-
-. 
-. qui teffects ra (re78 `c') (t) if (treat != 2), atet
-
-. matrix out = r(table)
-
-. matrix att[7,1] = out["b",1]
-
-. matrix att[7,2] = out["se",1]
-
-. matrix att[7,3] = out["ll",1]
-
-. matrix att[7,4] = out["ul",1]
-
-. 
-. * ate, PSID data, three ways
-. qui teffects ra (re78 `a') (t) if (treat != 0), ate
-
-. matrix out = r(table)
-
-. matrix ate[5,5] = out["b",1]
-
-. matrix ate[5,6] = out["se",1]
-
-. matrix ate[5,7] = out["ll",1]
-
-. matrix ate[5,8] = out["ul",1]
-
-. 
-. qui teffects ra (re78 `b') (t) if (treat != 0), ate
-
-. matrix out = r(table)
-
-. matrix ate[6,5] = out["b",1]
-
-. matrix ate[6,6] = out["se",1]
-
-. matrix ate[6,7] = out["ll",1]
-
-. matrix ate[6,8] = out["ul",1]
-
-. 
-. qui teffects ra (re78 `c') (t) if (treat != 0), ate
-convergence not achieved
-    The Gauss-Newton stopping criterion has been met but missing standard errors
-    indicate some of the parameters are not identified.
-
-. matrix out = r(table)
-
-. matrix ate[7,5] = out["b",1]
-
-. matrix ate[7,6] = out["se",1]
-
-. matrix ate[7,7] = out["ll",1]
-
-. matrix ate[7,8] = out["ul",1]
-
-. 
-. * att, PSID data, three ways
-. qui teffects ra (re78 `a') (t) if (treat != 0), atet
-
-. matrix out = r(table)
-
-. matrix att[5,5] = out["b",1]
-
-. matrix att[5,6] = out["se",1]
-
-. matrix att[5,7] = out["ll",1]
-
-. matrix att[5,8] = out["ul",1]
-
-. 
-. qui teffects ra (re78 `b') (t) if (treat != 0), atet
-
-. matrix out = r(table)
-
-. matrix att[6,5] = out["b",1]
-
-. matrix att[6,6] = out["se",1]
-
-. matrix att[6,7] = out["ll",1]
-
-. matrix att[6,8] = out["ul",1]
-
-. 
-. qui teffects ra (re78 `c') (t) if (treat != 0), atet
-convergence not achieved
-    The Gauss-Newton stopping criterion has been met but missing standard errors
-    indicate some of the parameters are not identified.
-
-. matrix out = r(table)
-
-. matrix att[7,5] = out["b",1]
-
-. matrix att[7,6] = out["se",1]
-
-. matrix att[7,7] = out["ll",1]
-
-. matrix att[7,8] = out["ul",1]
-
-. 
-. ********************************************************************************
-. * Q2.4: Inverse Probability Weighting (rows 8-10)
-. 
-. * ate, experimental data, three ways
-. qui teffects ipw (re78) (t `a', probit) if (treat != 2), ate iterate(50)
-
-. matrix out = r(table)
-
-. matrix ate[8,1] = out["b",1]
-
-. matrix ate[8,2] = out["se",1]
-
-. matrix ate[8,3] = out["ll",1]
-
-. matrix ate[8,4] = out["ul",1]
-
-. 
-. qui teffects ipw (re78) (t `b', probit) if (treat != 2), ate iterate(50)
-
-. matrix out = r(table)
-
-. matrix ate[9,1] = out["b",1]
-
-. matrix ate[9,2] = out["se",1]
-
-. matrix ate[9,3] = out["ll",1]
-
-. matrix ate[9,4] = out["ul",1]
-
-. 
-. qui teffects ipw (re78) (t `c', probit) if (treat != 2), ate iterate(50)
-
-. matrix out = r(table)
-
-. matrix ate[10,1] = out["b",1]
-
-. matrix ate[10,2] = out["se",1]
-
-. matrix ate[10,3] = out["ll",1]
-
-. matrix ate[10,4] = out["ul",1]
-
-. 
-. * att, experimental data, three ways
-. qui teffects ipw (re78) (t `a', probit) if (treat != 2), atet iterate(50)
-
-. matrix out = r(table)
-
-. matrix att[8,1] = out["b",1]
-
-. matrix att[8,2] = out["se",1]
-
-. matrix att[8,3] = out["ll",1]
-
-. matrix att[8,4] = out["ul",1]
-
-. 
-. qui teffects ipw (re78) (t `b', probit) if (treat != 2), atet iterate(50)
-
-. matrix out = r(table)
-
-. matrix att[9,1] = out["b",1]
-
-. matrix att[9,2] = out["se",1]
-
-. matrix att[9,3] = out["ll",1]
-
-. matrix att[9,4] = out["ul",1]
-
-. 
-. qui teffects ipw (re78) (t `c', probit) if (treat != 2), atet iterate(50)
-
-. matrix out = r(table)
-
-. matrix att[10,1] = out["b",1]
-
-. matrix att[10,2] = out["se",1]
-
-. matrix att[10,3] = out["ll",1]
-
-. matrix att[10,4] = out["ul",1]
-
-. 
-. * predicted propensity scores for PSID data are too close to 0 or 1
-. * so we need to predict, then only use interior data
-. * note new if condition (keep if treated, or PSID and interior prop score)
-. 
-. * three ways, PSID data, ate and att
-. qui probit t `a' if (treat != 0)
-
-. capture: drop prop
-
-. predict prop
-(option pr assumed; Pr(t))
-
-. qui teffects ipw (re78) (t `a') ///
->  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
-
-. matrix out = r(table)
-
-. matrix ate[8,5] = out["b",1]
-
-. matrix ate[8,6] = out["se",1]
-
-. matrix ate[8,7] = out["ll",1]
-
-. matrix ate[8,8] = out["ul",1]
-
-.  
-. qui teffects ipw (re78) (t `a') ///
->  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
-
-. matrix out = r(table)
-
-. matrix att[8,5] = out["b",1]
-
-. matrix att[8,6] = out["se",1]
-
-. matrix att[8,7] = out["ll",1]
-
-. matrix att[8,8] = out["ul",1]
-
-.  
-. qui probit t `b' if (treat != 0)
-
-. capture: drop prop
-
-. predict prop
-(option pr assumed; Pr(t))
-
-. qui teffects ipw (re78) (t `b') ///
->  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
-
-. matrix out = r(table)
-
-. matrix ate[9,5] = out["b",1]
-
-. matrix ate[9,6] = out["se",1]
-
-. matrix ate[9,7] = out["ll",1]
-
-. matrix ate[9,8] = out["ul",1]
-
-.  
-. qui teffects ipw (re78) (t `b') ///
->  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
-
-. matrix out = r(table)
-
-. matrix att[9,5] = out["b",1]
-
-. matrix att[9,6] = out["se",1]
-
-. matrix att[9,7] = out["ll",1]
-
-. matrix att[9,8] = out["ul",1]
-
-.  
-. qui probit t `c' if (treat != 0)
-
-. capture: drop prop
-
-. predict prop
-(option pr assumed; Pr(t))
-
-. qui teffects ipw (re78) (t `c') ///
->  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
-
-. matrix out = r(table)
-
-. matrix ate[10,5] = out["b",1]
-
-. matrix ate[10,6] = out["se",1]
-
-. matrix ate[10,7] = out["ll",1]
-
-. matrix ate[10,8] = out["ul",1]
-
-. 
-. qui teffects ipw (re78) (t `c') ///
->  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
-
-. matrix out = r(table)
+end of do-file
 
-. matrix att[10,5] = out["b",1]
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
 
-. matrix att[10,6] = out["se",1]
+. clear all
 
-. matrix att[10,7] = out["ll",1]
-
-. matrix att[10,8] = out["ul",1]
-
-. 
-. ********************************************************************************
-. * Q2.5: Doubly Robust (rows 11-13)
-. 
-. * ate, experimental data, three ways
-. qui teffects ipwra (re78 `a') (t `a', probit) if (treat != 2), ate iterate(50)
-
-. matrix out = r(table)
-
-. matrix ate[11,1] = out["b",1]
-
-. matrix ate[11,2] = out["se",1]
-
-. matrix ate[11,3] = out["ll",1]
-
-. matrix ate[11,4] = out["ul",1]
-
-. 
-. qui teffects ipwra (re78 `b') (t `b', probit) if (treat != 2), ate iterate(50)
-
-. matrix out = r(table)
-
-. matrix ate[12,1] = out["b",1]
-
-. matrix ate[12,2] = out["se",1]
-
-. matrix ate[12,3] = out["ll",1]
-
-. matrix ate[12,4] = out["ul",1]
-
-. 
-. qui teffects ipwra (re78 `c') (t `c', probit) if (treat != 2), ate iterate(50)
-convergence not achieved
-    The Gauss-Newton stopping criterion has been met but missing standard errors
-    indicate some of the parameters are not identified.
-
-. matrix out = r(table)
-
-. matrix ate[13,1] = out["b",1]
-
-. matrix ate[13,2] = out["se",1]
-
-. matrix ate[13,3] = out["ll",1]
-
-. matrix ate[13,4] = out["ul",1]
-
-. 
-. * att, experimental data, three ways
-. qui teffects ipwra (re78 `a') (t `a', probit) if (treat != 2), atet iterate(50)
-
-. matrix out = r(table)
-
-. matrix att[11,1] = out["b",1]
-
-. matrix att[11,2] = out["se",1]
-
-. matrix att[11,3] = out["ll",1]
-
-. matrix att[11,4] = out["ul",1]
-
-. 
-. qui teffects ipwra (re78 `b') (t `b', probit) if (treat != 2), atet iterate(50)
-
-. matrix out = r(table)
-
-. matrix att[12,1] = out["b",1]
-
-. matrix att[12,2] = out["se",1]
-
-. matrix att[12,3] = out["ll",1]
-
-. matrix att[12,4] = out["ul",1]
-
-. 
-. qui teffects ipwra (re78 `c') (t `c', probit) if (treat != 2), atet iterate(50)
-convergence not achieved
-    The Gauss-Newton stopping criterion has been met but missing standard errors
-    indicate some of the parameters are not identified.
-
-. matrix out = r(table)
-
-. matrix att[13,1] = out["b",1]
-
-. matrix att[13,2] = out["se",1]
-
-. matrix att[13,3] = out["ll",1]
-
-. matrix att[13,4] = out["ul",1]
-
-. 
-. * predicted propensity scores for PSID data are too close to 0 or 1
-. * so we need to predict, then only use interior data
-. 
-. * three ways, PSID data, ate and att
-. qui probit t `a' if (treat != 0)
-
-. capture: drop prop
-
-. predict prop
-(option pr assumed; Pr(t))
-
-. qui teffects ipwra (re78 `a') (t `a') ///
->  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
-
-. matrix out = r(table)
-
-. matrix ate[11,5] = out["b",1]
-
-. matrix ate[11,6] = out["se",1]
-
-. matrix ate[11,7] = out["ll",1]
-
-. matrix ate[11,8] = out["ul",1]
-
-.  
-. qui teffects ipwra (re78 `a') (t `a') ///
->  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
-
-. matrix out = r(table)
-
-. matrix att[11,5] = out["b",1]
-
-. matrix att[11,6] = out["se",1]
-
-. matrix att[11,7] = out["ll",1]
-
-. matrix att[11,8] = out["ul",1]
-
-.  
-. qui probit t `b' if (treat != 0)
-
-. capture: drop prop
-
-. predict prop
-(option pr assumed; Pr(t))
-
-. qui teffects ipwra (re78 `b') (t `b') ///
->  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
-convergence not achieved
-    The Gauss-Newton stopping criterion has been met but missing standard errors
-    indicate some of the parameters are not identified.
-
-. matrix out = r(table)
-
-. matrix ate[12,5] = out["b",1]
-
-. matrix ate[12,6] = out["se",1]
-
-. matrix ate[12,7] = out["ll",1]
-
-. matrix ate[12,8] = out["ul",1]
-
-.  
-. qui teffects ipwra (re78 `b') (t `b') ///
->  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
-
-. matrix out = r(table)
-
-. matrix att[12,5] = out["b",1]
-
-. matrix att[12,6] = out["se",1]
-
-. matrix att[12,7] = out["ll",1]
-
-. matrix att[12,8] = out["ul",1]
-
-.  
-. qui probit t `c' if (treat != 0)
-
-. capture: drop prop
-
-. predict prop
-(option pr assumed; Pr(t))
-
-. qui teffects ipwra (re78 `c') (t `c') ///
->  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
-convergence not achieved
-    The Gauss-Newton stopping criterion has been met but missing standard errors
-    indicate some of the parameters are not identified.
-
-. matrix out = r(table)
-
-. matrix ate[13,5] = out["b",1]
-
-. matrix ate[13,6] = out["se",1]
-
-. matrix ate[13,7] = out["ll",1]
-
-. matrix ate[13,8] = out["ul",1]
-
-. 
-. qui teffects ipwra (re78 `c') (t `c') ///
->  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
-convergence not achieved
-    The Gauss-Newton stopping criterion has been met but missing standard errors
-    indicate some of the parameters are not identified.
-
-. matrix out = r(table)
-
-. matrix att[13,5] = out["b",1]
-
-. matrix att[13,6] = out["se",1]
-
-. matrix att[13,7] = out["ll",1]
-
-. matrix att[13,8] = out["ul",1]
-
-. 
-. ********************************************************************************
-. * Q2.6: Nearest Neighbor Matching (rows 14-16)
-. 
-. * ate, experimental data, three ways
-. qui teffects nnmatch (re78 `a') (t) if (treat != 2), ate nneighbor(1) metric(maha)
-
-. matrix out = r(table)
-
-. matrix ate[14,1] = out["b",1]
-
-. matrix ate[14,2] = out["se",1]
-
-. matrix ate[14,3] = out["ll",1]
-
-. matrix ate[14,4] = out["ul",1]
-
-. 
-. qui teffects nnmatch (re78 `b') (t) if (treat != 2), ate nneighbor(1) metric(maha)
-
-. matrix out = r(table)
-
-. matrix ate[15,1] = out["b",1]
-
-. matrix ate[15,2] = out["se",1]
-
-. matrix ate[15,3] = out["ll",1]
-
-. matrix ate[15,4] = out["ul",1]
-
-. 
-. qui teffects nnmatch (re78 `c') (t) if (treat != 2), ate nneighbor(1) metric(maha)
-
-. matrix out = r(table)
-
-. matrix ate[16,1] = out["b",1]
-
-. matrix ate[16,2] = out["se",1]
-
-. matrix ate[16,3] = out["ll",1]
-
-. matrix ate[16,4] = out["ul",1]
-
-. 
-. * att, experimental data, three ways
-. qui teffects nnmatch (re78 `a') (t) if (treat != 2), atet nneighbor(1) metric(maha)
-
-. matrix out = r(table)
-
-. matrix att[14,1] = out["b",1]
-
-. matrix att[14,2] = out["se",1]
-
-. matrix att[14,3] = out["ll",1]
-
-. matrix att[14,4] = out["ul",1]
-
-. 
-. qui teffects nnmatch (re78 `b') (t) if (treat != 2), atet nneighbor(1) metric(maha)
-
-. matrix out = r(table)
-
-. matrix att[15,1] = out["b",1]
-
-. matrix att[15,2] = out["se",1]
-
-. matrix att[15,3] = out["ll",1]
-
-. matrix att[15,4] = out["ul",1]
-
-. 
-. qui teffects nnmatch (re78 `c') (t) if (treat != 2), atet nneighbor(1) metric(maha)
-
-. matrix out = r(table)
-
-. matrix att[16,1] = out["b",1]
-
-. matrix att[16,2] = out["se",1]
-
-. matrix att[16,3] = out["ll",1]
-
-. matrix att[16,4] = out["ul",1]
-
-. 
-. * ate, PSID data, three ways
-. qui teffects nnmatch (re78 `a') (t) if (treat != 0), ate nneighbor(1) metric(maha)
-
-. matrix out = r(table)
-
-. matrix ate[14,5] = out["b",1]
-
-. matrix ate[14,6] = out["se",1]
-
-. matrix ate[14,7] = out["ll",1]
-
-. matrix ate[14,8] = out["ul",1]
-
-. 
-. qui teffects nnmatch (re78 `b') (t) if (treat != 0), ate nneighbor(1) metric(maha)
-
-. matrix out = r(table)
-
-. matrix ate[15,5] = out["b",1]
-
-. matrix ate[15,6] = out["se",1]
-
-. matrix ate[15,7] = out["ll",1]
-
-. matrix ate[15,8] = out["ul",1]
-
-. 
-. qui teffects nnmatch (re78 `c') (t) if (treat != 0), ate nneighbor(1) metric(maha)
-
-. matrix out = r(table)
-
-. matrix ate[16,5] = out["b",1]
-
-. matrix ate[16,6] = out["se",1]
-
-. matrix ate[16,7] = out["ll",1]
-
-. matrix ate[16,8] = out["ul",1]
-
-. 
-. * att, PSID data, three ways
-. qui teffects nnmatch (re78 `a') (t) if (treat != 0), atet nneighbor(1) metric(maha)
-
-. matrix out = r(table)
-
-. matrix att[14,5] = out["b",1]
-
-. matrix att[14,6] = out["se",1]
-
-. matrix att[14,7] = out["ll",1]
-
-. matrix att[14,8] = out["ul",1]
-
-. 
-. qui teffects nnmatch (re78 `b') (t) if (treat != 0), atet nneighbor(1) metric(maha)
-
-. matrix out = r(table)
-
-. matrix att[15,5] = out["b",1]
-
-. matrix att[15,6] = out["se",1]
-
-. matrix att[15,7] = out["ll",1]
-
-. matrix att[15,8] = out["ul",1]
-
-. 
-. qui teffects nnmatch (re78 `c') (t) if (treat != 0), atet nneighbor(1) metric(maha)
-
-. matrix out = r(table)
-
-. matrix att[16,5] = out["b",1]
-
-. matrix att[16,6] = out["se",1]
-
-. matrix att[16,7] = out["ll",1]
-
-. matrix att[16,8] = out["ul",1]
-
-. 
-. ********************************************************************************
-. * Q2.7: Propensity Score Matching (rows 17-19)
-. 
-. * ate, experimental data, three ways
-. qui teffects psmatch (re78) (t `a', probit) if (treat != 2), ate
-
-. matrix out = r(table)
-
-. matrix ate[17,1] = out["b",1]
-
-. matrix ate[17,2] = out["se",1]
-
-. matrix ate[17,3] = out["ll",1]
-
-. matrix ate[17,4] = out["ul",1]
-
-. 
-. qui teffects psmatch (re78) (t `b', probit) if (treat != 2), ate
-
-. matrix out = r(table)
-
-. matrix ate[18,1] = out["b",1]
-
-. matrix ate[18,2] = out["se",1]
-
-. matrix ate[18,3] = out["ll",1]
-
-. matrix ate[18,4] = out["ul",1]
-
-. 
-. qui teffects psmatch (re78) (t `c', probit) if (treat != 2), ate
-
-. matrix out = r(table)
-
-. matrix ate[19,1] = out["b",1]
-
-. matrix ate[19,2] = out["se",1]
-
-. matrix ate[19,3] = out["ll",1]
-
-. matrix ate[19,4] = out["ul",1]
-
-. 
-. * att, experimental data, three ways
-. qui teffects psmatch (re78) (t `a', probit) if (treat != 2), atet
-
-. matrix out = r(table)
-
-. matrix att[17,1] = out["b",1]
-
-. matrix att[17,2] = out["se",1]
-
-. matrix att[17,3] = out["ll",1]
-
-. matrix att[17,4] = out["ul",1]
-
 . 
-. qui teffects psmatch (re78) (t `b', probit) if (treat != 2), atet
+. set seed 22
 
-. matrix out = r(table)
+. set obs 50
+number of observations (_N) was 0, now 50
 
-. matrix att[18,1] = out["b",1]
-
-. matrix att[18,2] = out["se",1]
-
-. matrix att[18,3] = out["ll",1]
-
-. matrix att[18,4] = out["ul",1]
-
 . 
-. qui teffects psmatch (re78) (t `c', probit) if (treat != 2), atet
+end of do-file
 
-. matrix out = r(table)
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
 
-. matrix att[19,1] = out["b",1]
+. matrix ests = J(10,3,.)
 
-. matrix att[19,2] = out["se",1]
-
-. matrix att[19,3] = out["ll",1]
-
-. matrix att[19,4] = out["ul",1]
-
 . 
-. * three ways, PSID data, ate and att
-. qui probit t `a' if (treat != 0)
-
-. capture: drop prop
-
-. predict prop
-(option pr assumed; Pr(t))
-
-. qui teffects psmatch (re78) (t `a') ///
->  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate
-
-. matrix out = r(table)
-
-. matrix ate[17,5] = out["b",1]
-
-. matrix ate[17,6] = out["se",1]
-
-. matrix ate[17,7] = out["ll",1]
-
-. matrix ate[17,8] = out["ul",1]
-
-.  
-. qui teffects psmatch (re78) (t `a') ///
->  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet
+. gen x = rnormal(0,1) 
 
-. matrix out = r(table)
+. gen z = .85*x + sqrt(1-.85)*rnormal(0,1)
 
-. matrix att[17,5] = out["b",1]
+. gen eps = rnormal(0,1)
 
-. matrix att[17,6] = out["se",1]
+. gen y = 1 + .5*x + z + eps
 
-. matrix att[17,7] = out["ll",1]
-
-. matrix att[17,8] = out["ul",1]
-
-.  
-. qui probit t `b' if (treat != 0)
-
-. capture: drop prop
-
-. predict prop
-(option pr assumed; Pr(t))
-
-. qui teffects psmatch (re78) (t `b') ///
->  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate
-
-. matrix out = r(table)
-
-. matrix ate[18,5] = out["b",1]
-
-. matrix ate[18,6] = out["se",1]
-
-. matrix ate[18,7] = out["ll",1]
-
-. matrix ate[18,8] = out["ul",1]
-
-.  
-. qui teffects psmatch (re78) (t `b') ///
->  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet
-
-. matrix out = r(table)
-
-. matrix att[18,5] = out["b",1]
-
-. matrix att[18,6] = out["se",1]
-
-. matrix att[18,7] = out["ll",1]
-
-. matrix att[18,8] = out["ul",1]
-
-.  
-. qui probit t `c' if (treat != 0)
-
-. capture: drop prop
-
-. predict prop
-(option pr assumed; Pr(t))
-
-. qui teffects psmatch (re78) (t `c') ///
->  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate
-
-. matrix out = r(table)
-
-. matrix ate[19,5] = out["b",1]
-
-. matrix ate[19,6] = out["se",1]
-
-. matrix ate[19,7] = out["ll",1]
-
-. matrix ate[19,8] = out["ul",1]
-
 . 
-. qui teffects psmatch (re78) (t `c') ///
->  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet
-
-. matrix out = r(table)
-
-. matrix att[19,5] = out["b",1]
+. * loop for M replications
+. forvalues i = 1/10{
+  2.         qui replace x = rnormal(0,1) 
+  3.         qui replace z = .85*x + sqrt(1-.85)*rnormal(0,1)
+  4.         qui replace eps = rnormal(0,1)
+  5.         qui replace y = 1 + .5*x + z + eps
+  6.         
+.         * long regression
+.         reg y x z, r
+  7.         matrix temp = r(table)
+  8.         local beta_hat = temp["b","x"]
+  9.         
+.         * save gamma over se gamma
+.         local gamma_hat = temp["b","z"]
+ 10.         local gamma_se  = temp["se","z"]
+ 11.         local tstat = `gamma_hat'/`gamma_se'
+ 12.         
+.         matrix drop temp
+ 13.         
+.         * short regression
+.         reg y x, r
+ 14.         matrix temp = r(table)
+ 15.         local beta_tilde = temp["b","x"]
+ 16.         
+.         matrix drop temp
+ 17.         
+.         * third estimate
+.         local beta_check = cond(`tstat' >= 1.96, `beta_hat', `beta_tilde')
+ 18.                 
+.         matrix ests[`i',1] = `beta_hat'
+ 19.         matrix ests[`i',2] = `beta_tilde'
+ 20.         matrix ests[`i',3] = `beta_check'
+ 21. }
 
-. matrix att[19,6] = out["se",1]
+Linear regression                               Number of obs     =         50
+                                                F(2, 47)          =      63.75
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.7311
+                                                Root MSE          =      .9454
 
-. matrix att[19,7] = out["ll",1]
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   .8304379    .367815     2.26   0.029     .0904895    1.570386
+           z |   .6292121   .4127084     1.52   0.134    -.2010501    1.459474
+       _cons |   1.093593   .1364263     8.02   0.000     .8191382    1.368047
+------------------------------------------------------------------------------
+matrix operators that return matrices not allowed in this context
+r(509);
 
-. matrix att[19,8] = out["ul",1]
+end of do-file
 
-. 
-. ********************************************************************************
-. * Q2: Output table to Excel, then convert that to LaTeX
-. 
-. * write to c2 so we can add row, heading columns in Excel
-. putexcel set ate_s, modify
+r(509);
 
-. putexcel b3 = matrix(ate)
-file ate_s.xlsx saved
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
 
-. putexcel close
+. clear all
 
 . 
-. putexcel set att_s, modify
+. set seed 22
 
-. putexcel b3 = matrix(att)
-file att_s.xlsx saved
+. set obs 50
+number of observations (_N) was 0, now 50
 
-. putexcel close
-
-. 
-. ********************************************************************************
-. *** Question 3: Post-model Selection Inference
-. ********************************************************************************
-. * Q3 setup
 . 
 . ********************************************************************************
 . * Q3.1: Summary Statistics and Kernel Density Plots
 . 
-. ********************************************************************************
-. * Q3.2: Empirical Coverage Rates
+. * this doesn't work...can we use bootstrap somehow? or do in mata?
+. 
+. * make empty matrix (test with 10 iterations)
+. matrix ests = J(10,3,.)
+
+. 
+. gen x = rnormal(0,1) 
+
+. gen z = .85*x + sqrt(1-.85)*rnormal(0,1)
+
+. gen eps = rnormal(0,1)
+
+. gen y = 1 + .5*x + z + eps
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
+
+.         qui replace x = rnormal(0,1) 
+
+.         qui replace z = .85*x + sqrt(1-.85)*rnormal(0,1)
+
+.         qui replace eps = rnormal(0,1)
+
+.         qui replace y = 1 + .5*x + z + eps
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
+
+.         reg y x z, r
+
+Linear regression                               Number of obs     =         50
+                                                F(2, 47)          =      63.75
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.7311
+                                                Root MSE          =      .9454
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   .8304379    .367815     2.26   0.029     .0904895    1.570386
+           z |   .6292121   .4127084     1.52   0.134    -.2010501    1.459474
+       _cons |   1.093593   .1364263     8.02   0.000     .8191382    1.368047
+------------------------------------------------------------------------------
+
+.         matrix temp = r(table)
+
+.         local beta_hat = temp["b","x"]
+matrix operators that return matrices not allowed in this context
+r(509);
+
+end of do-file
+
+r(509);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
+
+.         reg y x z, r
+
+Linear regression                               Number of obs     =         50
+                                                F(2, 47)          =      63.75
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.7311
+                                                Root MSE          =      .9454
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   .8304379    .367815     2.26   0.029     .0904895    1.570386
+           z |   .6292121   .4127084     1.52   0.134    -.2010501    1.459474
+       _cons |   1.093593   .1364263     8.02   0.000     .8191382    1.368047
+------------------------------------------------------------------------------
+
+.         matrix coef = e(b)
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
+
+.         matrix list coef
+
+coef[1,3]
+            x          z      _cons
+y1  .83043789  .62921214  1.0935925
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
+
+.         local beta_hat = coef["y1","x"]
+matrix operators that return matrices not allowed in this context
+r(509);
+
+end of do-file
+
+r(509);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
+
+.         reg y x z, r
+
+Linear regression                               Number of obs     =         50
+                                                F(2, 47)          =      63.75
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.7311
+                                                Root MSE          =      .9454
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   .8304379    .367815     2.26   0.029     .0904895    1.570386
+           z |   .6292121   .4127084     1.52   0.134    -.2010501    1.459474
+       _cons |   1.093593   .1364263     8.02   0.000     .8191382    1.368047
+------------------------------------------------------------------------------
+
+.         local beta_hat = _b["x"]
+
+.         display `beta_hat'
+.83043789
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
+
+.         reg y x z, r
+
+Linear regression                               Number of obs     =         50
+                                                F(2, 47)          =      63.75
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.7311
+                                                Root MSE          =      .9454
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   .8304379    .367815     2.26   0.029     .0904895    1.570386
+           z |   .6292121   .4127084     1.52   0.134    -.2010501    1.459474
+       _cons |   1.093593   .1364263     8.02   0.000     .8191382    1.368047
+------------------------------------------------------------------------------
+
+.         local beta_hat = _b["x"]
+
+.         
+.         * save gamma over se gamma
+.         local gamma_hat = _b["z"]
+
+.         local gamma_se  = _se["z"]
+
+.         local tstat = `gamma_hat'/`gamma_se'
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
+
+. clear all
+
+. 
+. set seed 22
+
+. set obs 50
+number of observations (_N) was 0, now 50
+
 . 
 . ********************************************************************************
-. log close
-      name:  <unnamed>
-       log:  C:\Users\prorgan\Box\Classes\Econ 675\Problem Sets\PS4\ps4.log
-  log type:  text
- closed on:  25 Oct 2018, 17:44:18
--------------------------------------------------------------------------------------
+. * Q3.1: Summary Statistics and Kernel Density Plots
+. 
+. * this doesn't work...can we use bootstrap somehow? or do in mata?
+. 
+. * make empty matrix (test with 10 iterations)
+. matrix ests = J(10,3,.)
+
+. 
+. gen x = rnormal(0,1) 
+
+. gen z = .85*x + sqrt(1-.85)*rnormal(0,1)
+
+. gen eps = rnormal(0,1)
+
+. gen y = 1 + .5*x + z + eps
+
+. 
+. * loop for M replications
+. forvalues i = 1/10{
+  2.         qui replace x = rnormal(0,1) 
+  3.         qui replace z = .85*x + sqrt(1-.85)*rnormal(0,1)
+  4.         qui replace eps = rnormal(0,1)
+  5.         qui replace y = 1 + .5*x + z + eps
+  6.         
+.         * long regression
+.         reg y x z, r
+  7.         local beta_hat = _b["x"]
+  8.         
+.         * save gamma over se gamma
+.         local gamma_hat = _b["z"]
+  9.         local gamma_se  = _se["z"]
+ 10.         local tstat = `gamma_hat'/`gamma_se'
+ 11.                 
+.         * short regression
+.         reg y x, r
+ 12.         local beta_tilde = _b["x"]
+ 13.         
+.         * third estimate
+.         local beta_check = cond(`tstat' >= 1.96, `beta_hat', `beta_tilde')
+ 14.                 
+.         matrix ests[`i',1] = `beta_hat'
+ 15.         matrix ests[`i',2] = `beta_tilde'
+ 16.         matrix ests[`i',3] = `beta_check'
+ 17. }
+
+Linear regression                               Number of obs     =         50
+                                                F(2, 47)          =      63.75
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.7311
+                                                Root MSE          =      .9454
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   .8304379    .367815     2.26   0.029     .0904895    1.570386
+           z |   .6292121   .4127084     1.52   0.134    -.2010501    1.459474
+       _cons |   1.093593   .1364263     8.02   0.000     .8191382    1.368047
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         50
+                                                F(1, 48)          =     122.85
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.7170
+                                                Root MSE          =     .95973
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   1.344039   .1212596    11.08   0.000      1.10023    1.587848
+       _cons |   1.067127   .1370007     7.79   0.000     .7916683    1.342585
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         50
+                                                F(2, 47)          =      64.34
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.6599
+                                                Root MSE          =     .99335
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   .0106363   .4013004     0.03   0.979    -.7966759    .8179485
+           z |    1.58175    .414602     3.82   0.000     .7476781    2.415821
+       _cons |   1.005619   .1477505     6.81   0.000     .7083832    1.302854
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         50
+                                                F(1, 48)          =      81.13
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.5710
+                                                Root MSE          =     1.1039
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   1.327626   .1473957     9.01   0.000     1.031267    1.623985
+       _cons |   .9461891   .1575212     6.01   0.000     .6294715    1.262907
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         50
+                                                F(2, 47)          =     105.01
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.8302
+                                                Root MSE          =     .72139
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |    .097455   .2081797     0.47   0.642    -.3213486    .5162586
+           z |   1.480139   .2536555     5.84   0.000     .9698503    1.990428
+       _cons |    .951471   .1044058     9.11   0.000     .7414337    1.161508
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         50
+                                                F(1, 48)          =     108.61
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.6824
+                                                Root MSE          =     .97633
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   1.341537   .1287281    10.42   0.000     1.082711    1.600362
+       _cons |   .9964266   .1352167     7.37   0.000     .7245553    1.268298
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         50
+                                                F(2, 47)          =      31.11
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.6014
+                                                Root MSE          =     1.1755
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   .8559705   .4206109     2.04   0.048     .0098105    1.702131
+           z |   .6922758   .4545897     1.52   0.134    -.2222408    1.606792
+       _cons |   1.062897   .1702362     6.24   0.000     .7204262    1.405368
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         50
+                                                F(1, 48)          =      56.99
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.5848
+                                                Root MSE          =     1.1872
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   1.421975    .188365     7.55   0.000     1.043242    1.800708
+       _cons |   1.039522    .167617     6.20   0.000      .702505    1.376538
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         50
+                                                F(2, 47)          =      23.30
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.4851
+                                                Root MSE          =     1.2021
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   .6592234   .4533368     1.45   0.153    -.2527726    1.571219
+           z |   .5061406    .474774     1.07   0.292    -.4489815    1.461263
+       _cons |   .8923305   .1716463     5.20   0.000     .5470226    1.237638
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         50
+                                                F(1, 48)          =      44.64
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.4692
+                                                Root MSE          =     1.2076
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   1.112718   .1665419     6.68   0.000     .7778633    1.447573
+       _cons |    .882012   .1737151     5.08   0.000     .5327343     1.23129
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         50
+                                                F(2, 47)          =      53.67
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.6433
+                                                Root MSE          =      .9931
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   1.040219   .2220943     4.68   0.000      .593423    1.487015
+           z |   .2601115    .274911     0.95   0.349    -.2929381     .813161
+       _cons |   1.154239   .1474413     7.83   0.000     .8576258    1.450853
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         50
+                                                F(1, 48)          =      95.13
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.6382
+                                                Root MSE          =     .98971
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   1.266888     .12989     9.75   0.000     1.005726    1.528049
+       _cons |   1.170423   .1422188     8.23   0.000     .8844727    1.456373
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         50
+                                                F(2, 47)          =      74.59
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.7917
+                                                Root MSE          =     .78741
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |    .147817   .3111636     0.48   0.637    -.4781634    .7737975
+           z |   1.278312   .3567938     3.58   0.001     .5605357    1.996089
+       _cons |   .8509836   .1141159     7.46   0.000      .621412    1.080555
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         50
+                                                F(1, 48)          =     124.05
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.7259
+                                                Root MSE          =     .89384
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   1.221417   .1096629    11.14   0.000     1.000925    1.441909
+       _cons |   .9266439    .136108     6.81   0.000     .6529805    1.200307
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         50
+                                                F(2, 47)          =      60.08
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.5662
+                                                Root MSE          =     1.0686
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   .7240226   .4931914     1.47   0.149    -.2681504    1.716196
+           z |   .6695012   .5384378     1.24   0.220     -.413696    1.752698
+       _cons |   .9927627   .1566901     6.34   0.000     .6775428    1.307983
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         50
+                                                F(1, 48)          =     111.27
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.5449
+                                                Root MSE          =     1.0831
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   1.288296   .1221313    10.55   0.000     1.042734    1.533857
+       _cons |   1.043083   .1534071     6.80   0.000      .734637    1.351528
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         50
+                                                F(2, 47)          =      95.91
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.7434
+                                                Root MSE          =     .83226
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |  -.1367832   .2238226    -0.61   0.544    -.5870561    .3134897
+           z |   1.700298   .2438343     6.97   0.000     1.209767    2.190829
+       _cons |   .9690003   .1130728     8.57   0.000     .7415272    1.196473
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         50
+                                                F(1, 48)          =      85.14
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.5876
+                                                Root MSE          =     1.0441
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   1.208061   .1309232     9.23   0.000     .9448223      1.4713
+       _cons |   1.059602   .1480956     7.15   0.000     .7618359    1.357368
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         50
+                                                F(2, 47)          =      81.52
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.7599
+                                                Root MSE          =     .88778
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   .3322494   .3299456     1.01   0.319    -.3315155    .9960143
+           z |   1.341748   .3211372     4.18   0.000     .6957035    1.987793
+       _cons |   .9220659   .1302004     7.08   0.000     .6601364    1.183995
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         50
+                                                F(1, 48)          =     114.66
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.6913
+                                                Root MSE          =     .99596
+
+------------------------------------------------------------------------------
+             |               Robust
+           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           x |   1.508833   .1409108    10.71   0.000     1.225513    1.792154
+       _cons |   .7885013   .1420322     5.55   0.000     .5029264    1.074076
+------------------------------------------------------------------------------
+
+. 
+. matrix list ests
+
+ests[10,3]
+             c1          c2          c3
+ r1   .83043789   1.3440389   1.3440389
+ r2   .01063633   1.3276262   .01063633
+ r3   .09745502   1.3415367   .09745502
+ r4   .85597052   1.4219751   1.4219751
+ r5   .65922343   1.1127182   1.1127182
+ r6    1.040219   1.2668876   1.2668876
+ r7   .14781701   1.2214173   .14781701
+ r8   .72402264   1.2882957   1.2882957
+ r9  -.13678318   1.2080611  -.13678318
+r10   .33224939   1.5088334   .33224939
+
+. 
+end of do-file
+
