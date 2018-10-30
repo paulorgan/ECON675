@@ -284,17 +284,8 @@ att[10,5] <- mean(df_p$left_c) - mean(df_p$right_c)
 ###############################################################################
 # Q2.6: Nearest Neighbor Matching (rows 14-16)
 
-# this may be useful:
+# useful sources:
 # https://cran.r-project.org/web/packages/MatchIt/vignettes/matchit.pdf
-
-# also this:
-# https://www.r-bloggers.com/using-the-r-matchit-package-for-propensity-score-analysis/
-
-# don't think this is right...
-r6ea_p <- matchit(ta, data = df %>% filter(treat != 2), method = 'nearest')
-df_r6ea <- match.data(r6ea_p)
-mean(df_r6ea$re78[df_r6ea$t==1])-mean(df_r6ea$re78[df_r6ea$t==0])
-t.test(df_r6ea$re78[df_r6ea$t==1],df_r6ea$re78[df_r6ea$t==0])
 
 # redefine dataframes
 df_e <- df %>% filter(treat != 2)
@@ -404,7 +395,114 @@ att[16,1:4] <- nnResultsE(tc, yc, 'att')
 att[16,5:8] <- nnResultsP(tc, yc, 'att')
 
 ###############################################################################
-# Q2.7: Propensity Score Matching
+# Q2.7: Propensity Score Matching (rows 17-19)
+
+# using same code as above, with probit for distance (propensity score)
+# https://www.r-bloggers.com/using-the-r-matchit-package-for-propensity-score-analysis/
+
+# redefine dataframes
+df_e <- df %>% filter(treat != 2)
+df_p <- df %>% filter(treat != 0)
+
+# only difference here is the matchit command uses probit
+psResultsE <- function(tmodel, ymodel, est){
+  # using MatchIt
+  reg_match <- matchit(tmodel, df_e, method = 'nearest', distance = 'probit')
+  
+  df_t <- match.data(reg_match, 'treat')
+  df_c <- match.data(reg_match, 'control')
+  
+  # predict values and treatment effects
+  reg_t       <- lm(ymodel, df_t)
+  df_c$y_pred <- predict(reg_t, df_c)
+  
+  df_c %<>% mutate(teffect = y_pred-re78)
+  
+  reg_c <- lm(ymodel, df_c)
+  df_t$y_pred  <- predict(reg_c, df_t)
+  
+  df_t %<>% mutate(teffect = re78-y_pred)
+  
+  # stack and predict treatment effects, etc.
+  comb <- bind_rows(df_c, df_t)
+  
+  ate <- mean(comb$teffect)
+  att <- mean(comb$teffect[comb$t==1])
+  
+  n_att = nrow(df_t)
+  n_ate = n_att*2
+  
+  ate_se <- sd(comb$teffect)/sqrt(n_ate)
+  att_se <- sd(comb$teffect[comb$t==1])/sqrt(att)
+  
+  out_ate = matrix(c(ate, ate_se, NA, NA),1,4)
+  out_att = matrix(c(att, att_se, NA, NA),1,4)
+  
+  if(est == 'ate'){
+    return(out_ate)
+  } else {
+    return(out_att)
+  }
+}
+
+psResultsP <- function(tmodel, ymodel, est){
+  # using MatchIt
+  reg_match <- matchit(tmodel, df_p, method = 'nearest', distance = 'probit')
+  
+  df_t <- match.data(reg_match, 'treat')
+  df_c <- match.data(reg_match, 'control')
+  
+  # predict values and treatment effects
+  reg_t       <- lm(ymodel, df_t)
+  df_c$y_pred <- predict(reg_t, df_c)
+  
+  df_c %<>% mutate(teffect = y_pred-re78)
+  
+  reg_c <- lm(ymodel, df_c)
+  df_t$y_pred  <- predict(reg_c, df_t)
+  
+  df_t %<>% mutate(teffect = re78-y_pred)
+  
+  # stack and predict treatment effects, etc.
+  comb <- bind_rows(df_c, df_t)
+  
+  ate <- mean(comb$teffect)
+  att <- mean(comb$teffect[comb$t==1])
+  
+  n_att = nrow(df_t)
+  n_ate = n_att*2
+  
+  ate_se <- sd(comb$teffect)/sqrt(n_ate)
+  att_se <- sd(comb$teffect[comb$t==1])/sqrt(att)
+  
+  out_ate = matrix(c(ate, ate_se, NA, NA),1,4)
+  out_att = matrix(c(att, att_se, NA, NA),1,4)
+  
+  if(est == 'ate'){
+    return(out_ate)
+  } else {
+    return(out_att)
+  }
+}
+
+# save results
+ate[17,1:4] <- psResultsE(ta, ya, 'ate')
+ate[17,5:8] <- psResultsP(ta, ya, 'ate')
+
+ate[18,1:4] <- psResultsE(tb, yb, 'ate')
+ate[18,5:8] <- psResultsP(tb, yb, 'ate')
+
+ate[19,1:4] <- psResultsE(tc, yc, 'ate')
+ate[19,5:8] <- psResultsP(tc, yc, 'ate')
+
+att[17,1:4] <- psResultsE(ta, ya, 'att')
+att[17,5:8] <- psResultsP(ta, ya, 'att')
+
+att[18,1:4] <- psResultsE(tb, yb, 'att')
+att[18,5:8] <- psResultsP(tb, yb, 'att')
+
+att[19,1:4] <- psResultsE(tc, yc, 'att')
+att[19,5:8] <- psResultsP(tc, yc, 'att')
 
 ###############################################################################
 # Q2 final steps
