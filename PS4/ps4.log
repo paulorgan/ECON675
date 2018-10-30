@@ -2,10 +2,1171 @@
       name:  <unnamed>
        log:  C:\Users\prorgan\Box\Classes\Econ 675\Problem Sets\PS4\ps4.log
   log type:  text
- opened on:  30 Oct 2018, 16:36:21
+ opened on:  30 Oct 2018, 17:27:14
 
 . 
+. ********************************************************************************
+. *** Question 2: Estimating Average Treatment Effects
+. ********************************************************************************
+. * Q2 setup
+. 
+. * load data
+. import delimited "LaLonde_all.csv"
+(12 vars, 2,935 obs)
+
+. 
+. * add treatment variable in expanded dataset
+. gen t = 0
+
+. replace t = 1 if treat == 1
+(185 real changes made)
+
+. 
+. * add other variables we will use in the analysis
+. gen logre74 = log(re74 + 1)
+
+. gen logre75 = log(re75 + 1)
+
+. gen age2 = age^2
+
+. gen educ2 = educ^2
+
+. gen age3 = age^3
+
+. gen bXu74 = black * u74
+
+. gen eXre74 = educ * logre74
+
+. 
+. * define vars for model specifications
+. local a = "age educ black hisp married nodegr logre74 logre75"
+
+. local b = "age educ black hisp married nodegr logre74 logre75 age2 educ2 u74 u75"
+
+. local c = "age educ black hisp married nodegr logre74 logre75 age2 educ2 u74 u75 ag
+> e3 bXu74 eXre74"
+
+. 
+. * empty tables to fill with results (1+6*3)
+. matrix ate = J(19,8,.)
+
+. matrix att = J(19,8,.)
+
+. 
+. ********************************************************************************
+. * Q2.1: Difference-in-Means (row 1)
+. 
+. * experimental data
+. qui reg re78 t if (treat != 2), vce(hc2)
+
+. 
+. * pull out results, and assign them to our empty table for ATE
+. matrix out = r(table)
+
+. matrix ate[1,1] = out["b","t"]
+
+. matrix ate[1,2] = out["se","t"]
+
+. matrix ate[1,3] = out["ll","t"]
+
+. matrix ate[1,4] = out["ul","t"]
+
+. 
+. * PSID data
+. qui reg re78 t if (treat != 0), vce(hc2)
+
+. 
+. * pull out results, and assign them to our empty table for ATE
+. matrix out = r(table)
+
+. matrix ate[1,5] = out["b","t"]
+
+. matrix ate[1,6] = out["se","t"]
+
+. matrix ate[1,7] = out["ll","t"]
+
+. matrix ate[1,8] = out["ul","t"]
+
+. 
+. * same for ATT
+. forvalues j = 1/8{
+  2.         matrix att[1,`j'] = ate[1,`j']
+  3. }
+
+. 
+. ********************************************************************************
+. * Q2.2: Linear Least-Squares (rows 2-4)
+. 
+. * experimental data, three ways
+. qui reg re78 t `a' if (treat != 2), vce(r)
+
+. matrix out = r(table)
+
+. matrix ate[2,1] = out["b","t"]
+
+. matrix ate[2,2] = out["se","t"]
+
+. matrix ate[2,3] = out["ll","t"]
+
+. matrix ate[2,4] = out["ul","t"]
+
+. 
+. qui reg re78 t `b' if (treat != 2), vce(r)
+
+. matrix out = r(table)
+
+. matrix ate[3,1] = out["b","t"]
+
+. matrix ate[3,2] = out["se","t"]
+
+. matrix ate[3,3] = out["ll","t"]
+
+. matrix ate[3,4] = out["ul","t"]
+
+. 
+. qui reg re78 t `c' if (treat != 2), vce(r)
+
+. matrix out = r(table)
+
+. matrix ate[4,1] = out["b","t"]
+
+. matrix ate[4,2] = out["se","t"]
+
+. matrix ate[4,3] = out["ll","t"]
+
+. matrix ate[4,4] = out["ul","t"]
+
+. 
+. * PSID data
+. qui reg re78 t `a' if (treat != 0), vce(r)
+
+. matrix out = r(table)
+
+. matrix ate[2,5] = out["b","t"]
+
+. matrix ate[2,6] = out["se","t"]
+
+. matrix ate[2,7] = out["ll","t"]
+
+. matrix ate[2,8] = out["ul","t"]
+
+. 
+. qui reg re78 t `b' if (treat != 0), vce(r)
+
+. matrix out = r(table)
+
+. matrix ate[3,5] = out["b","t"]
+
+. matrix ate[3,6] = out["se","t"]
+
+. matrix ate[3,7] = out["ll","t"]
+
+. matrix ate[3,8] = out["ul","t"]
+
+. 
+. qui reg re78 t `c' if (treat != 0), vce(r)
+
+. matrix out = r(table)
+
+. matrix ate[4,5] = out["b","t"]
+
+. matrix ate[4,6] = out["se","t"]
+
+. matrix ate[4,7] = out["ll","t"]
+
+. matrix ate[4,8] = out["ul","t"]
+
+. 
+. * same for ATT
+. forvalues i = 2/4{
+  2.         forvalues j = 1/8{
+  3.                 matrix att[`i',`j'] = ate[`i',`j']
+  4.         }
+  5. }
+
+. 
+. ********************************************************************************
+. * Q2.3: Regression Imputation (rows 5-7)
+. 
+. * ate, experimental data, three ways
+. qui teffects ra (re78 `a') (t) if (treat != 2), ate
+
+. matrix out = r(table)
+
+. matrix ate[5,1] = out["b",1]
+
+. matrix ate[5,2] = out["se",1]
+
+. matrix ate[5,3] = out["ll",1]
+
+. matrix ate[5,4] = out["ul",1]
+
+. 
+. qui teffects ra (re78 `b') (t) if (treat != 2), ate
+
+. matrix out = r(table)
+
+. matrix ate[6,1] = out["b",1]
+
+. matrix ate[6,2] = out["se",1]
+
+. matrix ate[6,3] = out["ll",1]
+
+. matrix ate[6,4] = out["ul",1]
+
+. 
+. qui teffects ra (re78 `c') (t) if (treat != 2), ate
+
+. matrix out = r(table)
+
+. matrix ate[7,1] = out["b",1]
+
+. matrix ate[7,2] = out["se",1]
+
+. matrix ate[7,3] = out["ll",1]
+
+. matrix ate[7,4] = out["ul",1]
+
+. 
+. * att, experimental data, three ways
+. qui teffects ra (re78 `a') (t) if (treat != 2), atet
+
+. matrix out = r(table)
+
+. matrix att[5,1] = out["b",1]
+
+. matrix att[5,2] = out["se",1]
+
+. matrix att[5,3] = out["ll",1]
+
+. matrix att[5,4] = out["ul",1]
+
+. 
+. qui teffects ra (re78 `b') (t) if (treat != 2), atet
+
+. matrix out = r(table)
+
+. matrix att[6,1] = out["b",1]
+
+. matrix att[6,2] = out["se",1]
+
+. matrix att[6,3] = out["ll",1]
+
+. matrix att[6,4] = out["ul",1]
+
+. 
+. qui teffects ra (re78 `c') (t) if (treat != 2), atet
+
+. matrix out = r(table)
+
+. matrix att[7,1] = out["b",1]
+
+. matrix att[7,2] = out["se",1]
+
+. matrix att[7,3] = out["ll",1]
+
+. matrix att[7,4] = out["ul",1]
+
+. 
+. * ate, PSID data, three ways
+. qui teffects ra (re78 `a') (t) if (treat != 0), ate
+
+. matrix out = r(table)
+
+. matrix ate[5,5] = out["b",1]
+
+. matrix ate[5,6] = out["se",1]
+
+. matrix ate[5,7] = out["ll",1]
+
+. matrix ate[5,8] = out["ul",1]
+
+. 
+. qui teffects ra (re78 `b') (t) if (treat != 0), ate
+
+. matrix out = r(table)
+
+. matrix ate[6,5] = out["b",1]
+
+. matrix ate[6,6] = out["se",1]
+
+. matrix ate[6,7] = out["ll",1]
+
+. matrix ate[6,8] = out["ul",1]
+
+. 
+. qui teffects ra (re78 `c') (t) if (treat != 0), ate
+convergence not achieved
+    The Gauss-Newton stopping criterion has been met but missing standard errors
+    indicate some of the parameters are not identified.
+
+. matrix out = r(table)
+
+. matrix ate[7,5] = out["b",1]
+
+. matrix ate[7,6] = out["se",1]
+
+. matrix ate[7,7] = out["ll",1]
+
+. matrix ate[7,8] = out["ul",1]
+
+. 
+. * att, PSID data, three ways
+. qui teffects ra (re78 `a') (t) if (treat != 0), atet
+
+. matrix out = r(table)
+
+. matrix att[5,5] = out["b",1]
+
+. matrix att[5,6] = out["se",1]
+
+. matrix att[5,7] = out["ll",1]
+
+. matrix att[5,8] = out["ul",1]
+
+. 
+. qui teffects ra (re78 `b') (t) if (treat != 0), atet
+
+. matrix out = r(table)
+
+. matrix att[6,5] = out["b",1]
+
+. matrix att[6,6] = out["se",1]
+
+. matrix att[6,7] = out["ll",1]
+
+. matrix att[6,8] = out["ul",1]
+
+. 
+. qui teffects ra (re78 `c') (t) if (treat != 0), atet
+convergence not achieved
+    The Gauss-Newton stopping criterion has been met but missing standard errors
+    indicate some of the parameters are not identified.
+
+. matrix out = r(table)
+
+. matrix att[7,5] = out["b",1]
+
+. matrix att[7,6] = out["se",1]
+
+. matrix att[7,7] = out["ll",1]
+
+. matrix att[7,8] = out["ul",1]
+
+. 
+. ********************************************************************************
+. * Q2.4: Inverse Probability Weighting (rows 8-10)
+. 
+. * ate, experimental data, three ways
+. qui teffects ipw (re78) (t `a', probit) if (treat != 2), ate iterate(50)
+
+. matrix out = r(table)
+
+. matrix ate[8,1] = out["b",1]
+
+. matrix ate[8,2] = out["se",1]
+
+. matrix ate[8,3] = out["ll",1]
+
+. matrix ate[8,4] = out["ul",1]
+
+. 
+. qui teffects ipw (re78) (t `b', probit) if (treat != 2), ate iterate(50)
+
+. matrix out = r(table)
+
+. matrix ate[9,1] = out["b",1]
+
+. matrix ate[9,2] = out["se",1]
+
+. matrix ate[9,3] = out["ll",1]
+
+. matrix ate[9,4] = out["ul",1]
+
+. 
+. qui teffects ipw (re78) (t `c', probit) if (treat != 2), ate iterate(50)
+
+. matrix out = r(table)
+
+. matrix ate[10,1] = out["b",1]
+
+. matrix ate[10,2] = out["se",1]
+
+. matrix ate[10,3] = out["ll",1]
+
+. matrix ate[10,4] = out["ul",1]
+
+. 
+. * att, experimental data, three ways
+. qui teffects ipw (re78) (t `a', probit) if (treat != 2), atet iterate(50)
+
+. matrix out = r(table)
+
+. matrix att[8,1] = out["b",1]
+
+. matrix att[8,2] = out["se",1]
+
+. matrix att[8,3] = out["ll",1]
+
+. matrix att[8,4] = out["ul",1]
+
+. 
+. qui teffects ipw (re78) (t `b', probit) if (treat != 2), atet iterate(50)
+
+. matrix out = r(table)
+
+. matrix att[9,1] = out["b",1]
+
+. matrix att[9,2] = out["se",1]
+
+. matrix att[9,3] = out["ll",1]
+
+. matrix att[9,4] = out["ul",1]
+
+. 
+. qui teffects ipw (re78) (t `c', probit) if (treat != 2), atet iterate(50)
+
+. matrix out = r(table)
+
+. matrix att[10,1] = out["b",1]
+
+. matrix att[10,2] = out["se",1]
+
+. matrix att[10,3] = out["ll",1]
+
+. matrix att[10,4] = out["ul",1]
+
+. 
+. * predicted propensity scores for PSID data are too close to 0 or 1
+. * so we need to predict, then only use interior data
+. * note new if condition (keep if treated, or PSID and interior prop score)
+. 
+. * three ways, PSID data, ate and att
+. qui probit t `a' if (treat != 0)
+
+. capture: drop prop
+
+. predict prop
+(option pr assumed; Pr(t))
+
+. qui teffects ipw (re78) (t `a') ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
+
+. matrix out = r(table)
+
+. matrix ate[8,5] = out["b",1]
+
+. matrix ate[8,6] = out["se",1]
+
+. matrix ate[8,7] = out["ll",1]
+
+. matrix ate[8,8] = out["ul",1]
+
+.  
+. qui teffects ipw (re78) (t `a') ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
+
+. matrix out = r(table)
+
+. matrix att[8,5] = out["b",1]
+
+. matrix att[8,6] = out["se",1]
+
+. matrix att[8,7] = out["ll",1]
+
+. matrix att[8,8] = out["ul",1]
+
+.  
+. qui probit t `b' if (treat != 0)
+
+. capture: drop prop
+
+. predict prop
+(option pr assumed; Pr(t))
+
+. qui teffects ipw (re78) (t `b') ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
+
+. matrix out = r(table)
+
+. matrix ate[9,5] = out["b",1]
+
+. matrix ate[9,6] = out["se",1]
+
+. matrix ate[9,7] = out["ll",1]
+
+. matrix ate[9,8] = out["ul",1]
+
+.  
+. qui teffects ipw (re78) (t `b') ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
+
+. matrix out = r(table)
+
+. matrix att[9,5] = out["b",1]
+
+. matrix att[9,6] = out["se",1]
+
+. matrix att[9,7] = out["ll",1]
+
+. matrix att[9,8] = out["ul",1]
+
+.  
+. qui probit t `c' if (treat != 0)
+
+. capture: drop prop
+
+. predict prop
+(option pr assumed; Pr(t))
+
+. qui teffects ipw (re78) (t `c') ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
+
+. matrix out = r(table)
+
+. matrix ate[10,5] = out["b",1]
+
+. matrix ate[10,6] = out["se",1]
+
+. matrix ate[10,7] = out["ll",1]
+
+. matrix ate[10,8] = out["ul",1]
+
+. 
+. qui teffects ipw (re78) (t `c') ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
+
+. matrix out = r(table)
+
+. matrix att[10,5] = out["b",1]
+
+. matrix att[10,6] = out["se",1]
+
+. matrix att[10,7] = out["ll",1]
+
+. matrix att[10,8] = out["ul",1]
+
+. 
+. ********************************************************************************
+. * Q2.5: Doubly Robust (rows 11-13)
+. 
+. * ate, experimental data, three ways
+. qui teffects ipwra (re78 `a') (t `a', probit) if (treat != 2), ate iterate(50)
+
+. matrix out = r(table)
+
+. matrix ate[11,1] = out["b",1]
+
+. matrix ate[11,2] = out["se",1]
+
+. matrix ate[11,3] = out["ll",1]
+
+. matrix ate[11,4] = out["ul",1]
+
+. 
+. qui teffects ipwra (re78 `b') (t `b', probit) if (treat != 2), ate iterate(50)
+
+. matrix out = r(table)
+
+. matrix ate[12,1] = out["b",1]
+
+. matrix ate[12,2] = out["se",1]
+
+. matrix ate[12,3] = out["ll",1]
+
+. matrix ate[12,4] = out["ul",1]
+
+. 
+. qui teffects ipwra (re78 `c') (t `c', probit) if (treat != 2), ate iterate(50)
+convergence not achieved
+    The Gauss-Newton stopping criterion has been met but missing standard errors
+    indicate some of the parameters are not identified.
+
+. matrix out = r(table)
+
+. matrix ate[13,1] = out["b",1]
+
+. matrix ate[13,2] = out["se",1]
+
+. matrix ate[13,3] = out["ll",1]
+
+. matrix ate[13,4] = out["ul",1]
+
+. 
+. * att, experimental data, three ways
+. qui teffects ipwra (re78 `a') (t `a', probit) if (treat != 2), atet iterate(50)
+
+. matrix out = r(table)
+
+. matrix att[11,1] = out["b",1]
+
+. matrix att[11,2] = out["se",1]
+
+. matrix att[11,3] = out["ll",1]
+
+. matrix att[11,4] = out["ul",1]
+
+. 
+. qui teffects ipwra (re78 `b') (t `b', probit) if (treat != 2), atet iterate(50)
+
+. matrix out = r(table)
+
+. matrix att[12,1] = out["b",1]
+
+. matrix att[12,2] = out["se",1]
+
+. matrix att[12,3] = out["ll",1]
+
+. matrix att[12,4] = out["ul",1]
+
+. 
+. qui teffects ipwra (re78 `c') (t `c', probit) if (treat != 2), atet iterate(50)
+convergence not achieved
+    The Gauss-Newton stopping criterion has been met but missing standard errors
+    indicate some of the parameters are not identified.
+
+. matrix out = r(table)
+
+. matrix att[13,1] = out["b",1]
+
+. matrix att[13,2] = out["se",1]
+
+. matrix att[13,3] = out["ll",1]
+
+. matrix att[13,4] = out["ul",1]
+
+. 
+. * predicted propensity scores for PSID data are too close to 0 or 1
+. * so we need to predict, then only use interior data
+. 
+. * three ways, PSID data, ate and att
+. qui probit t `a' if (treat != 0)
+
+. capture: drop prop
+
+. predict prop
+(option pr assumed; Pr(t))
+
+. qui teffects ipwra (re78 `a') (t `a') ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
+
+. matrix out = r(table)
+
+. matrix ate[11,5] = out["b",1]
+
+. matrix ate[11,6] = out["se",1]
+
+. matrix ate[11,7] = out["ll",1]
+
+. matrix ate[11,8] = out["ul",1]
+
+.  
+. qui teffects ipwra (re78 `a') (t `a') ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
+
+. matrix out = r(table)
+
+. matrix att[11,5] = out["b",1]
+
+. matrix att[11,6] = out["se",1]
+
+. matrix att[11,7] = out["ll",1]
+
+. matrix att[11,8] = out["ul",1]
+
+.  
+. qui probit t `b' if (treat != 0)
+
+. capture: drop prop
+
+. predict prop
+(option pr assumed; Pr(t))
+
+. qui teffects ipwra (re78 `b') (t `b') ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
+convergence not achieved
+    The Gauss-Newton stopping criterion has been met but missing standard errors
+    indicate some of the parameters are not identified.
+
+. matrix out = r(table)
+
+. matrix ate[12,5] = out["b",1]
+
+. matrix ate[12,6] = out["se",1]
+
+. matrix ate[12,7] = out["ll",1]
+
+. matrix ate[12,8] = out["ul",1]
+
+.  
+. qui teffects ipwra (re78 `b') (t `b') ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
+
+. matrix out = r(table)
+
+. matrix att[12,5] = out["b",1]
+
+. matrix att[12,6] = out["se",1]
+
+. matrix att[12,7] = out["ll",1]
+
+. matrix att[12,8] = out["ul",1]
+
+.  
+. qui probit t `c' if (treat != 0)
+
+. capture: drop prop
+
+. predict prop
+(option pr assumed; Pr(t))
+
+. qui teffects ipwra (re78 `c') (t `c') ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate iterate(50)
+convergence not achieved
+    The Gauss-Newton stopping criterion has been met but missing standard errors
+    indicate some of the parameters are not identified.
+
+. matrix out = r(table)
+
+. matrix ate[13,5] = out["b",1]
+
+. matrix ate[13,6] = out["se",1]
+
+. matrix ate[13,7] = out["ll",1]
+
+. matrix ate[13,8] = out["ul",1]
+
+. 
+. qui teffects ipwra (re78 `c') (t `c') ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet iterate(50)
+convergence not achieved
+    The Gauss-Newton stopping criterion has been met but missing standard errors
+    indicate some of the parameters are not identified.
+
+. matrix out = r(table)
+
+. matrix att[13,5] = out["b",1]
+
+. matrix att[13,6] = out["se",1]
+
+. matrix att[13,7] = out["ll",1]
+
+. matrix att[13,8] = out["ul",1]
+
+. 
+. ********************************************************************************
+. * Q2.6: Nearest Neighbor Matching (rows 14-16)
+. 
+. * ate, experimental data, three ways
+. qui teffects nnmatch (re78 `a') (t) if (treat != 2), ate nneighbor(1) metric(maha)
+
+. matrix out = r(table)
+
+. matrix ate[14,1] = out["b",1]
+
+. matrix ate[14,2] = out["se",1]
+
+. matrix ate[14,3] = out["ll",1]
+
+. matrix ate[14,4] = out["ul",1]
+
+. 
+. qui teffects nnmatch (re78 `b') (t) if (treat != 2), ate nneighbor(1) metric(maha)
+
+. matrix out = r(table)
+
+. matrix ate[15,1] = out["b",1]
+
+. matrix ate[15,2] = out["se",1]
+
+. matrix ate[15,3] = out["ll",1]
+
+. matrix ate[15,4] = out["ul",1]
+
+. 
+. qui teffects nnmatch (re78 `c') (t) if (treat != 2), ate nneighbor(1) metric(maha)
+
+. matrix out = r(table)
+
+. matrix ate[16,1] = out["b",1]
+
+. matrix ate[16,2] = out["se",1]
+
+. matrix ate[16,3] = out["ll",1]
+
+. matrix ate[16,4] = out["ul",1]
+
+. 
+. * att, experimental data, three ways
+. qui teffects nnmatch (re78 `a') (t) if (treat != 2), atet nneighbor(1) metric(maha)
+
+. matrix out = r(table)
+
+. matrix att[14,1] = out["b",1]
+
+. matrix att[14,2] = out["se",1]
+
+. matrix att[14,3] = out["ll",1]
+
+. matrix att[14,4] = out["ul",1]
+
+. 
+. qui teffects nnmatch (re78 `b') (t) if (treat != 2), atet nneighbor(1) metric(maha)
+
+. matrix out = r(table)
+
+. matrix att[15,1] = out["b",1]
+
+. matrix att[15,2] = out["se",1]
+
+. matrix att[15,3] = out["ll",1]
+
+. matrix att[15,4] = out["ul",1]
+
+. 
+. qui teffects nnmatch (re78 `c') (t) if (treat != 2), atet nneighbor(1) metric(maha)
+
+. matrix out = r(table)
+
+. matrix att[16,1] = out["b",1]
+
+. matrix att[16,2] = out["se",1]
+
+. matrix att[16,3] = out["ll",1]
+
+. matrix att[16,4] = out["ul",1]
+
+. 
+. * ate, PSID data, three ways
+. qui teffects nnmatch (re78 `a') (t) if (treat != 0), ate nneighbor(1) metric(maha)
+
+. matrix out = r(table)
+
+. matrix ate[14,5] = out["b",1]
+
+. matrix ate[14,6] = out["se",1]
+
+. matrix ate[14,7] = out["ll",1]
+
+. matrix ate[14,8] = out["ul",1]
+
+. 
+. qui teffects nnmatch (re78 `b') (t) if (treat != 0), ate nneighbor(1) metric(maha)
+
+. matrix out = r(table)
+
+. matrix ate[15,5] = out["b",1]
+
+. matrix ate[15,6] = out["se",1]
+
+. matrix ate[15,7] = out["ll",1]
+
+. matrix ate[15,8] = out["ul",1]
+
+. 
+. qui teffects nnmatch (re78 `c') (t) if (treat != 0), ate nneighbor(1) metric(maha)
+
+. matrix out = r(table)
+
+. matrix ate[16,5] = out["b",1]
+
+. matrix ate[16,6] = out["se",1]
+
+. matrix ate[16,7] = out["ll",1]
+
+. matrix ate[16,8] = out["ul",1]
+
+. 
+. * att, PSID data, three ways
+. qui teffects nnmatch (re78 `a') (t) if (treat != 0), atet nneighbor(1) metric(maha)
+
+. matrix out = r(table)
+
+. matrix att[14,5] = out["b",1]
+
+. matrix att[14,6] = out["se",1]
+
+. matrix att[14,7] = out["ll",1]
+
+. matrix att[14,8] = out["ul",1]
+
+. 
+. qui teffects nnmatch (re78 `b') (t) if (treat != 0), atet nneighbor(1) metric(maha)
+
+. matrix out = r(table)
+
+. matrix att[15,5] = out["b",1]
+
+. matrix att[15,6] = out["se",1]
+
+. matrix att[15,7] = out["ll",1]
+
+. matrix att[15,8] = out["ul",1]
+
+. 
+. qui teffects nnmatch (re78 `c') (t) if (treat != 0), atet nneighbor(1) metric(maha)
+
+. matrix out = r(table)
+
+. matrix att[16,5] = out["b",1]
+
+. matrix att[16,6] = out["se",1]
+
+. matrix att[16,7] = out["ll",1]
+
+. matrix att[16,8] = out["ul",1]
+
+. 
+. ********************************************************************************
+. * Q2.7: Propensity Score Matching (rows 17-19)
+. 
+. * ate, experimental data, three ways
+. qui teffects psmatch (re78) (t `a', probit) if (treat != 2), ate
+
+. matrix out = r(table)
+
+. matrix ate[17,1] = out["b",1]
+
+. matrix ate[17,2] = out["se",1]
+
+. matrix ate[17,3] = out["ll",1]
+
+. matrix ate[17,4] = out["ul",1]
+
+. 
+. qui teffects psmatch (re78) (t `b', probit) if (treat != 2), ate
+
+. matrix out = r(table)
+
+. matrix ate[18,1] = out["b",1]
+
+. matrix ate[18,2] = out["se",1]
+
+. matrix ate[18,3] = out["ll",1]
+
+. matrix ate[18,4] = out["ul",1]
+
+. 
+. qui teffects psmatch (re78) (t `c', probit) if (treat != 2), ate
+
+. matrix out = r(table)
+
+. matrix ate[19,1] = out["b",1]
+
+. matrix ate[19,2] = out["se",1]
+
+. matrix ate[19,3] = out["ll",1]
+
+. matrix ate[19,4] = out["ul",1]
+
+. 
+. * att, experimental data, three ways
+. qui teffects psmatch (re78) (t `a', probit) if (treat != 2), atet
+
+. matrix out = r(table)
+
+. matrix att[17,1] = out["b",1]
+
+. matrix att[17,2] = out["se",1]
+
+. matrix att[17,3] = out["ll",1]
+
+. matrix att[17,4] = out["ul",1]
+
+. 
+. qui teffects psmatch (re78) (t `b', probit) if (treat != 2), atet
+
+. matrix out = r(table)
+
+. matrix att[18,1] = out["b",1]
+
+. matrix att[18,2] = out["se",1]
+
+. matrix att[18,3] = out["ll",1]
+
+. matrix att[18,4] = out["ul",1]
+
+. 
+. qui teffects psmatch (re78) (t `c', probit) if (treat != 2), atet
+
+. matrix out = r(table)
+
+. matrix att[19,1] = out["b",1]
+
+. matrix att[19,2] = out["se",1]
+
+. matrix att[19,3] = out["ll",1]
+
+. matrix att[19,4] = out["ul",1]
+
+. 
+. * three ways, PSID data, ate and att
+. qui probit t `a' if (treat != 0)
+
+. capture: drop prop
+
+. predict prop
+(option pr assumed; Pr(t))
+
+. qui teffects psmatch (re78) (t `a') ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate
+
+. matrix out = r(table)
+
+. matrix ate[17,5] = out["b",1]
+
+. matrix ate[17,6] = out["se",1]
+
+. matrix ate[17,7] = out["ll",1]
+
+. matrix ate[17,8] = out["ul",1]
+
+.  
+. qui teffects psmatch (re78) (t `a') ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet
+
+. matrix out = r(table)
+
+. matrix att[17,5] = out["b",1]
+
+. matrix att[17,6] = out["se",1]
+
+. matrix att[17,7] = out["ll",1]
+
+. matrix att[17,8] = out["ul",1]
+
+.  
+. qui probit t `b' if (treat != 0)
+
+. capture: drop prop
+
+. predict prop
+(option pr assumed; Pr(t))
+
+. qui teffects psmatch (re78) (t `b') ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate
+
+. matrix out = r(table)
+
+. matrix ate[18,5] = out["b",1]
+
+. matrix ate[18,6] = out["se",1]
+
+. matrix ate[18,7] = out["ll",1]
+
+. matrix ate[18,8] = out["ul",1]
+
+.  
+. qui teffects psmatch (re78) (t `b') ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet
+
+. matrix out = r(table)
+
+. matrix att[18,5] = out["b",1]
+
+. matrix att[18,6] = out["se",1]
+
+. matrix att[18,7] = out["ll",1]
+
+. matrix att[18,8] = out["ul",1]
+
+.  
+. qui probit t `c' if (treat != 0)
+
+. capture: drop prop
+
+. predict prop
+(option pr assumed; Pr(t))
+
+. qui teffects psmatch (re78) (t `c') ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), ate
+
+. matrix out = r(table)
+
+. matrix ate[19,5] = out["b",1]
+
+. matrix ate[19,6] = out["se",1]
+
+. matrix ate[19,7] = out["ll",1]
+
+. matrix ate[19,8] = out["ul",1]
+
+. 
+. qui teffects psmatch (re78) (t `c') ///
+>  if (treat==1 | (treat==2 & prop >= .0001 & prop <= .9999) ), atet
+
+. matrix out = r(table)
+
+. matrix att[19,5] = out["b",1]
+
+. matrix att[19,6] = out["se",1]
+
+. matrix att[19,7] = out["ll",1]
+
+. matrix att[19,8] = out["ul",1]
+
+. 
+. ********************************************************************************
+. * Q2: Output table to Excel, then convert that to LaTeX
+. 
+. * write to c2 so we can add row, heading columns in Excel
+. putexcel set ate_s, modify
+
+. putexcel b3 = matrix(ate)
+file ate_s.xlsx saved
+
+. putexcel close
+
+. 
+. putexcel set att_s, modify
+
+. putexcel b3 = matrix(att)
+file att_s.xlsx saved
+
+. putexcel close
+
+. 
+. ********************************************************************************
+. *** Question 3: Post-model Selection Inference
+. ********************************************************************************
+. * Q3 setup
+. clear all
+
+. 
+. set seed 22
+
+. set obs 50
+number of observations (_N) was 0, now 50
+
+. 
+. ********************************************************************************
+. * Q3.1: Summary Statistics and Kernel Density Plots
+. 
+. * this doesn't work...can we use bootstrap somehow? or do in mata?
+. 
+. * number of replications
+. local M = 1000
+
+. 
+. * empty matrices to store estimates and indicator of coverage
+. matrix est = J(`M',3,.)
+matsize too small
+    You have attempted to create a matrix with too many rows or columns or
+    attempted to fit a model with too many variables.  You need to increase
+    matsize; it is currently 400.  Use set matsize; see help matsize.
+
+    If you are using factor variables and included an interaction that has lots of
+    missing cells, either increase matsize or set emptycells drop to reduce the
+    required matrix size; see help set emptycells.
+
+    If you are using factor variables, you might have accidentally treated a
+    continuous variable as a categorical, resulting in lots of categories.  Use the
+    c. operator on such variables.
+r(908);
+
 end of do-file
+
+r(908);
 
 . do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
 
@@ -18,13 +1179,24 @@ end of do-file
 number of observations (_N) was 0, now 50
 
 . 
-end of do-file
+. ********************************************************************************
+. * Q3.1: Summary Statistics and Kernel Density Plots
+. 
+. * this doesn't work...can we use bootstrap somehow? or do in mata?
+. 
+. * number of replications
+. local M = 1000
 
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
-
-. matrix ests = J(10,3,.)
+. set matsize 11000
 
 . 
+. * empty matrices to store estimates and indicator of coverage
+. matrix est = J(`M',3,.)
+
+. matrix cov = J(`M',3,.)
+
+. 
+. * initial values we will replace during replication
 . gen x = rnormal(0,1) 
 
 . gen z = .85*x + sqrt(1-.85)*rnormal(0,1)
@@ -43,285 +1215,40 @@ end of do-file
   6.         
 .         * long regression
 .         reg y x z, r
-  7.         matrix temp = r(table)
-  8.         local beta_hat = temp["b","x"]
+  7.         
+.         * extract first estimate
+.         local beta_hat = _b["x"]
+  8.         matrix est[`i',1] = `beta_hat'
   9.         
-.         * save gamma over se gamma
-.         local gamma_hat = temp["b","z"]
- 10.         local gamma_se  = temp["se","z"]
- 11.         local tstat = `gamma_hat'/`gamma_se'
- 12.         
-.         matrix drop temp
- 13.         
-.         * short regression
-.         reg y x, r
- 14.         matrix temp = r(table)
- 15.         local beta_tilde = temp["b","x"]
- 16.         
-.         matrix drop temp
- 17.         
-.         * third estimate
-.         local beta_check = cond(`tstat' >= 1.96, `beta_hat', `beta_tilde')
- 18.                 
-.         matrix ests[`i',1] = `beta_hat'
- 19.         matrix ests[`i',2] = `beta_tilde'
- 20.         matrix ests[`i',3] = `beta_check'
- 21. }
-
-Linear regression                               Number of obs     =         50
-                                                F(2, 47)          =      63.75
-                                                Prob > F          =     0.0000
-                                                R-squared         =     0.7311
-                                                Root MSE          =      .9454
-
-------------------------------------------------------------------------------
-             |               Robust
-           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-           x |   .8304379    .367815     2.26   0.029     .0904895    1.570386
-           z |   .6292121   .4127084     1.52   0.134    -.2010501    1.459474
-       _cons |   1.093593   .1364263     8.02   0.000     .8191382    1.368047
-------------------------------------------------------------------------------
-matrix operators that return matrices not allowed in this context
-r(509);
-
-end of do-file
-
-r(509);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
-
-. clear all
-
-. 
-. set seed 22
-
-. set obs 50
-number of observations (_N) was 0, now 50
-
-. 
-. ********************************************************************************
-. * Q3.1: Summary Statistics and Kernel Density Plots
-. 
-. * this doesn't work...can we use bootstrap somehow? or do in mata?
-. 
-. * make empty matrix (test with 10 iterations)
-. matrix ests = J(10,3,.)
-
-. 
-. gen x = rnormal(0,1) 
-
-. gen z = .85*x + sqrt(1-.85)*rnormal(0,1)
-
-. gen eps = rnormal(0,1)
-
-. gen y = 1 + .5*x + z + eps
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
-
-.         qui replace x = rnormal(0,1) 
-
-.         qui replace z = .85*x + sqrt(1-.85)*rnormal(0,1)
-
-.         qui replace eps = rnormal(0,1)
-
-.         qui replace y = 1 + .5*x + z + eps
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
-
-.         reg y x z, r
-
-Linear regression                               Number of obs     =         50
-                                                F(2, 47)          =      63.75
-                                                Prob > F          =     0.0000
-                                                R-squared         =     0.7311
-                                                Root MSE          =      .9454
-
-------------------------------------------------------------------------------
-             |               Robust
-           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-           x |   .8304379    .367815     2.26   0.029     .0904895    1.570386
-           z |   .6292121   .4127084     1.52   0.134    -.2010501    1.459474
-       _cons |   1.093593   .1364263     8.02   0.000     .8191382    1.368047
-------------------------------------------------------------------------------
-
-.         matrix temp = r(table)
-
-.         local beta_hat = temp["b","x"]
-matrix operators that return matrices not allowed in this context
-r(509);
-
-end of do-file
-
-r(509);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
-
-.         reg y x z, r
-
-Linear regression                               Number of obs     =         50
-                                                F(2, 47)          =      63.75
-                                                Prob > F          =     0.0000
-                                                R-squared         =     0.7311
-                                                Root MSE          =      .9454
-
-------------------------------------------------------------------------------
-             |               Robust
-           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-           x |   .8304379    .367815     2.26   0.029     .0904895    1.570386
-           z |   .6292121   .4127084     1.52   0.134    -.2010501    1.459474
-       _cons |   1.093593   .1364263     8.02   0.000     .8191382    1.368047
-------------------------------------------------------------------------------
-
-.         matrix coef = e(b)
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
-
-.         matrix list coef
-
-coef[1,3]
-            x          z      _cons
-y1  .83043789  .62921214  1.0935925
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
-
-.         local beta_hat = coef["y1","x"]
-matrix operators that return matrices not allowed in this context
-r(509);
-
-end of do-file
-
-r(509);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
-
-.         reg y x z, r
-
-Linear regression                               Number of obs     =         50
-                                                F(2, 47)          =      63.75
-                                                Prob > F          =     0.0000
-                                                R-squared         =     0.7311
-                                                Root MSE          =      .9454
-
-------------------------------------------------------------------------------
-             |               Robust
-           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-           x |   .8304379    .367815     2.26   0.029     .0904895    1.570386
-           z |   .6292121   .4127084     1.52   0.134    -.2010501    1.459474
-       _cons |   1.093593   .1364263     8.02   0.000     .8191382    1.368047
-------------------------------------------------------------------------------
-
-.         local beta_hat = _b["x"]
-
-.         display `beta_hat'
-.83043789
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
-
-.         reg y x z, r
-
-Linear regression                               Number of obs     =         50
-                                                F(2, 47)          =      63.75
-                                                Prob > F          =     0.0000
-                                                R-squared         =     0.7311
-                                                Root MSE          =      .9454
-
-------------------------------------------------------------------------------
-             |               Robust
-           y |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-           x |   .8304379    .367815     2.26   0.029     .0904895    1.570386
-           z |   .6292121   .4127084     1.52   0.134    -.2010501    1.459474
-       _cons |   1.093593   .1364263     8.02   0.000     .8191382    1.368047
-------------------------------------------------------------------------------
-
-.         local beta_hat = _b["x"]
-
-.         
+.         * get SE and calculate coverage of true beta_0 = .5
+.         local se_hat = _se["x"]
+ 10.         local lb_hat = `beta_hat' - 1.96 * `se_hat'
+ 11.         local ub_hat = `beta_hat' + 1.96 * `se_hat'
+ 12.         local cov_hat = (.5 >= `lb_hat') & (.5 <= `ub_hat')
+ 13.         matrix cov[`i',1] = `cov_hat'
+ 14.         
 .         * save gamma over se gamma
 .         local gamma_hat = _b["z"]
-
-.         local gamma_se  = _se["z"]
-
-.         local tstat = `gamma_hat'/`gamma_se'
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1260_000000.tmp"
-
-. clear all
-
-. 
-. set seed 22
-
-. set obs 50
-number of observations (_N) was 0, now 50
-
-. 
-. ********************************************************************************
-. * Q3.1: Summary Statistics and Kernel Density Plots
-. 
-. * this doesn't work...can we use bootstrap somehow? or do in mata?
-. 
-. * make empty matrix (test with 10 iterations)
-. matrix ests = J(10,3,.)
-
-. 
-. gen x = rnormal(0,1) 
-
-. gen z = .85*x + sqrt(1-.85)*rnormal(0,1)
-
-. gen eps = rnormal(0,1)
-
-. gen y = 1 + .5*x + z + eps
-
-. 
-. * loop for M replications
-. forvalues i = 1/10{
-  2.         qui replace x = rnormal(0,1) 
-  3.         qui replace z = .85*x + sqrt(1-.85)*rnormal(0,1)
-  4.         qui replace eps = rnormal(0,1)
-  5.         qui replace y = 1 + .5*x + z + eps
-  6.         
-.         * long regression
-.         reg y x z, r
-  7.         local beta_hat = _b["x"]
-  8.         
-.         * save gamma over se gamma
-.         local gamma_hat = _b["z"]
-  9.         local gamma_se  = _se["z"]
- 10.         local tstat = `gamma_hat'/`gamma_se'
- 11.                 
+ 15.         local gamma_se  = _se["z"]
+ 16.         local tstat = `gamma_hat'/`gamma_se'
+ 17.                 
 .         * short regression
 .         reg y x, r
- 12.         local beta_tilde = _b["x"]
- 13.         
+ 18.         local beta_tilde = _b["x"]
+ 19.         matrix est[`i',2] = `beta_tilde'
+ 20.         
+.         * get SE and calculate coverage of true beta_0 = .5
+.         local se_tilde = _se["x"]
+ 21.         local lb_tilde = `beta_tilde' - 1.96 * `se_tilde'
+ 22.         local ub_tilde = `beta_tilde' + 1.96 * `se_tilde'
+ 23.         local cov_tilde = (.5 >= `lb_tilde') & (.5 <= `ub_tilde')
+ 24.         matrix cov[`i',2] = `cov_tilde'
+ 25.         
 .         * third estimate
-.         local beta_check = cond(`tstat' >= 1.96, `beta_hat', `beta_tilde')
- 14.                 
-.         matrix ests[`i',1] = `beta_hat'
- 15.         matrix ests[`i',2] = `beta_tilde'
- 16.         matrix ests[`i',3] = `beta_check'
- 17. }
+.         local beta_check = cond(`tstat' >= 1.96, `beta_hat', `beta_tilde')      
+ 26.         matrix est[`i',3] = cond(`tstat' >= 1.96, `beta_hat', `beta_tilde')     
+ 27.         matrix cov[`i',3] = cond(`tstat' >= 1.96, `cov_hat', `cov_tilde') 
+ 28. }
 
 Linear regression                               Number of obs     =         50
                                                 F(2, 47)          =      63.75
@@ -614,21 +1541,98 @@ Linear regression                               Number of obs     =         50
 ------------------------------------------------------------------------------
 
 . 
-. matrix list ests
+. * turn results into variables
+. svmat est
+number of observations will be reset to 1000
+Press any key to continue, or Break to abort
+number of observations (_N) was 50, now 1,000
 
-ests[10,3]
-             c1          c2          c3
- r1   .83043789   1.3440389   1.3440389
- r2   .01063633   1.3276262   .01063633
- r3   .09745502   1.3415367   .09745502
- r4   .85597052   1.4219751   1.4219751
- r5   .65922343   1.1127182   1.1127182
- r6    1.040219   1.2668876   1.2668876
- r7   .14781701   1.2214173   .14781701
- r8   .72402264   1.2882957   1.2882957
- r9  -.13678318   1.2080611  -.13678318
-r10   .33224939   1.5088334   .33224939
+. svmat cov
 
 . 
-end of do-file
+. * drop old data
+. drop x
 
+. drop z
+
+. drop eps
+
+. drop y
+
+. 
+. * rename variables
+. rename est1 beta_hat
+
+. rename est2 beta_tilde
+
+. rename est3 beta_check
+
+. rename cov1 cov_hat
+
+. rename cov2 cov_tilde
+
+. rename cov3 cov_check
+
+. 
+. * write summary statistics to latex
+. outreg2 using q3.tex, sum(log) keep(beta_hat beta_tilde beta_check) ///
+>         eqkeep(min mean median max)
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+    beta_hat |         10    .4561248    .4140872  -.1367832   1.040219
+  beta_tilde |         10    1.304139    .1123891   1.112718   1.508833
+  beta_check |         10     .688529    .6455956  -.1367832   1.421975
+     cov_hat |         10          .8     .421637          0          1
+   cov_tilde |         10           0           0          0          0
+-------------+---------------------------------------------------------
+   cov_check |         10          .4    .5163978          0          1
+
+
+q3.tex
+dir : seeout
+
+. 
+. * kernel densities
+. twoway kdensity beta_hat, k(epanechnikov) || ///
+>  kdensity beta_tilde, k(epanechnikov) || ///
+>  kdensity beta_check, k(epanechnikov) ///
+>  leg(lab(1 "beta_hat") lab(2 "beta_tilde") lab(3 "beta_check")) ///
+>  ytitle("Density") xtitle("")
+
+.          
+. * save
+. graph export q3_s.png, replace
+(file q3_s.png written in PNG format)
+
+. 
+. ********************************************************************************
+. * Q3.2: Empirical Coverage Rates
+. 
+. * calculate these here, report them in LaTeX
+. sum(cov_hat)
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+     cov_hat |         10          .8     .421637          0          1
+
+. sum(cov_tilde)
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+   cov_tilde |         10           0           0          0          0
+
+. sum(cov_check)
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+   cov_check |         10          .4    .5163978          0          1
+
+. 
+. ********************************************************************************
+. log close
+      name:  <unnamed>
+       log:  C:\Users\prorgan\Box\Classes\Econ 675\Problem Sets\PS4\ps4.log
+  log type:  text
+ closed on:  30 Oct 2018, 17:29:34
+-------------------------------------------------------------------------------------

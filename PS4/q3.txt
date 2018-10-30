@@ -1,0 +1,7 @@
+	(1)	(2)	(3)	(4)
+VARIABLES	min	mean	median	max
+				
+beta_hat	-0.55	0.50	0.50	1.64
+beta_tilde	0.94	1.36	1.36	1.94
+beta_check	-0.55	0.61	0.61	1.86
+				

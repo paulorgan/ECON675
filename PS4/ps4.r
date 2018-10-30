@@ -586,13 +586,13 @@ for(i in 1:M){
   beta_hat <- long$coefficients['x']
   est[i,1] <- beta_hat
   
-  # get se to calculate confidence interval and check coverage
+  # get SE to calculate confidence interval and check coverage
   se_hat <- sqrt(vcovHC(long, 'HC1')['x','x'])
   lb_hat <- beta_hat - 1.96*se_hat
   ub_hat <- beta_hat + 1.96*se_hat
   cov[i,1] <- lb_hat <= .5 & ub_hat >= .5
   
-  # save gamma over se gamma (using robust std errors)
+  # save gamma over SE gamma (using robust std errors)
   gamma_hat <- long$coefficients['z']
   gamma_se  <- sqrt(vcovHC(long, 'HC1')['z','z'])
   tstat <- gamma_hat/gamma_se
@@ -604,7 +604,7 @@ for(i in 1:M){
   beta_tilde <- short$coefficients['x']
   est[i,2]   <- beta_tilde
   
-  # get se to calculate confidence interval
+  # get SE to calculate confidence interval and check coverage
   se_tilde <- sqrt(vcovHC(short, 'HC1')['x','x'])
   lb_tilde <- beta_tilde - 1.96*se_hat
   ub_tilde <- beta_tilde + 1.96*se_hat
@@ -616,17 +616,17 @@ for(i in 1:M){
 }
 
 # summary statistic of distribution of each of the estimators
-tab <- matrix(NA,nrow=4,ncol=3)
+tab <- matrix(NA,nrow=3,ncol=4)
 for(i in 1:3){
-  tab[1,i] <- min(est[,i])
-  tab[2,i] <- mean(est[,i])
-  tab[3,i] <- median(est[,i])
-  tab[4,i] <- max(est[,i])
+  tab[i,1] <- min(est[,i])
+  tab[i,2] <- mean(est[,i])
+  tab[i,3] <- median(est[,i])
+  tab[i,4] <- max(est[,i])
 }
 
 # add labels
-rownames(tab) <- c('min', 'mean', 'median', 'max')
-colnames(tab) <- c('beta_hat', 'beta_tilde', 'beta_check')
+colnames(tab) <- c('min', 'mean', 'median', 'max')
+rownames(tab) <- c('beta_hat', 'beta_tilde', 'beta_check')
 
 # write to LaTeX
 xtable(tab %>% round(3))
@@ -644,7 +644,7 @@ p <- ggplot(est, aes(x = x, group = Estimator, color = Estimator)) +
 p
 
 # save for LaTeX
-ggsave('q3_1_R.png')
+ggsave('q3_r.png')
 
 ###############################################################################
 # Q3.2: Empirical Coverage Rates
