@@ -1,7 +1,7 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS5
-# Last Update: Oct 30, 2018
+# Last Update: Oct 31, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
@@ -14,6 +14,7 @@ require(sandwich)  # robust standard errors
 require(ivpack)    # IV regression
 require(xtable)    # tables for LaTeX
 require(stargazer) # tables for LaTeX
+require(boot)      # bootstrapping
 
 options(scipen = 999)
 setwd('C:/Users/prorgan/Box/Classes/Econ 675/Problem Sets/PS5')
@@ -160,10 +161,10 @@ xtable(summ4, digits=c(0,3,3,3,3,3))
 rm(list = ls())
 gc()
 
-###############################################################################
-# Question 3.1) Angrist and Krueger
 df <- read_csv('Angrist_Krueger.csv')
 
+###############################################################################
+# Question 3.1) Angrist and Krueger
 # OLS1
 ols1 <- lm(l_w_wage ~ educ + non_white + SMSA + married +
              factor(region) + factor(YoB_ld), data = df)
@@ -174,6 +175,9 @@ iv1 <- ivreg(l_w_wage ~ educ + non_white + SMSA + married +
                factor(QoB)*factor(YoB_ld) + non_white + SMSA + married +
                factor(region) + factor(YoB_ld), data = df)
 
+# look at F statistic for weak instrument check
+summary(iv1, diagnostics = T)
+
 # OLS2
 ols2 <- lm(l_w_wage ~ educ + non_white + SMSA + married + age_q + age_sq +
              factor(region) + factor(YoB_ld), data = df)
@@ -183,6 +187,9 @@ iv2 <- ivreg(l_w_wage ~ educ + non_white + SMSA + married + age_q + age_sq +
                factor(region) + factor(YoB_ld) |
                factor(QoB)*factor(YoB_ld) + non_white + SMSA + married +
                age_q + age_sq + factor(region) + factor(YoB_ld), data = df)
+
+# look at F statistic for weak instrument check
+summary(iv2, diagnostics = T)
 
 # output for LaTeX
 vars <- c('educ', 'non_white', 'SMSA', 'married', 'age_q', 'age_sq')
@@ -199,5 +206,53 @@ stargazer(ols1, iv1, ols2, iv2, keep = vars, # show all four regs
 
 ###############################################################################
 # Question 3.2) Bound, Jaeger, and Baker
+
+# first for the smaller set of covariates
+boot_iv1 <- function(df, i){
+  # permute only QoB
+  df$QoB <- df$QoB[i]
+  
+  # iv reg (2SLS 1)
+  reg <- ivreg(l_w_wage ~ educ + non_white + SMSA + married +
+                 factor(region) + factor(YoB_ld) |
+                 factor(QoB)*factor(YoB_ld) + non_white + SMSA + married +
+                 factor(region) + factor(YoB_ld), data = df)
+  
+  return(reg$coefficients['educ'])
+}
+
+# run bootstrap, 500 replications
+ptm <- proc.time()
+set.seed(22)
+iv1_results <- boot(data = df, R = 500, statistic = boot_iv1)
+proc.time() - ptm
+# runtime is 28 minutes
+
+iv1_avg <- mean(iv1_results$t)
+iv1_sd  <- sd(iv1_results$t)
+
+# second for the larger set of covariates
+boot_iv2 <- function(df, i){
+  # permute only QoB
+  df$QoB <- df$QoB[i]
+  
+  # iv reg (2SLS 2)
+  reg <- ivreg(l_w_wage ~ educ + non_white + SMSA + married + age_q + age_sq +
+                 factor(region) + factor(YoB_ld) |
+                 factor(QoB)*factor(YoB_ld) + non_white + SMSA + married +
+                 age_q + age_sq + factor(region) + factor(YoB_ld), data = df)
+  
+  return(reg$coefficients['educ'])
+}
+
+# run bootstrap, 500 replications
+ptm <- proc.time()
+set.seed(22)
+iv2_results <- boot(data = df, R = 500, statistic = boot_iv2)
+proc.time() - ptm
+# runtime is 31 minutes
+
+iv2_avg <- mean(iv2_results$t)
+iv2_sd  <- sd(iv2_results$t)
 
 ###############################################################################
