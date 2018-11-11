@@ -1,7 +1,7 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS4
-# Last Update: Oct 30, 2018
+# Last Update: Nov 11, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
@@ -14,6 +14,7 @@ require(sandwich)  # robust standard errors
 require(xtable)    # tables for LaTeX
 require(boot)      # bootstrapping
 require(MatchIt)   # matching
+require(CausalGAM) # IPW and Doubly Robust
 
 setwd('C:/Users/prorgan/Box/Classes/Econ 675/Problem Sets/PS4')
 
@@ -224,8 +225,9 @@ att[7,6] <- sd(tauhat_p[df_p$t==1])/sqrt(sum(df_p$t==1)) # not right!
 ###############################################################################
 # Q2.4: Inverse Probability Weighting (rows 8-10)
 
+# this is my initial approach, superseded by use of CausalGAM package later
 # trimming for PSID data drops a lot of observations
-# not yet matching my Stata results
+# not really matching my Stata results
 
 # first estimate propensity scores (we use a probit here)
 r4ae <- glm(ta, data = df_e, family = binomial(link = 'probit'))
@@ -285,7 +287,94 @@ att[10,1] <- mean(df_e$left_c) - mean(df_e$right_c)
 att[10,5] <- mean(df_p$left_c) - mean(df_p$right_c)
 
 ###############################################################################
-# Q2.5: Doubly Robust
+# Q2.4 and 2.5: Inverse Probability Weighting (rows 8-10) using CausalGAM
+# thanks to Ani Yadav for showing me this package
+
+# redefine for use here
+df_e <- df %>% filter(treat != 2) %>% as.data.frame
+df_p <- df %>% filter(treat != 0) %>% as.data.frame
+
+# experimental data, three covar sets
+cgam_a_e <- estimate.ATE(pscore.formula = ta, pscore.family = binomial,
+                         outcome.formula.t = ya, outcome.formula.c = ya,
+                         outcome.family = gaussian,
+                         treatment.var = 't', data = df_e,
+                         divby0.action = 'truncate', divby0.tol = 0.001,
+                         var.gam.plot = F, nboot = 0)
+
+cgam_b_e <- estimate.ATE(pscore.formula = tb, pscore.family = binomial,
+                         outcome.formula.t = yb, outcome.formula.c = yb,
+                         outcome.family = gaussian,
+                         treatment.var = 't', data = df_e,
+                         divby0.action = 'truncate', divby0.tol = 0.001,
+                         var.gam.plot = F, nboot = 0)
+
+cgam_c_e <- estimate.ATE(pscore.formula = tc, pscore.family = binomial,
+                         outcome.formula.t = yc, outcome.formula.c = yc,
+                         outcome.family = gaussian,
+                         treatment.var = 't', data = df_e,
+                         divby0.action = 'truncate', divby0.tol = 0.001,
+                         var.gam.plot = F, nboot = 0)
+
+# PSID data, three covar sets
+# increase the tolerance here (else it fails)
+cgam_a_p <- estimate.ATE(pscore.formula = ta, pscore.family = binomial,
+                         outcome.formula.t = ya, outcome.formula.c = ya,
+                         outcome.family = gaussian,
+                         treatment.var = 't', data = df_p,
+                         divby0.action = 'truncate', divby0.tol = 0.03,
+                         var.gam.plot = F, nboot = 0)
+
+cgam_b_p <- estimate.ATE(pscore.formula = tb, pscore.family = binomial,
+                         outcome.formula.t = yb, outcome.formula.c = yb,
+                         outcome.family = gaussian,
+                         treatment.var = 't', data = df_p,
+                         divby0.action = 'truncate', divby0.tol = 0.03,
+                         var.gam.plot = F, nboot = 0)
+
+cgam_c_p <- estimate.ATE(pscore.formula = tc, pscore.family = binomial,
+                         outcome.formula.t = yc, outcome.formula.c = yc,
+                         outcome.family = gaussian,
+                         treatment.var = 't', data = df_p,
+                         divby0.action = 'truncate', divby0.tol = 0.06,
+                         var.gam.plot = F, nboot = 0)
+
+# save ATEs
+ate[8,1]  <- cgam_a_e$ATE.IPW.hat
+ate[8,5]  <- cgam_a_p$ATE.IPW.hat
+ate[9,1]  <- cgam_b_e$ATE.IPW.hat
+ate[9,5]  <- cgam_b_p$ATE.IPW.hat
+ate[10,1] <- cgam_c_e$ATE.IPW.hat
+ate[10,5] <- cgam_c_p$ATE.IPW.hat
+
+# save SEs
+ate[8,2]  <- cgam_a_e$ATE.IPW.asymp.SE
+ate[8,6]  <- cgam_a_p$ATE.IPW.asymp.SE
+ate[9,2]  <- cgam_b_e$ATE.IPW.asymp.SE
+ate[9,6]  <- cgam_b_p$ATE.IPW.asymp.SE
+ate[10,2] <- cgam_c_e$ATE.IPW.asymp.SE
+ate[10,6] <- cgam_c_p$ATE.IPW.asymp.SE
+
+###############################################################################
+# Q2.5: Doubly Robust (using CausalGAM from above) (rows 11-13)
+
+# save ATEs
+ate[11,1] <- cgam_a_e$ATE.AIPW.hat
+ate[11,5] <- cgam_a_p$ATE.AIPW.hat
+ate[12,1] <- cgam_b_e$ATE.AIPW.hat
+ate[12,5] <- cgam_b_p$ATE.AIPW.hat
+ate[13,1] <- cgam_c_e$ATE.AIPW.hat
+ate[13,5] <- cgam_c_p$ATE.AIPW.hat
+
+# save SEs
+ate[11,2] <- cgam_a_e$ATE.AIPW.asymp.SE
+ate[11,6] <- cgam_a_p$ATE.AIPW.asymp.SE
+ate[12,2] <- cgam_b_e$ATE.AIPW.asymp.SE
+ate[12,6] <- cgam_b_p$ATE.AIPW.asymp.SE
+ate[13,2] <- cgam_c_e$ATE.AIPW.asymp.SE
+ate[13,6] <- cgam_c_p$ATE.AIPW.asymp.SE
+
+# missing ATTs - doesn't seem CausalGAM can do ATT
 
 ###############################################################################
 # Q2.6: Nearest Neighbor Matching (rows 14-16)
