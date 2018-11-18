@@ -1,7 +1,7 @@
 ********************************************************************************
 * Author: Paul R. Organ
 * Purpose: ECON 675, PS5
-* Last Update: Oct 30, 2018
+* Last Update: Nov 18, 2018
 ********************************************************************************
 clear all
 set more off
@@ -36,9 +36,9 @@ use Angrist_Krueger
 
 * variables for use in regressions
 local ols_short = "educ non_white SMSA married"
-local iv_short = "non_white SMSA married"
-local ols_long = "educ non_white SMSA married age_q age_sq"
-local iv_long  = "non_white SMSA married age_q age_sq"
+local iv_short  = "non_white SMSA married"
+local ols_long  = "educ non_white SMSA married age_q age_sq"
+local iv_long   = "non_white SMSA married age_q age_sq"
 
 * note going out of order from PS to match with A&K(1991)
 
@@ -79,17 +79,43 @@ outreg2 using q3_1.tex, stats(coef se) keep(`ols_long') noaster dec(4) append //
 ********************************************************************************
 * Q3.2: Bound, Jaeger, and Baker (1995)
 
-* somehow use the permute command (we used it in PS1 with this code:)
-* Fisher permutation
-* permute treat diffmean=(r(mu_2)-r(mu_1)), reps(999) nowarn: ttest earn78, by(treat)
+* program defined in the problem set appendix for quicker IV estimation
+capture program drop IV_quick
+program define IV_quick, rclass
+    syntax varlist(max=1) [, model(integer 1) ]
+	local x "`varlist'"
+	
+	if (`model' == 1) {
+	    capture drop educ_hat
+		qui reg educ non_white married SMSA i.region i.YoB_ld i.YoB_ld##i.`x'
+		predict educ_hat
+		qui reg l_w_wage educ_hat non_white married SMSA i.region i.YoB_ld
+		return scalar beta = _b[educ_hat]
+	}
+	if (`model' == 2) {
+	    capture drop educ_hat
+		qui reg educ non_white married SMSA age_q age_sq i.region i.YoB_ld i.YoB_ld##i.`x'
+		predict educ_hat
+		qui reg l_w_wage educ_hat non_white married SMSA age_q age_sq i.region i.YoB_ld
+		return scalar beta = _b[educ_hat]
+	}
+end
 
-local iv_short = "non_white SMSA married"
-permute QoB beta = _b["educ"], reps(25) seed(22): ///
-	ivregress2 2sls l_w_wage `iv_short' i.region i.YoB_ld ///
-	(educ = i.YoB_ld##i.QoB)
+* permute QoB 500 times for each model, save results
+permute QoB TSLS_1_b = r(beta), reps(500) seed(22) saving(q3_model1, replace): ///
+    IV_quick QoB, model(1)
+	
+permute QoB TSLS_2_b = r(beta), reps(500) seed(22) saving(q3_model2, replace): ///
+    IV_quick QoB, model(2)
 
-* not sure this is best way to do it
-* maybe store results along the way, then collapse?
+* summarize results necessary for table in LaTeX
+clear all
+use q3_model1
+sum TSLS_1_b
+
+clear all
+use q3_model2
+sum TSLS_2_b
 	
 ********************************************************************************
 log close
