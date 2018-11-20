@@ -2,151 +2,568 @@
       name:  <unnamed>
        log:  C:\Users\prorgan\Box\Classes\Econ 675\Problem Sets\PS5\ps5.log
   log type:  text
- opened on:  18 Nov 2018, 18:17:09
+ opened on:  19 Nov 2018, 15:26:08
 
 . 
 . ********************************************************************************
 . *** Question 2: Weak Instrument Simulations
 . ********************************************************************************
-. * Q2 setup
 . 
-. ********************************************************************************
-. * Q2: OLS
-. 
-. 
-. ********************************************************************************
-. * Q2: 2SLS
-. 
-. 
-. ********************************************************************************
-. *** Question 3: Weak Instrument - Empirical Study
-. ********************************************************************************
-. * Q3 setup
-. clear all
-
-. 
-. use Angrist_Krueger
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD22e0_000000.tmp"
-
-. capture program drop IV_quick
-
-. program define IV_quick, rclass
-  1.     syntax varlist(max=1) [, model(integer 1) ]
-  2.         local x "`varlist'"
+. * from Yingjie
+. program define weak_IV, rclass
+  1.     syntax [, obs(integer 200) f_stat(real 10) ]
+  2.         drop _all
   3.         
-.         if (`model' == 1) {
-  4.             capture drop educ_hat
-  5.                 qui reg educ non_white married SMSA i.region i.YoB_ld i.YoB_ld##
-> i.`x'
-  6.                 predict educ_hat
-  7.                 qui reg l_w_wage educ_hat non_white married SMSA i.region i.YoB_
-> ld
-  8.                 return scalar beta = _b[educ_hat]
-  9.         }
- 10.         if (`model' == 2) {
- 11.             capture drop educ_hat
- 12.                 qui reg educ non_white married SMSA age_q age_sq i.region i.YoB_
-> ld i.YoB_ld##i.`x'
- 13.                 predict educ_hat
- 14.                 qui reg l_w_wage educ_hat non_white married SMSA age_q age_sq i.
-> region i.YoB_ld
- 15.                 return scalar beta = _b[educ_hat]
- 16.         }
- 17. end
+.         set obs `obs'
+  4.         
+.         * DGP
+.         gen u = rnormal()
+  5.         gen v = 0.99 * u + sqrt(1-0.99^2) * rnormal()
+  6.         gen z = rnormal()
+  7.         
+.         local gamma_0 = sqrt((`f_stat' - 1) / `obs')
+  8.         gen x = `gamma_0' * z + v
+  9.         gen y = u
+ 10.         
+.         * OLS
+.         qui reg y x, robust
+ 11.         return scalar OLS_b   = _b[x]
+ 12.         return scalar OLS_se  = _se[x]
+ 13.         return scalar OLS_rej = abs(_b[x]/_se[x]) > 1.96
+ 14.         
+.         * 2SLS
+.         qui ivregress 2sls y (x = z)
+ 15.         return scalar TSLS_b   = _b[x]
+ 16.         return scalar TSLS_se  = _se[x]
+ 17.         return scalar TSLS_rej = abs(_b[x]/_se[x]) > 1.96
+ 18.         qui reg x z
+ 19.         return scalar TSLS_F   = e(F)
+ 20. end
 
 . 
-. permute QoB TSLS_1_b = r(beta), reps(500) seed(22) saving(q3_model1, replace): ///
->     IV_quick QoB, model(1)
-(running IV_quick on estimation sample)
-(note: file q3_model1.dta not found)
+. * simulation 1: F = 1 
+. simulate OLS_b=r(OLS_b) OLS_se=r(OLS_se) OLS_rej=r(OLS_rej) ///
+>     TSLS_b=r(TSLS_b) TSLS_se=r(TSLS_se) TSLS_rej=r(TSLS_rej) TSLS_F=r(TSLS_F), ///
+>     reps(5000) seed(22) nodots: ///
+>     weak_IV, f_stat(1)
 
-Permutation replications (500)
-----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
-..................................................    50
-..................................................   100
-..................................................   150
-..................................................   200
-..................................................   250
-..................................................   300
-..................................................   350
-..................................................   400
-..................................................   450
-..................................................   500
+      command:  weak_IV, f_stat(1)
+        OLS_b:  r(OLS_b)
+       OLS_se:  r(OLS_se)
+      OLS_rej:  r(OLS_rej)
+       TSLS_b:  r(TSLS_b)
+      TSLS_se:  r(TSLS_se)
+     TSLS_rej:  r(TSLS_rej)
+       TSLS_F:  r(TSLS_F)
 
-Monte Carlo permutation results                 Number of obs     =    329,509
-
-      command:  IV_quick QoB, model(1)
-     TSLS_1_b:  r(beta)
-  permute var:  QoB
-
-------------------------------------------------------------------------------
-T            |     T(obs)       c       n   p=c/n   SE(p) [95% Conf. Interval]
--------------+----------------------------------------------------------------
-    TSLS_1_b |   .0805519     155     500  0.3100  0.0207  .2696884   .3525757
-------------------------------------------------------------------------------
-Note: Confidence interval is with respect to p=c/n.
-Note: c = #{|T| >= |T(obs)|}
 
 .         
-. permute QoB TSLS_2_b = r(beta), reps(500) seed(22) saving(q3_model2, replace): ///
->     IV_quick QoB, model(2)
-(running IV_quick on estimation sample)
-(note: file q3_model2.dta not found)
+. local k = 1
 
-Permutation replications (500)
-----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
-..................................................    50
-..................................................   100
-..................................................   150
-..................................................   200
-..................................................   250
-..................................................   300
-..................................................   350
-..................................................   400
-..................................................   450
-..................................................   500
-
-Monte Carlo permutation results                 Number of obs     =    329,509
-
-      command:  IV_quick QoB, model(2)
-     TSLS_2_b:  r(beta)
-  permute var:  QoB
-
-------------------------------------------------------------------------------
-T            |     T(obs)       c       n   p=c/n   SE(p) [95% Conf. Interval]
--------------+----------------------------------------------------------------
-    TSLS_2_b |   .0599538     269     500  0.5380  0.0223  .4931858   .5823624
-------------------------------------------------------------------------------
-Note: Confidence interval is with respect to p=c/n.
-Note: c = #{|T| >= |T(obs)|}
+. matrix Results = J(7, 5, .)
 
 . 
-. clear all
+. qui sum OLS_b, detail
 
-. use q3_model1
-(permute QoB : IV_quick)
+. matrix Results[`k',1] = r(mean)
 
-. sum TSLS_1_b
+. matrix Results[`k',2] = r(sd)
 
-    Variable |        Obs        Mean    Std. Dev.       Min        Max
--------------+---------------------------------------------------------
-    TSLS_1_b |        500    .0625177    .0392369   -.079467   .1725697
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
 
 . 
-. clear all
+. qui sum OLS_se, detail
 
-. use q3_model2
-(permute QoB : IV_quick)
+. matrix Results[`k',1] = r(mean)
 
-. sum TSLS_2_b
+. matrix Results[`k',2] = r(sd)
 
-    Variable |        Obs        Mean    Std. Dev.       Min        Max
--------------+---------------------------------------------------------
-    TSLS_2_b |        500    .0625487    .0392468  -.0780059   .1724133
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum OLS_rej, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum TSLS_b, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum TSLS_se, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum TSLS_rej, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum TSLS_F, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. mat2txt, matrix(Results) saving(q2_1.txt) format(%9.4f) replace
+
+. 
+. * now run for F=1.25, 10, and 100
+. 
+. * simulation 2: F = 1.25 
+. simulate OLS_b=r(OLS_b) OLS_se=r(OLS_se) OLS_rej=r(OLS_rej) ///
+>     TSLS_b=r(TSLS_b) TSLS_se=r(TSLS_se) TSLS_rej=r(TSLS_rej) TSLS_F=r(TSLS_F), ///
+>     reps(5000) seed(22) nodots: ///
+>     weak_IV, f_stat(1.25)
+
+      command:  weak_IV, f_stat(1.25)
+        OLS_b:  r(OLS_b)
+       OLS_se:  r(OLS_se)
+      OLS_rej:  r(OLS_rej)
+       TSLS_b:  r(TSLS_b)
+      TSLS_se:  r(TSLS_se)
+     TSLS_rej:  r(TSLS_rej)
+       TSLS_F:  r(TSLS_F)
+
+
+.         
+. local k = 1
+
+. matrix Results = J(7, 5, .)
+
+. 
+. qui sum OLS_b, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum OLS_se, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum OLS_rej, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum TSLS_b, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum TSLS_se, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum TSLS_rej, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum TSLS_F, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. mat2txt, matrix(Results) saving(q2_2.txt) format(%9.4f) replace
+(note: file q2_2.txt not found)
+
+. 
+. * simulation 3: F = 10
+. simulate OLS_b=r(OLS_b) OLS_se=r(OLS_se) OLS_rej=r(OLS_rej) ///
+>     TSLS_b=r(TSLS_b) TSLS_se=r(TSLS_se) TSLS_rej=r(TSLS_rej) TSLS_F=r(TSLS_F), ///
+>     reps(5000) seed(22) nodots: ///
+>     weak_IV, f_stat(10)
+
+      command:  weak_IV, f_stat(10)
+        OLS_b:  r(OLS_b)
+       OLS_se:  r(OLS_se)
+      OLS_rej:  r(OLS_rej)
+       TSLS_b:  r(TSLS_b)
+      TSLS_se:  r(TSLS_se)
+     TSLS_rej:  r(TSLS_rej)
+       TSLS_F:  r(TSLS_F)
+
+
+.         
+. local k = 1
+
+. matrix Results = J(7, 5, .)
+
+. 
+. qui sum OLS_b, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum OLS_se, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum OLS_rej, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum TSLS_b, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum TSLS_se, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum TSLS_rej, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum TSLS_F, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. mat2txt, matrix(Results) saving(q2_3.txt) format(%9.4f) replace
+(note: file q2_3.txt not found)
+
+. 
+. * simulation 4: F = 100 
+. simulate OLS_b=r(OLS_b) OLS_se=r(OLS_se) OLS_rej=r(OLS_rej) ///
+>     TSLS_b=r(TSLS_b) TSLS_se=r(TSLS_se) TSLS_rej=r(TSLS_rej) TSLS_F=r(TSLS_F), ///
+>     reps(5000) seed(22) nodots: ///
+>     weak_IV, f_stat(100)
+
+      command:  weak_IV, f_stat(100)
+        OLS_b:  r(OLS_b)
+       OLS_se:  r(OLS_se)
+      OLS_rej:  r(OLS_rej)
+       TSLS_b:  r(TSLS_b)
+      TSLS_se:  r(TSLS_se)
+     TSLS_rej:  r(TSLS_rej)
+       TSLS_F:  r(TSLS_F)
+
+
+.         
+. local k = 1
+
+. matrix Results = J(7, 5, .)
+
+. 
+. qui sum OLS_b, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum OLS_se, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum OLS_rej, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum TSLS_b, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum TSLS_se, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum TSLS_rej, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. qui sum TSLS_F, detail
+
+. matrix Results[`k',1] = r(mean)
+
+. matrix Results[`k',2] = r(sd)
+
+. matrix Results[`k',3] = r(p10)
+
+. matrix Results[`k',4] = r(p50)
+
+. matrix Results[`k',5] = r(p90)
+
+. local k = `k' + 1
+
+. 
+. mat2txt, matrix(Results) saving(q2_4.txt) format(%9.4f) replace
+(note: file q2_4.txt not found)
 
 . 
 end of do-file

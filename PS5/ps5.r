@@ -1,7 +1,7 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS5
-# Last Update: Oct 31, 2018
+# Last Update: Nov 19, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
@@ -27,8 +27,7 @@ setwd('C:/Users/prorgan/Box/Classes/Econ 675/Problem Sets/PS5')
 n <- 200
 
 # set of gammas we will test
-gammas <- c(0,0.25,9,99)
-gammas <- gammas / n %>% sqrt()
+gammas <- sqrt(c(0/n,0.25/n,9/n,99/n))
 
 # define data-generating process
 dgp <- function(n, gamma){
@@ -42,9 +41,6 @@ dgp <- function(n, gamma){
   out = data.frame(y = y, x = x, z = z)
   return(out)
 }
-
-# testing for now
-gamma <- gammas[2]
 
 # define function to estimate everything we want
 bigFunction <- function(rep, gamma){
@@ -71,7 +67,7 @@ bigFunction <- function(rep, gamma){
   rej_iv <- 1 * (beta_iv/se_iv > 1.96)
   
   # iv F stat
-  F_iv <- summary(iv)$waldtest[1]
+  F_iv <- summary(iv, diagnostics=T)$diagnostics[1,3]
   
   # single row dataframe to report, which we can combine over replications
   out <- data.frame(rep = rep, gamma = gamma,

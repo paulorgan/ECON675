@@ -1,7 +1,7 @@
 ********************************************************************************
 * Author: Paul R. Organ
 * Purpose: ECON 675, PS5
-* Last Update: Nov 18, 2018
+* Last Update: Nov 19, 2018
 ********************************************************************************
 clear all
 set more off
@@ -13,15 +13,307 @@ log using ps5.log, replace
 ********************************************************************************
 *** Question 2: Weak Instrument Simulations
 ********************************************************************************
-* Q2 setup
 
-********************************************************************************
-* Q2: OLS
+* from Yingjie
+program define weak_IV, rclass
+    syntax [, obs(integer 200) f_stat(real 10) ]
+	drop _all
+	
+	set obs `obs'
+	
+	* DGP
+	gen u = rnormal()
+	gen v = 0.99 * u + sqrt(1-0.99^2) * rnormal()
+	gen z = rnormal()
+	
+	local gamma_0 = sqrt((`f_stat' - 1) / `obs')
+	gen x = `gamma_0' * z + v
+	gen y = u
+	
+	* OLS
+	qui reg y x, robust
+	return scalar OLS_b   = _b[x]
+	return scalar OLS_se  = _se[x]
+	return scalar OLS_rej = abs(_b[x]/_se[x]) > 1.96
+	
+	* 2SLS
+	qui ivregress 2sls y (x = z)
+	return scalar TSLS_b   = _b[x]
+	return scalar TSLS_se  = _se[x]
+	return scalar TSLS_rej = abs(_b[x]/_se[x]) > 1.96
+	qui reg x z
+	return scalar TSLS_F   = e(F)
+end
 
+* simulation 1: F = 1 
+simulate OLS_b=r(OLS_b) OLS_se=r(OLS_se) OLS_rej=r(OLS_rej) ///
+    TSLS_b=r(TSLS_b) TSLS_se=r(TSLS_se) TSLS_rej=r(TSLS_rej) TSLS_F=r(TSLS_F), ///
+    reps(5000) seed(22) nodots: ///
+    weak_IV, f_stat(1)
+	
+local k = 1
+matrix Results = J(7, 5, .)
 
-********************************************************************************
-* Q2: 2SLS
+qui sum OLS_b, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
 
+qui sum OLS_se, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum OLS_rej, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum TSLS_b, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum TSLS_se, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum TSLS_rej, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum TSLS_F, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+mat2txt, matrix(Results) saving(q2_1.txt) format(%9.4f) replace
+
+* now run for F=1.25, 10, and 100
+
+* simulation 2: F = 1.25 
+simulate OLS_b=r(OLS_b) OLS_se=r(OLS_se) OLS_rej=r(OLS_rej) ///
+    TSLS_b=r(TSLS_b) TSLS_se=r(TSLS_se) TSLS_rej=r(TSLS_rej) TSLS_F=r(TSLS_F), ///
+    reps(5000) seed(22) nodots: ///
+    weak_IV, f_stat(1.25)
+	
+local k = 1
+matrix Results = J(7, 5, .)
+
+qui sum OLS_b, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum OLS_se, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum OLS_rej, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum TSLS_b, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum TSLS_se, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum TSLS_rej, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum TSLS_F, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+mat2txt, matrix(Results) saving(q2_2.txt) format(%9.4f) replace
+
+* simulation 3: F = 10
+simulate OLS_b=r(OLS_b) OLS_se=r(OLS_se) OLS_rej=r(OLS_rej) ///
+    TSLS_b=r(TSLS_b) TSLS_se=r(TSLS_se) TSLS_rej=r(TSLS_rej) TSLS_F=r(TSLS_F), ///
+    reps(5000) seed(22) nodots: ///
+    weak_IV, f_stat(10)
+	
+local k = 1
+matrix Results = J(7, 5, .)
+
+qui sum OLS_b, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum OLS_se, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum OLS_rej, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum TSLS_b, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum TSLS_se, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum TSLS_rej, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum TSLS_F, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+mat2txt, matrix(Results) saving(q2_3.txt) format(%9.4f) replace
+
+* simulation 4: F = 100 
+simulate OLS_b=r(OLS_b) OLS_se=r(OLS_se) OLS_rej=r(OLS_rej) ///
+    TSLS_b=r(TSLS_b) TSLS_se=r(TSLS_se) TSLS_rej=r(TSLS_rej) TSLS_F=r(TSLS_F), ///
+    reps(5000) seed(22) nodots: ///
+    weak_IV, f_stat(100)
+	
+local k = 1
+matrix Results = J(7, 5, .)
+
+qui sum OLS_b, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum OLS_se, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum OLS_rej, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum TSLS_b, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum TSLS_se, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum TSLS_rej, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+qui sum TSLS_F, detail
+matrix Results[`k',1] = r(mean)
+matrix Results[`k',2] = r(sd)
+matrix Results[`k',3] = r(p10)
+matrix Results[`k',4] = r(p50)
+matrix Results[`k',5] = r(p90)
+local k = `k' + 1
+
+mat2txt, matrix(Results) saving(q2_4.txt) format(%9.4f) replace
 
 ********************************************************************************
 *** Question 3: Weak Instrument - Empirical Study
