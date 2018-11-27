@@ -2,7 +2,7 @@
       name:  <unnamed>
        log:  C:\Users\prorgan\Box\Classes\Econ 675\Problem Sets\PS6\ps6.log
   log type:  text
- opened on:  27 Nov 2018, 16:25:14
+ opened on:  27 Nov 2018, 16:32:37
 
 . 
 . use HeadStart.dta
@@ -558,25 +558,285 @@ Linear regression                               Number of obs     =      2,783
 . mat2txt, matrix(tbl) saving("s\2_1.txt") format(%9.4f) replace
 
 . 
-. ********************************************************************************
-. * Q2.2.2: heterogeneous treatment effect model
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
+
+. gen p1t = pov*t
+
+. gen p1u = pov*(1-t)
+
+. gen p2t = p2*t
+
+. gen p2u = p2*(1-t)
+
+. gen p3t = p3*t
+
+. gen p3u = p3*(1-t) 
+
+. gen p4t = p4*t
+
+. gen p4u = p4*(1-t)
+
+. gen p5t = p5*t
+
+. gen p5u = p5*(1-t)
+
+. gen p6t = p6*t
+
+. gen p6u = p6*(1-t)
+
 . 
-. ********************************************************************************
-. * Q2.2.3: local parametric model
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
+
+. * empty matrix to fill with point estimates and standard errors
+. matrix tbl = J(2,4,.)
+
 . 
-. ********************************************************************************
-. * Q2.3.1: MSE-optimal RD estimators
+. local base = "p1t p1u p2t p2u p3t p3u"
+
 . 
-. ********************************************************************************
-. * Q2.3.2: Robustness checks
+. * order 3 (run reg, grab ests, predict vals, plot, save for combine later)
+. reg rel_post t `base', vce(hc2)
+
+Linear regression                               Number of obs     =      2,783
+                                                F(7, 2775)        =       2.88
+                                                Prob > F          =     0.0053
+                                                R-squared         =     0.0058
+                                                Root MSE          =     5.7164
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.019616   .8702954    -2.32   0.020    -3.726108   -.3131237
+         p1t |   .5080706   .2777961     1.83   0.068    -.0366372    1.052779
+         p1u |   .0151504   .1237371     0.12   0.903    -.2274756    .2577764
+         p2t |  -.0433291   .0341117    -1.27   0.204    -.1102161    .0235579
+         p2u |  -.0016139   .0058524    -0.28   0.783    -.0130894    .0098616
+         p3t |   .0010595   .0011545     0.92   0.359    -.0012043    .0033232
+         p3u |  -.0000291   .0000804    -0.36   0.717    -.0001868    .0001286
+       _cons |   3.130329   .7018138     4.46   0.000     1.754199    4.506459
+------------------------------------------------------------------------------
+
+. matrix tbl[1,1] = _b["t"]
+
+. matrix tbl[2,1] = _se["t"]
+
+. capture drop pred
+
+. predict pred
+(option xb assumed; fitted values)
+
+. twoway scatter pred pov, title("Order 3")
+
+. graph save "s\2_2a.gph", replace
+(note: file s\2_2a.gph not found)
+(file s\2_2a.gph saved)
+
 . 
-. ********************************************************************************
-. * Q2.4: Local Randomization Methods
-.         
-. ********************************************************************************
-. log close
-      name:  <unnamed>
-       log:  C:\Users\prorgan\Box\Classes\Econ 675\Problem Sets\PS6\ps6.log
-  log type:  text
- closed on:  27 Nov 2018, 16:25:24
--------------------------------------------------------------------------------------
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
+
+. matrix tbl = J(2,4,.)
+
+. 
+. local base = "p1t p1u p2t p2u p3t p3u"
+
+. 
+. * order 3 (run reg, grab ests, predict vals, plot, save for combine later)
+. reg rel_post t `base', vce(hc2)
+
+Linear regression                               Number of obs     =      2,783
+                                                F(7, 2775)        =       2.88
+                                                Prob > F          =     0.0053
+                                                R-squared         =     0.0058
+                                                Root MSE          =     5.7164
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.019616   .8702954    -2.32   0.020    -3.726108   -.3131237
+         p1t |   .5080706   .2777961     1.83   0.068    -.0366372    1.052779
+         p1u |   .0151504   .1237371     0.12   0.903    -.2274756    .2577764
+         p2t |  -.0433291   .0341117    -1.27   0.204    -.1102161    .0235579
+         p2u |  -.0016139   .0058524    -0.28   0.783    -.0130894    .0098616
+         p3t |   .0010595   .0011545     0.92   0.359    -.0012043    .0033232
+         p3u |  -.0000291   .0000804    -0.36   0.717    -.0001868    .0001286
+       _cons |   3.130329   .7018138     4.46   0.000     1.754199    4.506459
+------------------------------------------------------------------------------
+
+. matrix tbl[1,1] = _b["t"]
+
+. matrix tbl[2,1] = _se["t"]
+
+. capture drop pred
+
+. predict pred
+(option xb assumed; fitted values)
+
+. twoway scatter pred pov, title("Order 3")
+
+. graph save "s\2_2a.gph", replace
+(file s\2_2a.gph saved)
+
+. 
+. * order 4
+. reg rel_post t `base' p4t p4u, vce(hc2)
+
+Linear regression                               Number of obs     =      2,783
+                                                F(9, 2773)        =       2.96
+                                                Prob > F          =     0.0017
+                                                R-squared         =     0.0066
+                                                Root MSE          =     5.7161
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |   -3.06474    1.08806    -2.82   0.005    -5.198229   -.9312506
+         p1t |   .9604448   .5492743     1.75   0.080    -.1165831    2.037473
+         p1u |     .27599   .2547699     1.08   0.279    -.2235679    .7755479
+         p2t |  -.1497003   .1293066    -1.16   0.247    -.4032474    .1038467
+         p2u |   .0234221   .0208022     1.13   0.260    -.0173673    .0642114
+         p3t |   .0093274   .0098945     0.94   0.346    -.0100739    .0287287
+         p3u |    .000817   .0006462     1.26   0.206    -.0004501    .0020841
+         p4t |  -.0002005   .0002349    -0.85   0.393    -.0006612    .0002601
+         p4u |   9.30e-06   6.76e-06     1.38   0.169    -3.96e-06    .0000226
+       _cons |   3.754089   .9388414     4.00   0.000      1.91319    5.594988
+------------------------------------------------------------------------------
+
+. matrix tbl[1,2] = _b["t"]
+
+. matrix tbl[2,2] = _se["t"]
+
+. capture drop pred
+
+. predict pred
+(option xb assumed; fitted values)
+
+. twoway scatter pred pov, title("Order 4")
+
+. graph save "s\2_2b.gph", replace
+(note: file s\2_2b.gph not found)
+(file s\2_2b.gph saved)
+
+. 
+. * order 5
+. reg rel_post t `base' p4t p4u p5t p5u, vce(hc2)
+
+Linear regression                               Number of obs     =      2,783
+                                                F(11, 2771)       =       2.83
+                                                Prob > F          =     0.0011
+                                                R-squared         =     0.0067
+                                                Root MSE          =     5.7177
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.676265   1.286163    -2.08   0.038      -5.1982   -.1543299
+         p1t |   .7886348   .9746446     0.81   0.418    -1.122468    2.699738
+         p1u |   .0966375   .4054296     0.24   0.812    -.6983371    .8916121
+         p2t |  -.0882354   .3250179    -0.27   0.786    -.7255371    .5490664
+         p2u |   -.003638   .0517799    -0.07   0.944     -.105169    .0978931
+         p3t |   .0011746   .0404272     0.03   0.977     -.078096    .0804451
+         p3u |  -.0007564   .0028455    -0.27   0.790     -.006336    .0048231
+         p4t |   .0002457   .0021159     0.12   0.908    -.0039031    .0043946
+         p4u |  -.0000296    .000069    -0.43   0.668     -.000165    .0001057
+         p5t |  -8.53e-06   .0000392    -0.22   0.828    -.0000855    .0000684
+         p5u |  -3.45e-07   6.08e-07    -0.57   0.570    -1.54e-06    8.46e-07
+       _cons |   3.473781   1.100665     3.16   0.002     1.315574    5.631987
+------------------------------------------------------------------------------
+
+. matrix tbl[1,3] = _b["t"]
+
+. matrix tbl[2,3] = _se["t"]
+
+. capture drop pred
+
+. predict pred
+(option xb assumed; fitted values)
+
+. twoway scatter pred pov, title("Order 5")
+
+. graph save "s\2_2c.gph", replace
+(note: file s\2_2c.gph not found)
+(file s\2_2c.gph saved)
+
+. 
+. * order 6
+. reg rel_post t `base' p4t p4u p5t p5u p6t p6u, vce(hc2)
+
+Linear regression                               Number of obs     =      2,783
+                                                F(12, 2769)       =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.0078
+                                                Root MSE          =     5.7169
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -4.123966   1.462035    -2.82   0.005    -6.990754   -1.257177
+         p1t |   3.699801   1.402309     2.64   0.008     .9501234    6.449479
+         p1u |   .2385718   .6545593     0.36   0.716    -1.044902    1.522045
+         p2t |  -1.565935   .6520558    -2.40   0.016      -2.8445   -.2873702
+         p2u |   .0274327   .1220862     0.22   0.822    -.2119564    .2668218
+         p3t |   .2939523   .1256808     2.34   0.019     .0475147    .5403898
+         p3u |   .0019753   .0099023     0.20   0.842    -.0174413    .0213919
+         p4t |  -.0263873    .011392    -2.32   0.021     -.048725   -.0040495
+         p4u |   .0000835   .0003882     0.22   0.830    -.0006777    .0008448
+         p5t |   .0011106   .0004809     2.31   0.021     .0001677    .0020535
+         p5u |   1.87e-06   7.28e-06     0.26   0.798    -.0000124    .0000161
+         p6t |  -.0000176   7.61e-06    -2.31   0.021    -.0000325   -2.67e-06
+         p6u |   1.64e-08   5.25e-08     0.31   0.754    -8.64e-08    1.19e-07
+       _cons |   3.627494   1.250753     2.90   0.004     1.174992    6.079996
+------------------------------------------------------------------------------
+
+. matrix tbl[1,4] = _b["t"]
+
+. matrix tbl[2,4] = _se["t"]
+
+. capture drop pred
+
+. predict pred
+(option xb assumed; fitted values)
+
+. twoway scatter pred pov, title("Order 6")
+
+. graph save "s\2_2d.gph", replace
+(note: file s\2_2d.gph not found)
+(file s\2_2d.gph saved)
+
+. 
+. * combine graphs
+. graph combine "s\2_2a.gph" "s\2_2b.gph" "s\2_2c.gph" "s\2_2d.gph"
+
+. graph export "s\2_2.png", replace
+(note: file s\2_2.png not found)
+(file s\2_2.png written in PNG format)
+
+. 
+. * write table for LaTeX
+. mat2txt, matrix(tbl) saving("s\2_2.txt") format(%9.4f) replace
+(note: file s\2_2.txt not found)
+
+. 
+end of do-file
+
+. matrix list tab
+matrix tab not found
+r(111);
+
+. matrix list tbl
+
+tbl[2,4]
+            c1          c2          c3          c4
+r1  -2.0196157  -3.0647396   -2.676265  -4.1239656
+r2   .87029544   1.0880597   1.2861632   1.4620349
+

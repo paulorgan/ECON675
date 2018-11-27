@@ -127,6 +127,68 @@ mat2txt, matrix(tbl) saving("s\2_1.txt") format(%9.4f) replace
 ********************************************************************************
 * Q2.2.2: heterogeneous treatment effect model
 
+* define new, interacted terms for polynomials
+gen p1t = pov*t
+gen p1u = pov*(1-t)
+gen p2t = p2*t
+gen p2u = p2*(1-t)
+gen p3t = p3*t
+gen p3u = p3*(1-t) 
+gen p4t = p4*t
+gen p4u = p4*(1-t)
+gen p5t = p5*t
+gen p5u = p5*(1-t)
+gen p6t = p6*t
+gen p6u = p6*(1-t)
+
+* empty matrix to fill with point estimates and standard errors
+matrix tbl = J(2,4,.)
+
+local base = "p1t p1u p2t p2u p3t p3u"
+
+* order 3 (run reg, grab ests, predict vals, plot, save for combine later)
+reg rel_post t `base', vce(hc2)
+matrix tbl[1,1] = _b["t"]
+matrix tbl[2,1] = _se["t"]
+capture drop pred
+predict pred
+twoway scatter pred pov, title("Order 3")
+graph save "s\2_2a.gph", replace
+
+* order 4
+reg rel_post t `base' p4t p4u, vce(hc2)
+matrix tbl[1,2] = _b["t"]
+matrix tbl[2,2] = _se["t"]
+capture drop pred
+predict pred
+twoway scatter pred pov, title("Order 4")
+graph save "s\2_2b.gph", replace
+
+* order 5
+reg rel_post t `base' p4t p4u p5t p5u, vce(hc2)
+matrix tbl[1,3] = _b["t"]
+matrix tbl[2,3] = _se["t"]
+capture drop pred
+predict pred
+twoway scatter pred pov, title("Order 5")
+graph save "s\2_2c.gph", replace
+
+* order 6
+reg rel_post t `base' p4t p4u p5t p5u p6t p6u, vce(hc2)
+matrix tbl[1,4] = _b["t"]
+matrix tbl[2,4] = _se["t"]
+capture drop pred
+predict pred
+twoway scatter pred pov, title("Order 6")
+graph save "s\2_2d.gph", replace
+
+* combine graphs
+graph combine "s\2_2a.gph" "s\2_2b.gph" "s\2_2c.gph" "s\2_2d.gph"
+graph export "s\2_2.png", replace
+
+* write table for LaTeX
+mat2txt, matrix(tbl) saving("s\2_2.txt") format(%9.4f) replace
+
 ********************************************************************************
 * Q2.2.3: local parametric model
 

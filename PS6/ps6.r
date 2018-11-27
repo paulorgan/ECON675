@@ -86,8 +86,10 @@ rddensity(df$pov, all = T) %>% summary
 rddensity(df$pov, all = T, h = c(5,5)) %>% summary
 rddensity(df$pov, all = T, h = c(1,1)) %>% summary
 
+rm(p1_2i); gc()
+
 ###############################################################################
-# Q2.2.1: constant treatment effect model
+# Q2.2.1: constant treatment effect model (additive separable effect)
 
 # generate variables for polynomials of order 3-6
 df %<>% mutate(p2=pov^2, p3=pov^3, p4=pov^4, p5=pov^5, p6=pov^6)
@@ -143,8 +145,83 @@ png('r/2_1.png')
 multiplot(p2_1a, p2_1c, p2_1b, p2_1d, cols=2)
 dev.off()
 
+# clean up
+rm(r2_1a, r2_1b, r2_1c, r2_1d,
+   d2_1a, d2_1b, d2_1c, d2_1d,
+   p2_1a, p2_1b, p2_1c, p2_1d, tab); gc()
+
 ###############################################################################
-# Q2.2.2: heterogeneous treatment effect model
+# Q2.2.2: heterogeneous treatment effect model (fully interacted effect)
+
+# define new interacted terms for polynomials
+df %<>% mutate(p1t = pov*t, p1u = pov*(1-t), p2t = p2*t, p2u = p2*(1-t),
+               p3t = p3*t, p3u = p3*(1-t), p4t = p4*t, p4u = p4*(1-t),
+               p5t = p5*t, p5u = p5*(1-t), p6t = p6*t, p6u = p6*(1-t))
+
+# define reg equations
+v3 <- c('t', 'p1t', 'p1u', 'p2t', 'p2u', 'p3t', 'p3u')
+v4 <- c(v3, 'p4t', 'p4u')
+v5 <- c(v4, 'p5t', 'p5u')
+v6 <- c(v5, 'p6t', 'p6u')
+
+f3 <- paste('rel_post', paste(v3, collapse = ' + '), sep = ' ~ ') %>% as.formula()
+f4 <- paste('rel_post', paste(v4, collapse = ' + '), sep = ' ~ ') %>% as.formula()
+f5 <- paste('rel_post', paste(v5, collapse = ' + '), sep = ' ~ ') %>% as.formula()
+f6 <- paste('rel_post', paste(v6, collapse = ' + '), sep = ' ~ ') %>% as.formula()
+
+# run regressions
+r2_2a <- lm(f3, df); r2_2b <- lm(f4, df); r2_2c <- lm(f5, df); r2_2d <- lm(f6, df)
+
+# grab estimates for table
+tab <- matrix(NA,2,4) %>% as.data.frame()
+rownames(tab) <- c('Point Estimate', 'Standard Error')
+colnames(tab) <- c('p=3', 'p=4', 'p=5', 'p=6')
+
+# point estimates
+tab[1,1] <- r2_2a$coefficients['t']
+tab[1,2] <- r2_2b$coefficients['t']
+tab[1,3] <- r2_2c$coefficients['t']
+tab[1,4] <- r2_2d$coefficients['t']
+
+# robust standard errors
+tab[2,1] <- diag(vcovHC(r2_2a, type = "HC2")) %>% sqrt() %>% .['t']
+tab[2,2] <- diag(vcovHC(r2_2b, type = "HC2")) %>% sqrt() %>% .['t']
+tab[2,3] <- diag(vcovHC(r2_2c, type = "HC2")) %>% sqrt() %>% .['t']
+tab[2,4] <- diag(vcovHC(r2_2d, type = "HC2")) %>% sqrt() %>% .['t']
+
+# write to LaTeX
+xtable(tab)
+
+# generate dataframes for plotting
+d2_2a <- data.frame(pov = df$pov, pred = r2_2a$fitted.values)
+d2_2b <- data.frame(pov = df$pov, pred = r2_2b$fitted.values)
+d2_2c <- data.frame(pov = df$pov, pred = r2_2c$fitted.values)
+d2_2d <- data.frame(pov = df$pov, pred = r2_2d$fitted.values)
+
+# generate plot for each order
+p2_2a <- ggplot(d2_2a, aes(x = pov, y = pred)) + geom_point() +
+  theme_minimal() + labs(x = 'Pov Rate 1960 (Normalized)', y = 'Fitted Values',
+                         title = 'Order 3')
+p2_2b <- ggplot(d2_2b, aes(x = pov, y = pred)) + geom_point() +
+  theme_minimal() + labs(x = 'Pov Rate 1960 (Normalized)', y = 'Fitted Values',
+                         title = 'Order 4')
+p2_2c <- ggplot(d2_2c, aes(x = pov, y = pred)) + geom_point() +
+  theme_minimal() + labs(x = 'Pov Rate 1960 (Normalized)', y = 'Fitted Values',
+                         title = 'Order 5')
+p2_2d <- ggplot(d2_2d, aes(x = pov, y = pred)) + geom_point() +
+  theme_minimal() + labs(x = 'Pov Rate 1960 (Normalized)', y = 'Fitted Values',
+                         title = 'Order 6')
+
+# combine plots
+png('r/2_2.png')
+multiplot(p2_2a, p2_2c, p2_2b, p2_2d, cols=2)
+dev.off()
+
+# clean up
+rm(r2_2a, r2_2b, r2_2c, r2_2d,
+   d2_2a, d2_2b, d2_2c, d2_2d,
+   p2_2a, p2_2b, p2_2c, p2_2d, tab,
+   v3, v4, v5, v6, f3, f4, f5, f6); gc()
 
 ###############################################################################
 # Q2.2.3: local parametric model
