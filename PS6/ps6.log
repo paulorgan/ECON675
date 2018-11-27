@@ -2,7 +2,7 @@
       name:  <unnamed>
        log:  C:\Users\prorgan\Box\Classes\Econ 675\Problem Sets\PS6\ps6.log
   log type:  text
- opened on:  26 Nov 2018, 14:37:54
+ opened on:  27 Nov 2018, 16:25:14
 
 . 
 . use HeadStart.dta
@@ -15,15 +15,26 @@
 . * exog post var is mort_injury_post
 . 
 . * packages: rdrobust, rdlocrand, rddensity, rdmulti, rdpower
+. * https://sites.google.com/site/rdpackages/home
+. 
+. * rename variable for ease of use
+. rename povrate60 pov
+
+. rename mort_related_pre rel_pre
+
+. rename mort_related_post rel_post
+
+. rename mort_injury_post inj_post
+
 . 
 . ********************************************************************************
 . *** Question 2: The Effect of Head Start on Child Mortality
 . ********************************************************************************
-. * Q2.1 (a): RD Plots
+. * Q2.1.1: RD Plots
 . 
 . * using the rdrobust package from Matias
-. rdplot mort_related_pre povrate60, c(0) binselect(es) ///
->     graph_options(title("Evenly-spaced binning, IMSE-optimal")) saving("s\1_1a")
+. rdplot rel_pre pov, c(0) binselect(es) ///
+>     graph_options(title("Evenly-spaced binning, IMSE-optimal"))
 
 RD Plot with evenly spaced number of bins using spacings estimators.
 
@@ -35,7 +46,7 @@ RD Plot with evenly spaced number of bins using spacings estimators.
      BW poly. fit (h) |    43.990      22.372
  Number of bins scale |     1.000       1.000
 
-Outcome: mort_related_pre. Running variable: povrate60.
+Outcome: rel_pre. Running variable: pov.
 ---------------------------------------------
                       | Left of c  Right of c
 ----------------------+----------------------
@@ -54,13 +65,11 @@ Rel. to IMSE-optimal: |
 
 
 . graph export "s\1_1a.png", replace
-(note: file s\1_1a.png not found)
 (file s\1_1a.png written in PNG format)
 
 . 
-. rdplot mort_related_pre povrate60, c(0) binselect(esmv) ///
->     graph_options(title("Evenly-spaced binning, variability-mimicking")) saving("s\
-> 1_1b")
+. rdplot rel_pre pov, c(0) binselect(esmv) ///
+>     graph_options(title("Evenly-spaced binning, variability-mimicking"))
 
 RD Plot with evenly spaced mimicking variance number of bins using spacings estimator
 > s.
@@ -73,7 +82,7 @@ RD Plot with evenly spaced mimicking variance number of bins using spacings esti
      BW poly. fit (h) |    43.990      22.372
  Number of bins scale |     1.000       1.000
 
-Outcome: mort_related_pre. Running variable: povrate60.
+Outcome: rel_pre. Running variable: pov.
 ---------------------------------------------
                       | Left of c  Right of c
 ----------------------+----------------------
@@ -92,11 +101,10 @@ Rel. to IMSE-optimal: |
 
 
 . graph export "s\1_1b.png", replace
-(note: file s\1_1b.png not found)
 (file s\1_1b.png written in PNG format)
 
 . 
-. rdplot mort_related_pre povrate60, c(0) binselect(qs) ///
+. rdplot rel_pre pov, c(0) binselect(qs) ///
 >     graph_options(title("Quantile-spaced binning, IMSE-optimal"))
 
 RD Plot with quantile spaced number of bins using spacings estimators.
@@ -109,7 +117,7 @@ RD Plot with quantile spaced number of bins using spacings estimators.
      BW poly. fit (h) |    43.990      22.372
  Number of bins scale |     1.000       1.000
 
-Outcome: mort_related_pre. Running variable: povrate60.
+Outcome: rel_pre. Running variable: pov.
 ---------------------------------------------
                       | Left of c  Right of c
 ----------------------+----------------------
@@ -128,11 +136,10 @@ Rel. to IMSE-optimal: |
 
 
 . graph export "s\1_1c.png", replace
-(note: file s\1_1c.png not found)
 (file s\1_1c.png written in PNG format)
 
 . 
-. rdplot mort_related_pre povrate60, c(0) binselect(qsmv) ///
+. rdplot rel_pre pov, c(0) binselect(qsmv) ///
 >     graph_options(title("Quantile-spaced binning, variability mimicking"))
 
 RD Plot with quantile spaced mimicking variance quantile spaced using spacings estima
@@ -146,7 +153,7 @@ RD Plot with quantile spaced mimicking variance quantile spaced using spacings e
      BW poly. fit (h) |    43.990      22.372
  Number of bins scale |     1.000       1.000
 
-Outcome: mort_related_pre. Running variable: povrate60.
+Outcome: rel_pre. Running variable: pov.
 ---------------------------------------------
                       | Left of c  Right of c
 ----------------------+----------------------
@@ -165,76 +172,26 @@ Rel. to IMSE-optimal: |
 
 
 . graph export "s\1_1d.png", replace
-(note: file s\1_1d.png not found)
 (file s\1_1d.png written in PNG format)
 
 . 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
-
-. twoway (hist povrate60 if povrate60 <=0, freq) ///
->            (hist povrate60 if povrate60 >0, freq
-parentheses do not balance
-r(198);
-
-end of do-file
-
-r(198);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
-
-. twoway (hist povrate60 if povrate60 <=0, freq) ///
->            (hist povrate60 if povrate60 >0, freq)
-
-. graph export "s\1_2i.png", replace
-(note: file s\1_2i.png not found)
-(file s\1_2i.png written in PNG format)
+. ********************************************************************************
+. * Q2.1.2: Falsification Tests
+. * falsification of RD design using three methods
+. 
+. gen t = pov > 0
 
 . 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
-
-. twoway (hist povrate60 if povrate60 <=0, freq bcolor(black)) ///
->            (hist povrate60 if povrate60 >0, freq bcolor(red)))
-) is not a twoway plot type
-r(198);
-
-end of do-file
-
-r(198);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
-
-. twoway (hist povrate60 if povrate60 <=0, freq bcolor(black)) ///
->            (hist povrate60 if povrate60 >0, freq bcolor(red))
+. * (1) histogram plots
+. twoway (hist pov if t, freq bcolor(black)) ///
+>            (hist pov if !t, freq bcolor(red))
 
 . graph export "s\1_2i.png", replace
 (file s\1_2i.png written in PNG format)
 
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
-
-. rdwinselect povrate60, wmin(0.05) wstep(0.05) nwindows(100)
-command rdwinselect is unrecognized
-r(199);
-
-end of do-file
-
-r(199);
-
-. net install rdlocrand, from(https://sites.google.com/site/rdpackages/rdlocrand/stat
-> a) replace
-checking rdlocrand consistency and verifying not already installed...
-installing into c:\ado\plus\...
-installation complete.
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
-
-. rdwinselect povrate60, wmin(0.05) wstep(0.05) nwindows(100)
+.            
+. * (2) binomial tests using rdlocrand package - how to interpret?
+. rdwinselect pov, wmin(0.05) wstep(0.05) nwindows(100)
 
 
 Window selection for RD under local randomization
@@ -353,231 +310,14 @@ Cutoff c = 0.00   | Left of c   Right of c        Number of obs  =          2783
             4.950 |         .                 -         0.136       166      139
             5.000 |         .                 -         0.111       169      140
 
-Variable used in binomial test (running variable): povrate60
+Variable used in binomial test (running variable): pov
 
 Note: no covariates specified.
 Need to specify covariates to find recommended length.
 
 . 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
-
-. rdwinselect povrate60, wmin(0.1) wstep(0.1) nwindows(50)
-
-
-Window selection for RD under local randomization
-
-
-Cutoff c = 0.00   | Left of c   Right of c        Number of obs  =          2783
-------------------+-----------------------        Order of poly  =             0
-    Number of obs |      2489          294        Kernel type    =       uniform
-   1st percentile |        25            3        Reps           =          1000
-   5th percentile |       124           14        Testing method =     rdrandinf
-  10th percentile |       249           29        Balance test   =     diffmeans
-  20th percentile |       497           59
-
-
-                  |   Bal. test         Var. name    Bin. test 
- Window length /2 |    p-value        (min p-value)   p-value     Obs<c   Obs>=c
-------------------+-------------------------------------------------------------
-            0.100 |         .                 -         1.000         3        3
-            0.200 |         .                 -         0.791         6        8
-            0.300 |         .                 -         1.000         9       10
-            0.400 |         .                 -         1.000        12       12
-            0.500 |         .                 -         0.864        18       16
-            0.600 |         .                 -         1.000        20       20
-            0.700 |         .                 -         0.883        24       22
-            0.800 |         .                 -         0.678        28       24
-            0.900 |         .                 -         0.603        32       27
-            1.000 |         .                 -         0.532        35       29
-            1.100 |         .                 -         0.302        43       33
-            1.200 |         .                 -         0.368        44       35
-            1.300 |         .                 -         0.203        51       38
-            1.400 |         .                 -         0.213        53       40
-            1.500 |         .                 -         0.213        53       40
-            1.600 |         .                 -         0.422        54       45
-            1.700 |         .                 -         0.329        58       47
-            1.800 |         .                 -         0.255        62       49
-            1.900 |         .                 -         0.263        64       51
-            2.000 |         .                 -         0.243        69       55
-            2.100 |         .                 -         0.294        72       59
-            2.200 |         .                 -         0.338        72       60
-            2.300 |         .                 -         0.494        73       64
-            2.400 |         .                 -         0.501        75       66
-            2.500 |         .                 -         0.413        80       69
-            2.600 |         .                 -         0.570        80       72
-            2.700 |         .                 -         0.630        81       74
-            2.800 |         .                 -         0.582        85       77
-            2.900 |         .                 -         0.490        90       80
-            3.000 |         .                 -         0.412        96       84
-            3.100 |         .                 -         0.335        98       84
-            3.200 |         .                 -         0.610        98       90
-            3.300 |         .                 -         0.721       101       95
-            3.400 |         .                 -         0.675       106       99
-            3.500 |         .                 -         0.628       108      100
-            3.600 |         .                 -         0.733       110      104
-            3.700 |         .                 -         0.734       111      105
-            3.800 |         .                 -         0.691       117      110
-            3.900 |         .                 -         0.472       123      111
-            4.000 |         .                 -         0.305       130      113
-            4.100 |         .                 -         0.341       132      116
-            4.200 |         .                 -         0.320       138      121
-            4.300 |         .                 -         0.354       139      123
-            4.400 |         .                 -         0.272       144      125
-            4.500 |         .                 -         0.397       144      129
-            4.600 |         .                 -         0.285       151      132
-            4.700 |         .                 -         0.217       156      134
-            4.800 |         .                 -         0.164       161      136
-            4.900 |         .                 -         0.150       164      138
-            5.000 |         .                 -         0.111       169      140
-
-Variable used in binomial test (running variable): povrate60
-
-Note: no covariates specified.
-Need to specify covariates to find recommended length.
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
-
-. rdwinselect povrate60, wmin(0.05) wstep(0.05) nwindows(100)
-
-
-Window selection for RD under local randomization
-
-
-Cutoff c = 0.00   | Left of c   Right of c        Number of obs  =          2783
-------------------+-----------------------        Order of poly  =             0
-    Number of obs |      2489          294        Kernel type    =       uniform
-   1st percentile |        25            3        Reps           =          1000
-   5th percentile |       124           14        Testing method =     rdrandinf
-  10th percentile |       249           29        Balance test   =     diffmeans
-  20th percentile |       497           59
-
-
-                  |   Bal. test         Var. name    Bin. test 
- Window length /2 |    p-value        (min p-value)   p-value     Obs<c   Obs>=c
-------------------+-------------------------------------------------------------
-            0.050 |         .                 -         1.000         1        1
-            0.100 |         .                 -         1.000         3        3
-            0.150 |         .                 -         1.000         4        5
-            0.200 |         .                 -         0.791         6        8
-            0.250 |         .                 -         0.607         6        9
-            0.300 |         .                 -         1.000         9       10
-            0.350 |         .                 -         1.000        11       12
-            0.400 |         .                 -         1.000        12       12
-            0.450 |         .                 -         1.000        15       15
-            0.500 |         .                 -         0.864        18       16
-            0.550 |         .                 -         0.871        20       18
-            0.600 |         .                 -         1.000        20       20
-            0.650 |         .                 -         1.000        21       20
-            0.700 |         .                 -         0.883        24       22
-            0.750 |         .                 -         0.665        26       22
-            0.800 |         .                 -         0.678        28       24
-            0.850 |         .                 -         0.689        30       26
-            0.900 |         .                 -         0.603        32       27
-            0.950 |         .                 -         0.699        32       28
-            1.000 |         .                 -         0.532        35       29
-            1.050 |         .                 -         0.403        39       31
-            1.100 |         .                 -         0.302        43       33
-            1.150 |         .                 -         0.254        44       33
-            1.200 |         .                 -         0.368        44       35
-            1.250 |         .                 -         0.266        46       35
-            1.300 |         .                 -         0.203        51       38
-            1.350 |         .                 -         0.208        52       39
-            1.400 |         .                 -         0.213        53       40
-            1.450 |         .                 -         0.213        53       40
-            1.500 |         .                 -         0.213        53       40
-            1.550 |         .                 -         0.261        54       42
-            1.600 |         .                 -         0.422        54       45
-            1.650 |         .                 -         0.324        57       46
-            1.700 |         .                 -         0.329        58       47
-            1.750 |         .                 -         0.334        59       48
-            1.800 |         .                 -         0.255        62       49
-            1.850 |         .                 -         0.259        63       50
-            1.900 |         .                 -         0.263        64       51
-            1.950 |         .                 -         0.355        64       53
-            2.000 |         .                 -         0.243        69       55
-            2.050 |         .                 -         0.287        70       57
-            2.100 |         .                 -         0.294        72       59
-            2.150 |         .                 -         0.294        72       59
-            2.200 |         .                 -         0.338        72       60
-            2.250 |         .                 -         0.390        73       62
-            2.300 |         .                 -         0.494        73       64
-            2.350 |         .                 -         0.498        74       65
-            2.400 |         .                 -         0.501        75       66
-            2.450 |         .                 -         0.456        78       68
-            2.500 |         .                 -         0.413        80       69
-            2.550 |         .                 -         0.515        80       71
-            2.600 |         .                 -         0.570        80       72
-            2.650 |         .                 -         0.570        80       72
-            2.700 |         .                 -         0.630        81       74
-            2.750 |         .                 -         0.689        81       75
-            2.800 |         .                 -         0.582        85       77
-            2.850 |         .                 -         0.534        87       78
-            2.900 |         .                 -         0.490        90       80
-            2.950 |         .                 -         0.548        93       84
-            3.000 |         .                 -         0.412        96       84
-            3.050 |         .                 -         0.372        97       84
-            3.100 |         .                 -         0.335        98       84
-            3.150 |         .                 -         0.417        98       86
-            3.200 |         .                 -         0.610        98       90
-            3.250 |         .                 -         0.773        99       94
-            3.300 |         .                 -         0.721       101       95
-            3.350 |         .                 -         0.724       103       97
-            3.400 |         .                 -         0.675       106       99
-            3.450 |         .                 -         0.626       107       99
-            3.500 |         .                 -         0.628       108      100
-            3.550 |         .                 -         0.783       108      103
-            3.600 |         .                 -         0.733       110      104
-            3.650 |         .                 -         0.734       111      105
-            3.700 |         .                 -         0.734       111      105
-            3.750 |         .                 -         0.687       114      107
-            3.800 |         .                 -         0.691       117      110
-            3.850 |         .                 -         0.597       119      110
-            3.900 |         .                 -         0.472       123      111
-            3.950 |         .                 -         0.363       126      111
-            4.000 |         .                 -         0.305       130      113
-            4.050 |         .                 -         0.307       131      114
-            4.100 |         .                 -         0.341       132      116
-            4.150 |         .                 -         0.288       137      119
-            4.200 |         .                 -         0.320       138      121
-            4.250 |         .                 -         0.322       139      122
-            4.300 |         .                 -         0.354       139      123
-            4.350 |         .                 -         0.244       143      123
-            4.400 |         .                 -         0.272       144      125
-            4.450 |         .                 -         0.301       144      126
-            4.500 |         .                 -         0.397       144      129
-            4.550 |         .                 -         0.400       146      131
-            4.600 |         .                 -         0.285       151      132
-            4.650 |         .                 -         0.288       153      134
-            4.700 |         .                 -         0.217       156      134
-            4.750 |         .                 -         0.162       160      135
-            4.800 |         .                 -         0.164       161      136
-            4.850 |         .                 -         0.133       163      136
-            4.900 |         .                 -         0.150       164      138
-            4.950 |         .                 -         0.136       166      139
-            5.000 |         .                 -         0.111       169      140
-
-Variable used in binomial test (running variable): povrate60
-
-Note: no covariates specified.
-Need to specify covariates to find recommended length.
-
-. 
-end of do-file
-
-. net install rddensity, from(https://sites.google.com/site/rdpackages/rddensity/stat
-> a) replace
-checking rddensity consistency and verifying not already installed...
-installing into c:\ado\plus\...
-installation complete.
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
-
-. rddensity povrate60, c(0)
+. * (3) continuity-in-density tests using rddensity package - how to interpret?
+. rddensity pov, all
 Computing data-driven bandwidth selectors.
 
 RD Manipulation Test using local polynomial density estimation.
@@ -590,33 +330,7 @@ Eff. Number of obs |       331         211          Kernel        =   triangular
     Order bias (q) |         3           3
        BW est. (h) |     9.585       8.469
 
-Running variable: povrate60.
------------------------------------------------
-            Method |          T        P>|T|
--------------------+---------------------------
-            Robust |      -0.4692      0.6389
------------------------------------------------
-
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
-
-. rddensity povrate60, all
-Computing data-driven bandwidth selectors.
-
-RD Manipulation Test using local polynomial density estimation.
-
-      Cutoff c = 0 |Left of c   Right of c          Number of obs =         2783
--------------------+----------------------          Model         = unrestricted
-     Number of obs |      2489         294          BW method     =         comb
-Eff. Number of obs |       331         211          Kernel        =   triangular
-    Order est. (p) |         2           2          VCE method    =    jackknife
-    Order bias (q) |         3           3
-       BW est. (h) |     9.585       8.469
-
-Running variable: povrate60.
+Running variable: pov.
 -----------------------------------------------
             Method |          T        P>|T|
 -------------------+---------------------------
@@ -625,22 +339,7 @@ Running variable: povrate60.
 -----------------------------------------------
 
 
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
-
-. rddensity povrate60, all hl(5) hr(5)
-option hl() not allowed
-r(198);
-
-end of do-file
-
-r(198);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
-
-. rddensity povrate60, all h(5 5)
+. rddensity pov, all h(5 5)
 
 RD Manipulation Test using local polynomial density estimation.
 
@@ -652,7 +351,7 @@ Eff. Number of obs |       169         140          Kernel        =   triangular
     Order bias (q) |         3           3
        BW est. (h) |     5.000       5.000
 
-Running variable: povrate60.
+Running variable: pov.
 -----------------------------------------------
             Method |          T        P>|T|
 -------------------+---------------------------
@@ -661,12 +360,7 @@ Running variable: povrate60.
 -----------------------------------------------
 
 
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
-
-. rddensity povrate60, all h(1 1)
+. rddensity pov, all h(1 1)
 
 RD Manipulation Test using local polynomial density estimation.
 
@@ -678,7 +372,7 @@ Eff. Number of obs |        35          29          Kernel        =   triangular
     Order bias (q) |         3           3
        BW est. (h) |     1.000       1.000
 
-Running variable: povrate60.
+Running variable: pov.
 -----------------------------------------------
             Method |          T        P>|T|
 -------------------+---------------------------
@@ -688,132 +382,201 @@ Running variable: povrate60.
 
 
 . 
-end of do-file
+. ********************************************************************************
+. * Q2.2.1: constant treatment effect model
+. 
+. * generate variables for polynomials of order 3-6
+. gen p2 = pov^2
 
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
+. gen p3 = pov^3
 
-. rdplot mort_related_pre povrate60, c(0) binselect(es) ///
->     graph_options(title("Evenly-spaced binning, IMSE-optimal")) saving("s\1_1a")
+. gen p4 = pov^4
 
-RD Plot with evenly spaced number of bins using spacings estimators.
+. gen p5 = pov^5
 
-         Cutoff c = 0 | Left of c  Right of c        Number of obs  =       2783
-----------------------+----------------------        Kernel         =    Uniform
-        Number of obs |      2489         294
-   Eff. Number of obs |      2489         294
-  Order poly. fit (p) |         4           4
-     BW poly. fit (h) |    43.990      22.372
- Number of bins scale |     1.000       1.000
-
-Outcome: mort_related_pre. Running variable: povrate60.
----------------------------------------------
-                      | Left of c  Right of c
-----------------------+----------------------
-        Bins selected |         5           6
-   Average bin length |     8.798       3.729
-    Median bin length |     8.798       3.729
-----------------------+----------------------
-    IMSE-optimal bins |         5           6
-  Mimicking Var. bins |        47          43
-----------------------+----------------------
-Rel. to IMSE-optimal: | 
-        Implied scale |     1.000       1.000
-    WIMSE var. weight |     0.500       0.500
-    WIMSE bias weight |     0.500       0.500
----------------------------------------------
-
-
-. graph export "s\1_1a.png", replace
-(file s\1_1a.png written in PNG format)
+. gen p6 = pov^6
 
 . 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
-
-. rddensity povrate60, all /// default settings
-
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
-
-. rddensity povrate60, all h(5 5) /// playing around with bandwidth
-
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
-
-. rddensity povrate60, all /// default settings
-
-end of do-file
-
-. rddensity povrate60
-Computing data-driven bandwidth selectors.
-
-RD Manipulation Test using local polynomial density estimation.
-
-      Cutoff c = 0 |Left of c   Right of c          Number of obs =         2783
--------------------+----------------------          Model         = unrestricted
-     Number of obs |      2489         294          BW method     =         comb
-Eff. Number of obs |       331         211          Kernel        =   triangular
-    Order est. (p) |         2           2          VCE method    =    jackknife
-    Order bias (q) |         3           3
-       BW est. (h) |     9.585       8.469
-
-Running variable: povrate60.
------------------------------------------------
-            Method |          T        P>|T|
--------------------+---------------------------
-            Robust |      -0.4692      0.6389
------------------------------------------------
-
-
-. rddensity povrate60, all
-Computing data-driven bandwidth selectors.
-
-RD Manipulation Test using local polynomial density estimation.
-
-      Cutoff c = 0 |Left of c   Right of c          Number of obs =         2783
--------------------+----------------------          Model         = unrestricted
-     Number of obs |      2489         294          BW method     =         comb
-Eff. Number of obs |       331         211          Kernel        =   triangular
-    Order est. (p) |         2           2          VCE method    =    jackknife
-    Order bias (q) |         3           3
-       BW est. (h) |     9.585       8.469
-
-Running variable: povrate60.
------------------------------------------------
-            Method |          T        P>|T|
--------------------+---------------------------
-      Conventional |       0.1955      0.8450
-            Robust |      -0.4692      0.6389
------------------------------------------------
-
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
-
-. rddensity povrate60, all
-Computing data-driven bandwidth selectors.
-
-RD Manipulation Test using local polynomial density estimation.
-
-      Cutoff c = 0 |Left of c   Right of c          Number of obs =         2783
--------------------+----------------------          Model         = unrestricted
-     Number of obs |      2489         294          BW method     =         comb
-Eff. Number of obs |       331         211          Kernel        =   triangular
-    Order est. (p) |         2           2          VCE method    =    jackknife
-    Order bias (q) |         3           3
-       BW est. (h) |     9.585       8.469
-
-Running variable: povrate60.
------------------------------------------------
-            Method |          T        P>|T|
--------------------+---------------------------
-      Conventional |       0.1955      0.8450
-            Robust |      -0.4692      0.6389
------------------------------------------------
-
+. * empty matrix to fill with point estimates and standard errors
+. matrix tbl = J(2,4,.)
 
 . 
-end of do-file
+. * order 3 (run reg, grab ests, predict vals, plot, save for combine later)
+. reg rel_post t pov p2 p3, vce(hc2)
 
+Linear regression                               Number of obs     =      2,783
+                                                F(4, 2778)        =       4.14
+                                                Prob > F          =     0.0024
+                                                R-squared         =     0.0052
+                                                Root MSE          =      5.715
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -1.119972   .5946944    -1.88   0.060     -2.28606    .0461152
+         pov |   .0439276   .0273691     1.61   0.109    -.0097382    .0975935
+          p2 |   -.000286   .0010951    -0.26   0.794    -.0024333    .0018613
+          p3 |  -.0000116   .0000223    -0.52   0.602    -.0000553    .0000321
+       _cons |   3.280616   .3849699     8.52   0.000      2.52576    4.035472
+------------------------------------------------------------------------------
+
+. matrix tbl[1,1] = _b["t"]
+
+. matrix tbl[2,1] = _se["t"]
+
+. capture drop pred
+
+. predict pred
+(option xb assumed; fitted values)
+
+. twoway scatter pred pov, title("Order 3")
+
+. graph save "s\2_1a.gph", replace
+(file s\2_1a.gph saved)
+
+. 
+. * order 4
+. reg rel_post t pov p2 p3 p4, vce(hc2)
+
+Linear regression                               Number of obs     =      2,783
+                                                F(5, 2777)        =       3.40
+                                                Prob > F          =     0.0046
+                                                R-squared         =     0.0052
+                                                Root MSE          =     5.7159
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -1.018176   .7535121    -1.35   0.177    -2.495677    .4593244
+         pov |   .0335796   .0524126     0.64   0.522     -.069192    .1363513
+          p2 |  -.0001852   .0011164    -0.17   0.868    -.0023742    .0020039
+          p3 |   .0000158   .0001015     0.16   0.876    -.0001831    .0002148
+          p4 |   4.89e-07   1.75e-06     0.28   0.779    -2.93e-06    3.91e-06
+       _cons |   3.206047    .503915     6.36   0.000     2.217961    4.194133
+------------------------------------------------------------------------------
+
+. matrix tbl[1,2] = _b["t"]
+
+. matrix tbl[2,2] = _se["t"]
+
+. capture drop pred
+
+. predict pred
+(option xb assumed; fitted values)
+
+. twoway scatter pred pov, title("Order 4")
+
+. graph save "s\2_1b.gph", replace
+(file s\2_1b.gph saved)
+
+. 
+. * order 5
+. reg rel_post t pov p2 p3 p4 p5, vce(hc2)
+
+Linear regression                               Number of obs     =      2,783
+                                                F(6, 2776)        =       3.53
+                                                Prob > F          =     0.0018
+                                                R-squared         =     0.0061
+                                                Root MSE          =     5.7143
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -1.659208   .8111913    -2.05   0.041    -3.249808   -.0686092
+         pov |   .1146616   .0674717     1.70   0.089    -.0176382    .2469615
+          p2 |   .0038814   .0025235     1.54   0.124    -.0010668    .0088295
+          p3 |  -.0001485    .000131    -1.13   0.257    -.0004052    .0001083
+          p4 |  -.0000117   6.64e-06    -1.77   0.077    -.0000248    1.28e-06
+          p5 |  -1.68e-07   8.74e-08    -1.92   0.054    -3.39e-07    3.17e-09
+       _cons |   3.405855   .5133951     6.63   0.000     2.399181     4.41253
+------------------------------------------------------------------------------
+
+. matrix tbl[1,3] = _b["t"]
+
+. matrix tbl[2,3] = _se["t"]
+
+. capture drop pred
+
+. predict pred
+(option xb assumed; fitted values)
+
+. twoway scatter pred pov, title("Order 5")
+
+. graph save "s\2_1c.gph", replace
+(file s\2_1c.gph saved)
+
+. 
+. * order 6
+. reg rel_post t pov p2 p3 p4 p5 p6, vce(hc2)
+
+Linear regression                               Number of obs     =      2,783
+                                                F(6, 2775)        =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.0063
+                                                Root MSE          =     5.7148
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -1.746761   .8603792    -2.03   0.042    -3.433809   -.0597126
+         pov |    .126275   .0756002     1.67   0.095    -.0219634    .2745133
+          p2 |   .0014792   .0034465     0.43   0.668    -.0052786    .0082371
+          p3 |  -.0002803   .0002607    -1.08   0.282    -.0007914    .0002309
+          p4 |  -7.26e-06   7.04e-06    -1.03   0.302    -.0000211    6.54e-06
+          p5 |   1.50e-07   4.00e-07     0.37   0.708    -6.35e-07    9.35e-07
+          p6 |   4.09e-09   5.38e-09     0.76   0.447    -6.45e-09    1.46e-08
+       _cons |   3.549386   .5936055     5.98   0.000     2.385433    4.713339
+------------------------------------------------------------------------------
+
+. matrix tbl[1,4] = _b["t"]
+
+. matrix tbl[2,4] = _se["t"]
+
+. capture drop pred
+
+. predict pred
+(option xb assumed; fitted values)
+
+. twoway scatter pred pov, title("Order 6")
+
+. graph save "s\2_1d.gph", replace
+(file s\2_1d.gph saved)
+
+. 
+. * combine graphs
+. graph combine "s\2_1a.gph" "s\2_1b.gph" "s\2_1c.gph" "s\2_1d.gph"
+
+. graph export "s\2_1.png", replace
+(file s\2_1.png written in PNG format)
+
+. 
+. * write table for LaTeX
+. mat2txt, matrix(tbl) saving("s\2_1.txt") format(%9.4f) replace
+
+. 
+. ********************************************************************************
+. * Q2.2.2: heterogeneous treatment effect model
+. 
+. ********************************************************************************
+. * Q2.2.3: local parametric model
+. 
+. ********************************************************************************
+. * Q2.3.1: MSE-optimal RD estimators
+. 
+. ********************************************************************************
+. * Q2.3.2: Robustness checks
+. 
+. ********************************************************************************
+. * Q2.4: Local Randomization Methods
+.         
+. ********************************************************************************
+. log close
+      name:  <unnamed>
+       log:  C:\Users\prorgan\Box\Classes\Econ 675\Problem Sets\PS6\ps6.log
+  log type:  text
+ closed on:  27 Nov 2018, 16:25:24
+-------------------------------------------------------------------------------------
