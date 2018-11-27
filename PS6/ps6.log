@@ -840,3 +840,378 @@ tbl[2,4]
 r1  -2.0196157  -3.0647396   -2.676265  -4.1239656
 r2   .87029544   1.0880597   1.2861632   1.4620349
 
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
+
+. reg rel_post t if abs(pov) <= 1, vce(hc2)
+
+Linear regression                               Number of obs     =         64
+                                                F(1, 62)          =       6.53
+                                                Prob > F          =     0.0131
+                                                R-squared         =     0.0854
+                                                Root MSE          =     3.8247
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.311095   .9044063    -2.56   0.013    -4.118978   -.5032127
+       _cons |    3.22022   .8014279     4.02   0.000     1.618189    4.822252
+------------------------------------------------------------------------------
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
+
+. matrix tbl = J(12,3,.)
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
+
+. matrix tbl = J(12,3,.)
+
+. matrix tbl[1,1] = "h=1"
+type mismatch
+r(109);
+
+end of do-file
+
+r(109);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
+
+. matrix tbl = J(12,3,.)
+
+. matrix tbl[1,1] = 1
+
+. matrix tbl[4,1] = 5
+
+. matrix tbl[7,1] = 9
+
+. matrix tbl[10,1] = 18
+
+. 
+. * for h = 1
+. reg rel_post t if abs(pov) <= 1, vce(hc2)
+
+Linear regression                               Number of obs     =         64
+                                                F(1, 62)          =       6.53
+                                                Prob > F          =     0.0131
+                                                R-squared         =     0.0854
+                                                Root MSE          =     3.8247
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.311095   .9044063    -2.56   0.013    -4.118978   -.5032127
+       _cons |    3.22022   .8014279     4.02   0.000     1.618189    4.822252
+------------------------------------------------------------------------------
+
+. matrix tbl[2,1] = _b["t"]
+
+. matrix tbl[3,1] = _se["t"]
+
+. capture drop pred
+
+. predict pred if abs(pov) <= 1
+(option xb assumed; fitted values)
+(2,719 missing values generated)
+
+. twoway scatter pred pov, title("Order 0, h = 1")
+
+. graph save "s\2_3h1a.gph", replace
+(note: file s\2_3h1a.gph not found)
+(file s\2_3h1a.gph saved)
+
+. 
+. reg rel_post t p1t p1u if abs(pov) <= 1, vce(hc2)
+
+Linear regression                               Number of obs     =         64
+                                                F(3, 60)          =       2.24
+                                                Prob > F          =     0.0930
+                                                R-squared         =     0.0860
+                                                Root MSE          =     3.8867
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |   -2.55966   2.072884    -1.23   0.222    -6.706045    1.586725
+         p1t |   .4808698   1.655283     0.29   0.772    -2.830189    3.791929
+         p1u |   .0504578   3.351869     0.02   0.988    -6.654279    6.755194
+       _cons |   3.246493   1.932769     1.68   0.098    -.6196211    7.112608
+------------------------------------------------------------------------------
+
+. matrix tbl[2,2] = _b["t"]
+
+. matrix tbl[3,2] = _se["t"]
+
+. capture drop pred
+
+. predict pred if abs(pov) <= 1
+(option xb assumed; fitted values)
+(2,719 missing values generated)
+
+. twoway scatter pred pov, title("Order 1, h = 1")
+
+. graph save "s\2_3h1b.gph", replace
+(note: file s\2_3h1b.gph not found)
+(file s\2_3h1b.gph saved)
+
+. 
+. reg rel_post t p1t p1u p2t p2u if abs(pov) <= 1, vce(hc2)
+
+Linear regression                               Number of obs     =         64
+                                                F(5, 58)          =       2.41
+                                                Prob > F          =     0.0468
+                                                R-squared         =     0.1891
+                                                Root MSE          =     3.7235
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -5.791349   3.223135    -1.80   0.078    -12.24315     .660456
+         p1t |  -4.423473   4.413157    -1.00   0.320    -13.25737    4.410422
+         p1u |   22.64563   12.29052     1.84   0.071    -1.956513    47.24777
+         p2t |     5.0552   4.003318     1.26   0.212    -2.958311    13.06871
+         p2u |   22.16044   11.75907     1.88   0.065      -1.3779    45.69878
+       _cons |   7.243192   3.018594     2.40   0.020      1.20082    13.28556
+------------------------------------------------------------------------------
+
+. matrix tbl[2,3] = _b["t"]
+
+. matrix tbl[3,3] = _se["t"]
+
+. capture drop pred
+
+. predict pred if abs(pov) <= 1
+(option xb assumed; fitted values)
+(2,719 missing values generated)
+
+. twoway scatter pred pov, title("Order 2, h = 1")
+
+. graph save "s\2_3h1c.gph", replace
+(note: file s\2_3h1c.gph not found)
+(file s\2_3h1c.gph saved)
+
+. 
+. graph combine "s\2_3h1a.gph" "s\2_3h1b.gph" "s\2_3h1c.gph"
+
+. graph export "s\2_3h1.png", replace
+(note: file s\2_3h1.png not found)
+(file s\2_3h1.png written in PNG format)
+
+. 
+end of do-file
+
+. matrix list tbl
+
+tbl[12,3]
+             c1          c2          c3
+ r1           1           .           .
+ r2  -2.3110952  -2.5596597  -5.7913494
+ r3   .90440632   2.0728837   3.2231348
+ r4           5           .           .
+ r5           .           .           .
+ r6           .           .           .
+ r7           9           .           .
+ r8           .           .           .
+ r9           .           .           .
+r10          18           .           .
+r11           .           .           .
+r12           .           .           .
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
+
+. graph combine "s\2_3h1a.gph" "s\2_3h1b.gph" "s\2_3h1c.gph", c(3)
+
+. graph export "s\2_3h1.png", replace
+(file s\2_3h1.png written in PNG format)
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
+
+. graph combine "s\2_3h1a.gph" "s\2_3h1b.gph" "s\2_3h1c.gph", r(3)
+
+. graph export "s\2_3h1.png", replace
+(file s\2_3h1.png written in PNG format)
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
+
+. reg rel_post t if abs(pov) <= 1, vce(hc2)
+
+Linear regression                               Number of obs     =         64
+                                                F(1, 62)          =       6.53
+                                                Prob > F          =     0.0131
+                                                R-squared         =     0.0854
+                                                Root MSE          =     3.8247
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.311095   .9044063    -2.56   0.013    -4.118978   -.5032127
+       _cons |    3.22022   .8014279     4.02   0.000     1.618189    4.822252
+------------------------------------------------------------------------------
+
+. matrix tbl[2,1] = _b["t"]
+
+. matrix tbl[3,1] = _se["t"]
+
+. capture drop pred
+
+. predict pred if abs(pov) <= 1
+(option xb assumed; fitted values)
+(2,719 missing values generated)
+
+. twoway scatter pred pov if abs(poc)<=1, title("Order 0, h = 1")
+poc not found
+r(111);
+
+end of do-file
+
+r(111);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
+
+. matrix tbl = J(12,3,.)
+
+. matrix tbl[1,1] = 1
+
+. matrix tbl[4,1] = 5
+
+. matrix tbl[7,1] = 9
+
+. matrix tbl[10,1] = 18
+
+. 
+. * for h = 1
+. reg rel_post t if abs(pov) <= 1, vce(hc2)
+
+Linear regression                               Number of obs     =         64
+                                                F(1, 62)          =       6.53
+                                                Prob > F          =     0.0131
+                                                R-squared         =     0.0854
+                                                Root MSE          =     3.8247
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.311095   .9044063    -2.56   0.013    -4.118978   -.5032127
+       _cons |    3.22022   .8014279     4.02   0.000     1.618189    4.822252
+------------------------------------------------------------------------------
+
+. matrix tbl[2,1] = _b["t"]
+
+. matrix tbl[3,1] = _se["t"]
+
+. capture drop pred
+
+. predict pred if abs(pov) <= 1
+(option xb assumed; fitted values)
+(2,719 missing values generated)
+
+. twoway scatter pred pov if abs(pov)<=1, title("Order 0, h = 1")
+
+. graph save "s\2_3h1a.gph", replace
+(file s\2_3h1a.gph saved)
+
+. 
+. reg rel_post t p1t p1u if abs(pov) <= 1, vce(hc2)
+
+Linear regression                               Number of obs     =         64
+                                                F(3, 60)          =       2.24
+                                                Prob > F          =     0.0930
+                                                R-squared         =     0.0860
+                                                Root MSE          =     3.8867
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |   -2.55966   2.072884    -1.23   0.222    -6.706045    1.586725
+         p1t |   .4808698   1.655283     0.29   0.772    -2.830189    3.791929
+         p1u |   .0504578   3.351869     0.02   0.988    -6.654279    6.755194
+       _cons |   3.246493   1.932769     1.68   0.098    -.6196211    7.112608
+------------------------------------------------------------------------------
+
+. matrix tbl[2,2] = _b["t"]
+
+. matrix tbl[3,2] = _se["t"]
+
+. capture drop pred
+
+. predict pred if abs(pov) <= 1
+(option xb assumed; fitted values)
+(2,719 missing values generated)
+
+. twoway scatter pred pov if abs(pov)<=1, title("Order 1, h = 1")
+
+. graph save "s\2_3h1b.gph", replace
+(file s\2_3h1b.gph saved)
+
+. 
+. reg rel_post t p1t p1u p2t p2u if abs(pov) <= 1, vce(hc2)
+
+Linear regression                               Number of obs     =         64
+                                                F(5, 58)          =       2.41
+                                                Prob > F          =     0.0468
+                                                R-squared         =     0.1891
+                                                Root MSE          =     3.7235
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -5.791349   3.223135    -1.80   0.078    -12.24315     .660456
+         p1t |  -4.423473   4.413157    -1.00   0.320    -13.25737    4.410422
+         p1u |   22.64563   12.29052     1.84   0.071    -1.956513    47.24777
+         p2t |     5.0552   4.003318     1.26   0.212    -2.958311    13.06871
+         p2u |   22.16044   11.75907     1.88   0.065      -1.3779    45.69878
+       _cons |   7.243192   3.018594     2.40   0.020      1.20082    13.28556
+------------------------------------------------------------------------------
+
+. matrix tbl[2,3] = _b["t"]
+
+. matrix tbl[3,3] = _se["t"]
+
+. capture drop pred
+
+. predict pred if abs(pov) <= 1
+(option xb assumed; fitted values)
+(2,719 missing values generated)
+
+. twoway scatter pred pov if abs(pov)<=1, title("Order 2, h = 1")
+
+. graph save "s\2_3h1c.gph", replace
+(file s\2_3h1c.gph saved)
+
+. 
+. graph combine "s\2_3h1a.gph" "s\2_3h1b.gph" "s\2_3h1c.gph", r(3)
+
+. graph export "s\2_3h1.png", replace
+(file s\2_3h1.png written in PNG format)
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD1d94_000000.tmp"
+
+. graph combine "s\2_3h1a.gph" "s\2_3h1b.gph" "s\2_3h1c.gph", c(3)
+
+. graph export "s\2_3h1.png", replace
+(file s\2_3h1.png written in PNG format)
+
+. 
+end of do-file
+

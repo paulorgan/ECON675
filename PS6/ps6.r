@@ -224,7 +224,49 @@ rm(r2_2a, r2_2b, r2_2c, r2_2d,
    v3, v4, v5, v6, f3, f4, f5, f6); gc()
 
 ###############################################################################
-# Q2.2.3: local parametric model
+# Q2.2.3: local parametric model (p = 0,1,2 and h = 1,5,9,18)
+
+# for h = 1
+r2_3h1a <- lm(rel_post ~ t, df %>% filter(abs(pov) <= 1))
+r2_3h1b <- lm(rel_post ~ t + p1t + p1u, df %>% filter(abs(pov) <= 1))
+r2_3h1c <- lm(rel_post ~ t + p1t + p1u + p2t + p2u, df %>% filter(abs(pov) <= 1))
+
+# grab estimates for table
+tab <- matrix(NA,12,4) %>% as.data.frame()
+tab[,1] <- c('h=1','b','se','h=5','b','se',
+             'h=9','b', 'se','h=18', 'b', 'se')
+colnames(tab) <- c('p=0', 'p=1', 'p=2')
+
+# point estimates
+tab[2,2] <- r2_3h1a$coefficients['t']
+tab[2,3] <- r2_3h1b$coefficients['t']
+tab[2,4] <- r2_3h1c$coefficients['t']
+
+# robust standard errors
+tab[3,2] <- diag(vcovHC(r2_3h1a, type = "HC2")) %>% sqrt() %>% .['t']
+tab[3,3] <- diag(vcovHC(r2_3h1b, type = "HC2")) %>% sqrt() %>% .['t']
+tab[3,4] <- diag(vcovHC(r2_3h1c, type = "HC2")) %>% sqrt() %>% .['t']
+
+# generate dataframes for plotting
+d2_3h1a <- data.frame(pov = df$pov[abs(df$pov) <= 1], pred = r2_3h1a$fitted.values)
+d2_3h1b <- data.frame(pov = df$pov[abs(df$pov) <= 1], pred = r2_3h1b$fitted.values)
+d2_3h1c <- data.frame(pov = df$pov[abs(df$pov) <= 1], pred = r2_3h1c$fitted.values)
+
+# generate plot for each order
+p2_3h1a <- ggplot(d2_3h1a, aes(x = pov, y = pred)) + geom_point() +
+  theme_minimal() + labs(x = 'Pov Rate 1960 (Normalized)', y = 'Fitted Values',
+                         title = 'Order 0, h = 1')
+p2_3h1b <- ggplot(d2_3h1b, aes(x = pov, y = pred)) + geom_point() +
+  theme_minimal() + labs(x = 'Pov Rate 1960 (Normalized)', y = 'Fitted Values',
+                         title = 'Order 1, h = 1')
+p2_3h1c <- ggplot(d2_3h1c, aes(x = pov, y = pred)) + geom_point() +
+  theme_minimal() + labs(x = 'Pov Rate 1960 (Normalized)', y = 'Fitted Values',
+                         title = 'Order 2, h = 1')
+
+# combine plots
+png('r/2_3h1.png')
+multiplot(p2_3h1a, p2_3h1b, p2_3h1c, cols=3)
+dev.off()
 
 ###############################################################################
 # Q2.3.1: MSE-optimal RD estimators

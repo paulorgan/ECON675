@@ -190,7 +190,42 @@ graph export "s\2_2.png", replace
 mat2txt, matrix(tbl) saving("s\2_2.txt") format(%9.4f) replace
 
 ********************************************************************************
-* Q2.2.3: local parametric model
+* Q2.2.3: local parametric model (p = 0,1,2 and h = 1,5,9,18)
+
+* matrix to fill with estimates
+matrix tbl = J(12,3,.)
+matrix tbl[1,1] = 1
+matrix tbl[4,1] = 5
+matrix tbl[7,1] = 9
+matrix tbl[10,1] = 18
+
+* for h = 1
+reg rel_post t if abs(pov) <= 1, vce(hc2)
+matrix tbl[2,1] = _b["t"]
+matrix tbl[3,1] = _se["t"]
+capture drop pred
+predict pred if abs(pov) <= 1
+twoway scatter pred pov if abs(pov)<=1, title("Order 0, h = 1")
+graph save "s\2_3h1a.gph", replace
+
+reg rel_post t p1t p1u if abs(pov) <= 1, vce(hc2)
+matrix tbl[2,2] = _b["t"]
+matrix tbl[3,2] = _se["t"]
+capture drop pred
+predict pred if abs(pov) <= 1
+twoway scatter pred pov if abs(pov)<=1, title("Order 1, h = 1")
+graph save "s\2_3h1b.gph", replace
+
+reg rel_post t p1t p1u p2t p2u if abs(pov) <= 1, vce(hc2)
+matrix tbl[2,3] = _b["t"]
+matrix tbl[3,3] = _se["t"]
+capture drop pred
+predict pred if abs(pov) <= 1
+twoway scatter pred pov if abs(pov)<=1, title("Order 2, h = 1")
+graph save "s\2_3h1c.gph", replace
+
+graph combine "s\2_3h1a.gph" "s\2_3h1b.gph" "s\2_3h1c.gph", c(3)
+graph export "s\2_3h1.png", replace
 
 ********************************************************************************
 * Q2.3.1: MSE-optimal RD estimators
