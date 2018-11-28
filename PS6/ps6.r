@@ -1,7 +1,7 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS6
-# Last Update: Nov 27, 2018
+# Last Update: Nov 28, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
@@ -146,9 +146,8 @@ multiplot(p2_1a, p2_1c, p2_1b, p2_1d, cols=2)
 dev.off()
 
 # clean up
-rm(r2_1a, r2_1b, r2_1c, r2_1d,
-   d2_1a, d2_1b, d2_1c, d2_1d,
-   p2_1a, p2_1b, p2_1c, p2_1d, tab); gc()
+rm(list=ls(pattern="r2_|d2_|p2_|tab")); gc()
+
 
 ###############################################################################
 # Q2.2.2: heterogeneous treatment effect model (fully interacted effect)
@@ -218,10 +217,7 @@ multiplot(p2_2a, p2_2c, p2_2b, p2_2d, cols=2)
 dev.off()
 
 # clean up
-rm(r2_2a, r2_2b, r2_2c, r2_2d,
-   d2_2a, d2_2b, d2_2c, d2_2d,
-   p2_2a, p2_2b, p2_2c, p2_2d, tab,
-   v3, v4, v5, v6, f3, f4, f5, f6); gc()
+rm(list=ls(pattern="r2_|d2_|p2_|v[0-9]|f[0-9]|tab")); gc()
 
 ###############################################################################
 # Q2.2.3: local parametric model (p = 0,1,2 and h = 1,5,9,18)
@@ -235,7 +231,7 @@ r2_3h1c <- lm(rel_post ~ t + p1t + p1u + p2t + p2u, df %>% filter(abs(pov) <= 1)
 tab <- matrix(NA,12,4) %>% as.data.frame()
 tab[,1] <- c('h=1','b','se','h=5','b','se',
              'h=9','b', 'se','h=18', 'b', 'se')
-colnames(tab) <- c('p=0', 'p=1', 'p=2')
+colnames(tab) <- c('','p=0', 'p=1', 'p=2')
 
 # point estimates
 tab[2,2] <- r2_3h1a$coefficients['t']
@@ -264,9 +260,126 @@ p2_3h1c <- ggplot(d2_3h1c, aes(x = pov, y = pred)) + geom_point() +
                          title = 'Order 2, h = 1')
 
 # combine plots
-png('r/2_3h1.png')
-multiplot(p2_3h1a, p2_3h1b, p2_3h1c, cols=3)
-dev.off()
+comb <- grid.arrange(p2_3h1a, p2_3h1b, p2_3h1c, ncol=3)
+ggsave('r/2_3h1.png', plot = comb)
+
+# for h = 5
+r2_3h5a <- lm(rel_post ~ t, df %>% filter(abs(pov) <= 5))
+r2_3h5b <- lm(rel_post ~ t + p1t + p1u, df %>% filter(abs(pov) <= 5))
+r2_3h5c <- lm(rel_post ~ t + p1t + p1u + p2t + p2u, df %>% filter(abs(pov) <= 5))
+
+# point estimates
+tab[5,2] <- r2_3h5a$coefficients['t']
+tab[5,3] <- r2_3h5b$coefficients['t']
+tab[5,4] <- r2_3h5c$coefficients['t']
+
+# robust standard errors
+tab[6,2] <- diag(vcovHC(r2_3h5a, type = "HC2")) %>% sqrt() %>% .['t']
+tab[6,3] <- diag(vcovHC(r2_3h5b, type = "HC2")) %>% sqrt() %>% .['t']
+tab[6,4] <- diag(vcovHC(r2_3h5c, type = "HC2")) %>% sqrt() %>% .['t']
+
+# generate dataframes for plotting
+d2_3h5a <- data.frame(pov = df$pov[abs(df$pov) <= 5], pred = r2_3h5a$fitted.values)
+d2_3h5b <- data.frame(pov = df$pov[abs(df$pov) <= 5], pred = r2_3h5b$fitted.values)
+d2_3h5c <- data.frame(pov = df$pov[abs(df$pov) <= 5], pred = r2_3h5c$fitted.values)
+
+# generate plot for each order
+p2_3h5a <- ggplot(d2_3h5a, aes(x = pov, y = pred)) + geom_point() +
+  theme_minimal() + labs(x = 'Pov Rate 1960 (Normalized)', y = 'Fitted Values',
+                         title = 'Order 0, h = 5')
+p2_3h5b <- ggplot(d2_3h5b, aes(x = pov, y = pred)) + geom_point() +
+  theme_minimal() + labs(x = 'Pov Rate 1960 (Normalized)', y = 'Fitted Values',
+                         title = 'Order 1, h = 5')
+p2_3h5c <- ggplot(d2_3h5c, aes(x = pov, y = pred)) + geom_point() +
+  theme_minimal() + labs(x = 'Pov Rate 1960 (Normalized)', y = 'Fitted Values',
+                         title = 'Order 2, h = 5')
+
+# combine plots
+comb <- grid.arrange(p2_3h5a, p2_3h5b, p2_3h5c, ncol=3)
+ggsave('r/2_3h5.png', plot = comb)
+
+# for h = 9
+r2_3h9a <- lm(rel_post ~ t, df %>% filter(abs(pov) <= 9))
+r2_3h9b <- lm(rel_post ~ t + p1t + p1u, df %>% filter(abs(pov) <= 9))
+r2_3h9c <- lm(rel_post ~ t + p1t + p1u + p2t + p2u, df %>% filter(abs(pov) <= 9))
+
+# point estimates
+tab[8,2] <- r2_3h5a$coefficients['t']
+tab[8,3] <- r2_3h5b$coefficients['t']
+tab[8,4] <- r2_3h5c$coefficients['t']
+
+# robust standard errors
+tab[9,2] <- diag(vcovHC(r2_3h9a, type = "HC2")) %>% sqrt() %>% .['t']
+tab[9,3] <- diag(vcovHC(r2_3h9b, type = "HC2")) %>% sqrt() %>% .['t']
+tab[9,4] <- diag(vcovHC(r2_3h9c, type = "HC2")) %>% sqrt() %>% .['t']
+
+# generate dataframes for plotting
+d2_3h9a <- data.frame(pov = df$pov[abs(df$pov) <= 9], pred = r2_3h9a$fitted.values)
+d2_3h9b <- data.frame(pov = df$pov[abs(df$pov) <= 9], pred = r2_3h9b$fitted.values)
+d2_3h9c <- data.frame(pov = df$pov[abs(df$pov) <= 9], pred = r2_3h9c$fitted.values)
+
+# generate plot for each order
+p2_3h9a <- ggplot(d2_3h9a, aes(x = pov, y = pred)) + geom_point() +
+  theme_minimal() + labs(x = 'Pov Rate 1960 (Normalized)', y = 'Fitted Values',
+                         title = 'Order 0, h = 9')
+p2_3h9b <- ggplot(d2_3h9b, aes(x = pov, y = pred)) + geom_point() +
+  theme_minimal() + labs(x = 'Pov Rate 1960 (Normalized)', y = 'Fitted Values',
+                         title = 'Order 1, h = 9')
+p2_3h9c <- ggplot(d2_3h9c, aes(x = pov, y = pred)) + geom_point() +
+  theme_minimal() + labs(x = 'Pov Rate 1960 (Normalized)', y = 'Fitted Values',
+                         title = 'Order 2, h = 9')
+
+# combine plots
+comb <- grid.arrange(p2_3h9a, p2_3h9b, p2_3h9c, ncol=3)
+ggsave('r/2_3h9.png', plot = comb)
+
+# for h = 18
+r2_3h18a <- lm(rel_post ~ t, df %>% filter(abs(pov) <= 18))
+r2_3h18b <- lm(rel_post ~ t + p1t + p1u, df %>% filter(abs(pov) <= 18))
+r2_3h18c <- lm(rel_post ~ t + p1t + p1u + p2t + p2u, df %>% filter(abs(pov) <= 18))
+
+# point estimates
+tab[11,2] <- r2_3h18a$coefficients['t']
+tab[11,3] <- r2_3h18b$coefficients['t']
+tab[11,4] <- r2_3h18c$coefficients['t']
+
+# robust standard errors
+tab[12,2] <- diag(vcovHC(r2_3h18a, type = "HC2")) %>% sqrt() %>% .['t']
+tab[12,3] <- diag(vcovHC(r2_3h18b, type = "HC2")) %>% sqrt() %>% .['t']
+tab[12,4] <- diag(vcovHC(r2_3h18c, type = "HC2")) %>% sqrt() %>% .['t']
+
+# generate dataframes for plotting
+d2_3h18a <- data.frame(pov = df$pov[abs(df$pov) <= 18], pred = r2_3h18a$fitted.values)
+d2_3h18b <- data.frame(pov = df$pov[abs(df$pov) <= 18], pred = r2_3h18b$fitted.values)
+d2_3h18c <- data.frame(pov = df$pov[abs(df$pov) <= 18], pred = r2_3h18c$fitted.values)
+
+# generate plot for each order
+p2_3h18a <- ggplot(d2_3h18a, aes(x = pov, y = pred)) + geom_point() +
+  theme_minimal() + labs(x = 'Pov Rate 1960 (Normalized)', y = 'Fitted Values',
+                         title = 'Order 0, h = 18')
+p2_3h18b <- ggplot(d2_3h18b, aes(x = pov, y = pred)) + geom_point() +
+  theme_minimal() + labs(x = 'Pov Rate 1960 (Normalized)', y = 'Fitted Values',
+                         title = 'Order 1, h = 18')
+p2_3h18c <- ggplot(d2_3h18c, aes(x = pov, y = pred)) + geom_point() +
+  theme_minimal() + labs(x = 'Pov Rate 1960 (Normalized)', y = 'Fitted Values',
+                         title = 'Order 2, h = 18')
+
+# combine plots
+comb <- grid.arrange(p2_3h18a, p2_3h18b, p2_3h18c, ncol=3)
+ggsave('r/2_3h18.png', plot = comb)
+
+# combine all and check
+comb <- grid.arrange(p2_3h1a, p2_3h1b, p2_3h1c,
+                     p2_3h5a, p2_3h5b, p2_3h5c,
+                     p2_3h9a, p2_3h9b, p2_3h9c,
+                     p2_3h18a, p2_3h18b, p2_3h18c, ncol=3)
+ggsave('r/2_3.png', plot = comb)
+
+# write table to LaTeX
+xtable(tab)
+
+# clean up
+rm(list=ls(pattern="d2_|p2_|r2_|comb|tab")); gc()
 
 ###############################################################################
 # Q2.3.1: MSE-optimal RD estimators

@@ -1,7 +1,7 @@
 ********************************************************************************
 * Author: Paul R. Organ
 * Purpose: ECON 675, PS6
-* Last Update: Nov 27, 2018
+* Last Update: Nov 28, 2018
 ********************************************************************************
 clear all
 set more off
@@ -200,32 +200,126 @@ matrix tbl[7,1] = 9
 matrix tbl[10,1] = 18
 
 * for h = 1
-reg rel_post t if abs(pov) <= 1, vce(hc2)
+reg rel_post t if abs(pov)<=1, vce(hc2)
 matrix tbl[2,1] = _b["t"]
 matrix tbl[3,1] = _se["t"]
 capture drop pred
-predict pred if abs(pov) <= 1
+predict pred if abs(pov)<=1
 twoway scatter pred pov if abs(pov)<=1, title("Order 0, h = 1")
 graph save "s\2_3h1a.gph", replace
 
-reg rel_post t p1t p1u if abs(pov) <= 1, vce(hc2)
+reg rel_post t p1t p1u if abs(pov)<=1, vce(hc2)
 matrix tbl[2,2] = _b["t"]
 matrix tbl[3,2] = _se["t"]
 capture drop pred
-predict pred if abs(pov) <= 1
+predict pred if abs(pov)<=1
 twoway scatter pred pov if abs(pov)<=1, title("Order 1, h = 1")
 graph save "s\2_3h1b.gph", replace
 
-reg rel_post t p1t p1u p2t p2u if abs(pov) <= 1, vce(hc2)
+reg rel_post t p1t p1u p2t p2u if abs(pov)<=1, vce(hc2)
 matrix tbl[2,3] = _b["t"]
 matrix tbl[3,3] = _se["t"]
 capture drop pred
-predict pred if abs(pov) <= 1
+predict pred if abs(pov)<=1
 twoway scatter pred pov if abs(pov)<=1, title("Order 2, h = 1")
 graph save "s\2_3h1c.gph", replace
 
 graph combine "s\2_3h1a.gph" "s\2_3h1b.gph" "s\2_3h1c.gph", c(3)
 graph export "s\2_3h1.png", replace
+
+* for h = 5
+reg rel_post t if abs(pov)<=5, vce(hc2)
+matrix tbl[5,1] = _b["t"]
+matrix tbl[6,1] = _se["t"]
+capture drop pred
+predict pred if abs(pov)<=5
+twoway scatter pred pov if abs(pov)<=5, title("Order 0, h = 5")
+graph save "s\2_3h5a.gph", replace
+
+reg rel_post t p1t p1u if abs(pov)<=5, vce(hc2)
+matrix tbl[5,2] = _b["t"]
+matrix tbl[6,2] = _se["t"]
+capture drop pred
+predict pred if abs(pov)<=5
+twoway scatter pred pov if abs(pov)<=5, title("Order 1, h = 5")
+graph save "s\2_3h5b.gph", replace
+
+reg rel_post t p1t p1u p2t p2u if abs(pov)<=5, vce(hc2)
+matrix tbl[5,3] = _b["t"]
+matrix tbl[6,3] = _se["t"]
+capture drop pred
+predict pred if abs(pov)<=5
+twoway scatter pred pov if abs(pov)<=5, title("Order 2, h = 5")
+graph save "s\2_3h5c.gph", replace
+
+graph combine "s\2_3h5a.gph" "s\2_3h5b.gph" "s\2_3h5c.gph", c(3)
+graph export "s\2_3h5.png", replace
+
+* for h = 9
+reg rel_post t if abs(pov)<=9, vce(hc2)
+matrix tbl[8,1] = _b["t"]
+matrix tbl[9,1] = _se["t"]
+capture drop pred
+predict pred if abs(pov)<=9
+twoway scatter pred pov if abs(pov)<=9, title("Order 0, h = 9")
+graph save "s\2_3h9a.gph", replace
+
+reg rel_post t p1t p1u if abs(pov) <=9, vce(hc2)
+matrix tbl[8,2] = _b["t"]
+matrix tbl[9,2] = _se["t"]
+capture drop pred
+predict pred if abs(pov)<=9
+twoway scatter pred pov if abs(pov)<=9, title("Order 1, h = 9")
+graph save "s\2_3h9b.gph", replace
+
+reg rel_post t p1t p1u p2t p2u if abs(pov)<=9, vce(hc2)
+matrix tbl[8,3] = _b["t"]
+matrix tbl[9,3] = _se["t"]
+capture drop pred
+predict pred if abs(pov)<=9
+twoway scatter pred pov if abs(pov)<=9, title("Order 2, h = 9")
+graph save "s\2_3h9c.gph", replace
+
+graph combine "s\2_3h9a.gph" "s\2_3h9b.gph" "s\2_3h9c.gph", c(3)
+graph export "s\2_3h9.png", replace
+
+* for h = 18
+reg rel_post t if abs(pov)<=18, vce(hc2)
+matrix tbl[11,1] = _b["t"]
+matrix tbl[12,1] = _se["t"]
+capture drop pred
+predict pred if abs(pov)<=18
+twoway scatter pred pov if abs(pov)<=18, title("Order 0, h = 18")
+graph save "s\2_3h18a.gph", replace
+
+reg rel_post t p1t p1u if abs(pov)<=18, vce(hc2)
+matrix tbl[11,2] = _b["t"]
+matrix tbl[12,2] = _se["t"]
+capture drop pred
+predict pred if abs(pov)<=18
+twoway scatter pred pov if abs(pov)<=18, title("Order 1, h = 18")
+graph save "s\2_3h18b.gph", replace
+
+reg rel_post t p1t p1u p2t p2u if abs(pov)<=18, vce(hc2)
+matrix tbl[11,3] = _b["t"]
+matrix tbl[12,3] = _se["t"]
+capture drop pred
+predict pred if abs(pov)<=18
+twoway scatter pred pov if abs(pov)<=18, title("Order 2, h = 18")
+graph save "s\2_3h18c.gph", replace
+
+graph combine "s\2_3h18a.gph" "s\2_3h18b.gph" "s\2_3h18c.gph", c(3)
+graph export "s\2_3h18.png", replace
+
+* combine all four sets of three
+graph combine "s\2_3h1a.gph" "s\2_3h1b.gph" "s\2_3h1c.gph" ///
+	"s\2_3h5a.gph" "s\2_3h5b.gph" "s\2_3h5c.gph" ///
+	"s\2_3h9a.gph" "s\2_3h9b.gph" "s\2_3h9c.gph" ///
+	"s\2_3h18a.gph" "s\2_3h18b.gph" "s\2_3h18c.gph", c(3)
+graph export "s\2_3.png", replace
+
+* write table to LaTeX
+mat2txt, matrix(tbl) saving("s\2_3.txt") format(%9.4f) replace
 
 ********************************************************************************
 * Q2.3.1: MSE-optimal RD estimators
