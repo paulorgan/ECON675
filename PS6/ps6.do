@@ -1,7 +1,7 @@
 ********************************************************************************
 * Author: Paul R. Organ
 * Purpose: ECON 675, PS6
-* Last Update: Nov 28, 2018
+* Last Update: Dec 2, 2018
 ********************************************************************************
 clear all
 set more off
@@ -324,8 +324,78 @@ mat2txt, matrix(tbl) saving("s\2_3.txt") format(%9.4f) replace
 ********************************************************************************
 * Q2.3.1: MSE-optimal RD estimators
 
+* just manually typing these into LaTeX
+* 'all' gives us the three methods, p and q tell the polynomial orders
+rdrobust rel_post pov, p(0) q(1) c(0) all
+rdrobust rel_post pov, p(1) q(2) c(0) all
+rdrobust rel_post pov, p(2) q(3) c(0) all
+
 ********************************************************************************
 * Q2.3.2: Robustness checks
+
+** a) Placebo outcome tests
+* check preintervention related mortality
+rdrobust rel_pre pov, p(1) q(2) c(0) all
+* check postintervention unrelated mortality
+rdrobust inj_post pov, p(1) q(2) c(0) all
+
+** b) Bandwidth and Kernel sensitivity
+* empty matrix to fill with results
+matrix tbl = J(3, 10, .)
+
+* loop over bandwidths, calc for three different kernels
+forvalues h = 1(1)10 {
+    quiet rdrobust rel_post pov, h(`h') kernel(tri) p(1) q(2) c(0) all
+	matrix tbl[1, `h'] = round(e(tau_bc), .01)
+	quiet rdrobust rel_post pov, h(`h') kernel(uni) p(1) q(2) c(0) all
+	matrix tbl[2, `h'] = round(e(tau_bc), .01)
+	quiet rdrobust rel_post pov, h(`h') kernel(epa) p(1) q(2) c(0) all
+	matrix tbl[3, `h'] = round(e(tau_bc), .01)
+}
+
+* write to LaTeX
+mat2txt, matrix(tbl) saving("s\3_2b.txt") format(%9.4f) replace
+
+** c) "donut hole" approach
+* first sort by closeness for povrate to 0
+gen pov_abs = abs(pov)
+sort pov_abs
+drop pov_abs
+
+* empty matrix to fill with results
+matrix tbl = J(1, 10, .)
+
+* loop over 10 l's
+forvalues l = 1(1)10 {
+    quiet rdrobust rel_post pov if _n>`l', p(1) q(2) c(0) all
+	matrix tbl[1, `l'] = round(e(tau_bc), .01)
+}
+
+* write to LaTeX
+mat2txt, matrix(tbl) saving("s\3_2c.txt") format(%9.4f) replace
+
+** d) Placebo cutoff approach
+* empty matrix to fill with results
+matrix tbl = J(2, 10, .)
+
+* loop over various cutoffs, save point estimates and p-values
+forvalues c = -10(2)10 {
+    if `c' != 0 {
+	    quiet rdrobust rel_post pov, c(`c') p(1) q(2) all
+		* to know which matrix position to store in
+		if `c' < 0 { 
+		    local i = `c'/2 + 6 
+		}
+		if `c' > 0 { 
+		    local i = `c'/2 + 5 
+		}
+		matrix tbl[1, `i'] = round(e(tau_bc), .01)
+		matrix tbl[2, `i'] = round(e(pv_rb), .01)
+	}
+}
+
+* write to LaTeX
+mat2txt, matrix(tbl) saving("s\3_2d.txt") format(%9.4f) replace
 
 ********************************************************************************
 * Q2.4: Local Randomization Methods

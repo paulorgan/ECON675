@@ -1,7 +1,7 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS6
-# Last Update: Nov 28, 2018
+# Last Update: Dec 2, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
@@ -384,8 +384,83 @@ rm(list=ls(pattern="d2_|p2_|r2_|comb|tab")); gc()
 ###############################################################################
 # Q2.3.1: MSE-optimal RD estimators
 
+# just manually typings these into LaTeX
+# 'all=T' gives the three methods
+# p and q tell the polynomial orders to use
+rdrobust(df$rel_post, df$pov, p = 0, q = 1, c = 0, all = T) %>% summary()
+rdrobust(df$rel_post, df$pov, p = 1, q = 2, c = 0, all = T) %>% summary()
+rdrobust(df$rel_post, df$pov, p = 2, q = 3, c = 0, all = T) %>% summary()
+
 ###############################################################################
 # Q2.3.2: Robustness checks
+
+# a) Placebo outcome tests
+
+# check preintervention related mortality
+rdrobust(df$rel_pre, df$pov, p =1, q = 2, c = 0, all = T) %>% summary()
+# check postintervention unrelated mortality
+rdrobust(df$inj_post, df$pov, p =1, q = 2, c = 0, all = T) %>% summary()
+
+# b) Bandwidth and Kernel sensitivity
+# empty matrix to fill with results
+tbl <- matrix(NA,3,10)
+
+# loop over 10 bandwidths, for three kernels, grab point estimates
+for(h in 1:10){
+  tbl[1,h] <- rdrobust(df$rel_pre, df$pov, p =1, q = 2, c = 0,
+                       all = T, kernel = 'tri')$Estimate[2]
+  tbl[2,h] <- rdrobust(df$rel_pre, df$pov, p =1, q = 2, c = 0,
+                       all = T, kernel = 'uni')$Estimate[2]
+  tbl[3,h] <- rdrobust(df$rel_pre, df$pov, p =1, q = 2, c = 0,
+                       all = T, kernel = 'epa')$Estimate[2]
+}
+
+# clean up and write to LaTeX
+tbl %<>% as.data.frame()
+rownames(tbl) <- c('Triangular', 'Uniform', 'Epanechnikov')
+colnames(tbl) <- 1:10
+xtable(tbl)
+
+# c) "donut hole" approach
+# sort by proximity to 0, and number them
+df %<>% mutate(pov_abs = abs(pov)) %>% arrange(pov_abs)
+df$abs_pov_rank <- 1:nrow(df)
+
+# empty matrix to fill with results
+tbl <- matrix(NA, 1, 10)
+
+# loop over 10 l's
+for(l in 1:10){
+  tbl[1,l] <- rdrobust(df$rel_pre[df$abs_pov_rank > l], df$pov[df$abs_pov_rank > l],
+                       p = 1, q = 2, c = 0, all = T)$Estimate[2]
+}
+
+# clean up and write to LaTeX
+tbl %<>% as.data.frame()
+colnames(tbl) <- 1:10
+xtable(tbl)
+
+# d) Placebo cutoff approach
+cutoffs <- c(-10, -8, -6, -4, -2, 2, 4, 6, 8, 10)
+
+# empty matrix to fill with results
+tbl <- matrix(NA, 2, 10)
+
+# loop over 10 cutoffs, save point estimates and p-values
+for(i in 1:10){
+  temp <- rdrobust(df$rel_pre, df$pov, p = 1, q = 2, c = cutoffs[i], all = T)
+  tbl[1,i] <- temp$Estimate[2]
+  tbl[2,i] <- temp$pv[2]
+}
+
+# clean up and write to LaTeX
+tbl %<>% as.data.frame()
+rownames(tbl) <- c('Point estimate', 'p-value')
+colnames(tbl) <- 1:10
+xtable(tbl)
+
+# clean up Q2.3
+rm(r3_1a, r3_1b, r3_1c, tbl, temp, cutoffs, h, i, l); gc()
 
 ###############################################################################
 # Q2.4: Local Randomization Methods
