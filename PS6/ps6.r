@@ -16,6 +16,7 @@ require(stargazer) # tables for LaTeX
 require(rdrobust)  # RD stuff
 require(rdlocrand) # RD stuff
 require(rddensity) # RD stuff
+require(gridExtra) # plotting multiple plots
 
 source('multiplot.R') # multi-panel plots
 
@@ -65,18 +66,19 @@ rdplot(df$rel_pre, df$pov, binselect = 'qsmv',
        y.label = 'Average Mortality Rate (Pre)')
 dev.off()
 
+# combine in PPT for use in LaTeX
+
 ###############################################################################
 # Q2.1.2: Falsification Tests
 # falsification of RD design using three methods
 
 # (i) histogram plots
-df %<>% mutate(t = (pov > 0) * 1)
+df %<>% mutate(treated = (pov > 0), t = treated * 1)
 
-p1_2i <- ggplot(df, aes(x = pov, fill = t, color = treated)) +
+p1_2 <- ggplot(df, aes(x = pov, fill = treated, color = treated)) +
   geom_histogram() + theme_minimal() +
-  labs(title = 'Histogram by Treatment Type',
-       y = 'Frequency', x = 'Poverty Rate (Normalized)')
-ggsave('r/1_2i.png')
+  labs(y = 'Frequency', x = 'Poverty Rate (Normalized)')
+ggsave('r/1_2r.png', width = 6, height = 4)
 
 # (ii) binomial tests
 rdwinselect(df$pov, wmin = .05, wstep = .05, nwindows = 100)
@@ -86,7 +88,7 @@ rddensity(df$pov, all = T) %>% summary
 rddensity(df$pov, all = T, h = c(5,5)) %>% summary
 rddensity(df$pov, all = T, h = c(1,1)) %>% summary
 
-rm(p1_2i); gc()
+rm(p1_2); gc()
 
 ###############################################################################
 # Q2.2.1: constant treatment effect model (additive separable effect)
@@ -141,13 +143,12 @@ p2_1d <- ggplot(d2_1d, aes(x = pov, y = pred)) + geom_point() +
                          title = 'Order 6')
 
 # combine plots
-png('r/2_1.png')
+png('r/2_1r.png')
 multiplot(p2_1a, p2_1c, p2_1b, p2_1d, cols=2)
 dev.off()
 
 # clean up
 rm(list=ls(pattern="r2_|d2_|p2_|tab")); gc()
-
 
 ###############################################################################
 # Q2.2.2: heterogeneous treatment effect model (fully interacted effect)
@@ -212,7 +213,7 @@ p2_2d <- ggplot(d2_2d, aes(x = pov, y = pred)) + geom_point() +
                          title = 'Order 6')
 
 # combine plots
-png('r/2_2.png')
+png('r/2_2r.png')
 multiplot(p2_2a, p2_2c, p2_2b, p2_2d, cols=2)
 dev.off()
 
@@ -259,10 +260,6 @@ p2_3h1c <- ggplot(d2_3h1c, aes(x = pov, y = pred)) + geom_point() +
   theme_minimal() + labs(x = 'Pov Rate 1960 (Normalized)', y = 'Fitted Values',
                          title = 'Order 2, h = 1')
 
-# combine plots
-comb <- grid.arrange(p2_3h1a, p2_3h1b, p2_3h1c, ncol=3)
-ggsave('r/2_3h1.png', plot = comb)
-
 # for h = 5
 r2_3h5a <- lm(rel_post ~ t, df %>% filter(abs(pov) <= 5))
 r2_3h5b <- lm(rel_post ~ t + p1t + p1u, df %>% filter(abs(pov) <= 5))
@@ -294,19 +291,15 @@ p2_3h5c <- ggplot(d2_3h5c, aes(x = pov, y = pred)) + geom_point() +
   theme_minimal() + labs(x = 'Pov Rate 1960 (Normalized)', y = 'Fitted Values',
                          title = 'Order 2, h = 5')
 
-# combine plots
-comb <- grid.arrange(p2_3h5a, p2_3h5b, p2_3h5c, ncol=3)
-ggsave('r/2_3h5.png', plot = comb)
-
 # for h = 9
 r2_3h9a <- lm(rel_post ~ t, df %>% filter(abs(pov) <= 9))
 r2_3h9b <- lm(rel_post ~ t + p1t + p1u, df %>% filter(abs(pov) <= 9))
 r2_3h9c <- lm(rel_post ~ t + p1t + p1u + p2t + p2u, df %>% filter(abs(pov) <= 9))
 
 # point estimates
-tab[8,2] <- r2_3h5a$coefficients['t']
-tab[8,3] <- r2_3h5b$coefficients['t']
-tab[8,4] <- r2_3h5c$coefficients['t']
+tab[8,2] <- r2_3h9a$coefficients['t']
+tab[8,3] <- r2_3h9b$coefficients['t']
+tab[8,4] <- r2_3h9c$coefficients['t']
 
 # robust standard errors
 tab[9,2] <- diag(vcovHC(r2_3h9a, type = "HC2")) %>% sqrt() %>% .['t']
@@ -328,10 +321,6 @@ p2_3h9b <- ggplot(d2_3h9b, aes(x = pov, y = pred)) + geom_point() +
 p2_3h9c <- ggplot(d2_3h9c, aes(x = pov, y = pred)) + geom_point() +
   theme_minimal() + labs(x = 'Pov Rate 1960 (Normalized)', y = 'Fitted Values',
                          title = 'Order 2, h = 9')
-
-# combine plots
-comb <- grid.arrange(p2_3h9a, p2_3h9b, p2_3h9c, ncol=3)
-ggsave('r/2_3h9.png', plot = comb)
 
 # for h = 18
 r2_3h18a <- lm(rel_post ~ t, df %>% filter(abs(pov) <= 18))
@@ -364,19 +353,15 @@ p2_3h18c <- ggplot(d2_3h18c, aes(x = pov, y = pred)) + geom_point() +
   theme_minimal() + labs(x = 'Pov Rate 1960 (Normalized)', y = 'Fitted Values',
                          title = 'Order 2, h = 18')
 
-# combine plots
-comb <- grid.arrange(p2_3h18a, p2_3h18b, p2_3h18c, ncol=3)
-ggsave('r/2_3h18.png', plot = comb)
-
 # combine all and check
 comb <- grid.arrange(p2_3h1a, p2_3h1b, p2_3h1c,
                      p2_3h5a, p2_3h5b, p2_3h5c,
                      p2_3h9a, p2_3h9b, p2_3h9c,
                      p2_3h18a, p2_3h18b, p2_3h18c, ncol=3)
-ggsave('r/2_3.png', plot = comb)
+ggsave('r/2_3r.png', plot = comb, width = 6, height = 9)
 
 # write table to LaTeX
-xtable(tab)
+print(xtable(tab), include.rownames=F)
 
 # clean up
 rm(list=ls(pattern="d2_|p2_|r2_|comb|tab")); gc()
@@ -407,11 +392,11 @@ tbl <- matrix(NA,3,10)
 
 # loop over 10 bandwidths, for three kernels, grab point estimates
 for(h in 1:10){
-  tbl[1,h] <- rdrobust(df$rel_pre, df$pov, p =1, q = 2, c = 0,
+  tbl[1,h] <- rdrobust(df$rel_post, df$pov, p = 1, q = 2, c = 0, h=h,
                        all = T, kernel = 'tri')$Estimate[2]
-  tbl[2,h] <- rdrobust(df$rel_pre, df$pov, p =1, q = 2, c = 0,
+  tbl[2,h] <- rdrobust(df$rel_post, df$pov, p =1, q = 2, c = 0, h=h,
                        all = T, kernel = 'uni')$Estimate[2]
-  tbl[3,h] <- rdrobust(df$rel_pre, df$pov, p =1, q = 2, c = 0,
+  tbl[3,h] <- rdrobust(df$rel_post, df$pov, p =1, q = 2, c = 0, h=h,
                        all = T, kernel = 'epa')$Estimate[2]
 }
 
@@ -431,7 +416,7 @@ tbl <- matrix(NA, 1, 10)
 
 # loop over 10 l's
 for(l in 1:10){
-  tbl[1,l] <- rdrobust(df$rel_pre[df$abs_pov_rank > l], df$pov[df$abs_pov_rank > l],
+  tbl[1,l] <- rdrobust(df$rel_post[df$abs_pov_rank > l], df$pov[df$abs_pov_rank > l],
                        p = 1, q = 2, c = 0, all = T)$Estimate[2]
 }
 
@@ -448,9 +433,9 @@ tbl <- matrix(NA, 2, 10)
 
 # loop over 10 cutoffs, save point estimates and p-values
 for(i in 1:10){
-  temp <- rdrobust(df$rel_pre, df$pov, p = 1, q = 2, c = cutoffs[i], all = T)
-  tbl[1,i] <- temp$Estimate[2]
-  tbl[2,i] <- temp$pv[2]
+  temp <- rdrobust(df$rel_post, df$pov, p = 1, q = 2, c = cutoffs[i], all = T)
+  tbl[1,i] <- temp$Estimate[2] # bias-corrected
+  tbl[2,i] <- temp$pv[3] # robust
 }
 
 # clean up and write to LaTeX

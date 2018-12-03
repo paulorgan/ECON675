@@ -34,20 +34,27 @@ rename mort_injury_post inj_post
 
 * using the rdrobust package from Matias
 rdplot rel_pre pov, c(0) binselect(es) ///
-    graph_options(title("Evenly-spaced binning, IMSE-optimal"))
-graph export "s\1_1a.png", replace
+    graph_options(title("Evenly-spaced binning, IMSE-optimal", size(medium)) ///
+					legend(size(vsmall)))
+graph save "s\1_1a.gph", replace
 
 rdplot rel_pre pov, c(0) binselect(esmv) ///
-    graph_options(title("Evenly-spaced binning, variability-mimicking"))
-graph export "s\1_1b.png", replace
+    graph_options(title("Evenly-spaced binning, variability-mimicking", size(medium)) ///
+					legend(size(vsmall)))
+graph save "s\1_1b.gph", replace
 
 rdplot rel_pre pov, c(0) binselect(qs) ///
-    graph_options(title("Quantile-spaced binning, IMSE-optimal"))
-graph export "s\1_1c.png", replace
+    graph_options(title("Quantile-spaced binning, IMSE-optimal", size(medium)) ///
+					legend(size(vsmall)))
+graph save "s\1_1c.gph", replace
 
 rdplot rel_pre pov, c(0) binselect(qsmv) ///
-    graph_options(title("Quantile-spaced binning, variability mimicking"))
-graph export "s\1_1d.png", replace
+    graph_options(title("Quantile-spaced binning, variability mimicking", size(medium)) ///
+					legend(size(vsmall)))
+graph save "s\1_1d.gph", replace
+
+graph combine "s\1_1a.gph" "s\1_1b.gph" "s\1_1c.gph" "s\1_1d.gph"
+graph export "s\1_1s.png", replace
 
 ********************************************************************************
 * Q2.1.2: Falsification Tests
@@ -56,9 +63,10 @@ graph export "s\1_1d.png", replace
 gen t = pov > 0
 
 * (1) histogram plots
-twoway (hist pov if t, freq bcolor(black)) ///
-	   (hist pov if !t, freq bcolor(red))
-graph export "s\1_2i.png", replace
+twoway (hist pov if t, freq bcolor(red)) ///
+	   (hist pov if !t, freq bcolor(black)), ///
+	   legend(label(1 "Treated") label(2 "Untreated") order(2 1))
+graph export "s\1_2s.png", replace
 	   
 * (2) binomial tests using rdlocrand package - how to interpret?
 rdwinselect pov, wmin(0.05) wstep(0.05) nwindows(100)
@@ -119,7 +127,7 @@ graph save "s\2_1d.gph", replace
 
 * combine graphs
 graph combine "s\2_1a.gph" "s\2_1b.gph" "s\2_1c.gph" "s\2_1d.gph"
-graph export "s\2_1.png", replace
+graph export "s\2_1s.png", replace
 
 * write table for LaTeX
 mat2txt, matrix(tbl) saving("s\2_1.txt") format(%9.4f) replace
@@ -184,7 +192,7 @@ graph save "s\2_2d.gph", replace
 
 * combine graphs
 graph combine "s\2_2a.gph" "s\2_2b.gph" "s\2_2c.gph" "s\2_2d.gph"
-graph export "s\2_2.png", replace
+graph export "s\2_2s.png", replace
 
 * write table for LaTeX
 mat2txt, matrix(tbl) saving("s\2_2.txt") format(%9.4f) replace
@@ -224,9 +232,6 @@ predict pred if abs(pov)<=1
 twoway scatter pred pov if abs(pov)<=1, title("Order 2, h = 1")
 graph save "s\2_3h1c.gph", replace
 
-graph combine "s\2_3h1a.gph" "s\2_3h1b.gph" "s\2_3h1c.gph", c(3)
-graph export "s\2_3h1.png", replace
-
 * for h = 5
 reg rel_post t if abs(pov)<=5, vce(hc2)
 matrix tbl[5,1] = _b["t"]
@@ -251,9 +256,6 @@ capture drop pred
 predict pred if abs(pov)<=5
 twoway scatter pred pov if abs(pov)<=5, title("Order 2, h = 5")
 graph save "s\2_3h5c.gph", replace
-
-graph combine "s\2_3h5a.gph" "s\2_3h5b.gph" "s\2_3h5c.gph", c(3)
-graph export "s\2_3h5.png", replace
 
 * for h = 9
 reg rel_post t if abs(pov)<=9, vce(hc2)
@@ -280,9 +282,6 @@ predict pred if abs(pov)<=9
 twoway scatter pred pov if abs(pov)<=9, title("Order 2, h = 9")
 graph save "s\2_3h9c.gph", replace
 
-graph combine "s\2_3h9a.gph" "s\2_3h9b.gph" "s\2_3h9c.gph", c(3)
-graph export "s\2_3h9.png", replace
-
 * for h = 18
 reg rel_post t if abs(pov)<=18, vce(hc2)
 matrix tbl[11,1] = _b["t"]
@@ -308,15 +307,12 @@ predict pred if abs(pov)<=18
 twoway scatter pred pov if abs(pov)<=18, title("Order 2, h = 18")
 graph save "s\2_3h18c.gph", replace
 
-graph combine "s\2_3h18a.gph" "s\2_3h18b.gph" "s\2_3h18c.gph", c(3)
-graph export "s\2_3h18.png", replace
-
-* combine all four sets of three
+* combine all graphs
 graph combine "s\2_3h1a.gph" "s\2_3h1b.gph" "s\2_3h1c.gph" ///
 	"s\2_3h5a.gph" "s\2_3h5b.gph" "s\2_3h5c.gph" ///
 	"s\2_3h9a.gph" "s\2_3h9b.gph" "s\2_3h9c.gph" ///
 	"s\2_3h18a.gph" "s\2_3h18b.gph" "s\2_3h18c.gph", c(3)
-graph export "s\2_3.png", replace
+graph export "s\2_3s.png", replace
 
 * write table to LaTeX
 mat2txt, matrix(tbl) saving("s\2_3.txt") format(%9.4f) replace

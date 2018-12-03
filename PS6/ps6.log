@@ -2,7 +2,7 @@
       name:  <unnamed>
        log:  C:\Users\prorgan\Box\Classes\Econ 675\Problem Sets\PS6\ps6.log
   log type:  text
- opened on:   2 Dec 2018, 16:43:33
+ opened on:   2 Dec 2018, 17:56:53
 
 . 
 . use HeadStart.dta
@@ -34,7 +34,8 @@
 . 
 . * using the rdrobust package from Matias
 . rdplot rel_pre pov, c(0) binselect(es) ///
->     graph_options(title("Evenly-spaced binning, IMSE-optimal"))
+>     graph_options(title("Evenly-spaced binning, IMSE-optimal", size(medium)) ///
+>                                         legend(size(vsmall)))
 
 RD Plot with evenly spaced number of bins using spacings estimators.
 
@@ -64,12 +65,14 @@ Rel. to IMSE-optimal: |
 ---------------------------------------------
 
 
-. graph export "s\1_1a.png", replace
-(file s\1_1a.png written in PNG format)
+. graph save "s\1_1a.gph", replace
+(file s\1_1a.gph saved)
 
 . 
 . rdplot rel_pre pov, c(0) binselect(esmv) ///
->     graph_options(title("Evenly-spaced binning, variability-mimicking"))
+>     graph_options(title("Evenly-spaced binning, variability-mimicking", size(medium
+> )) ///
+>                                         legend(size(vsmall)))
 
 RD Plot with evenly spaced mimicking variance number of bins using spacings estimator
 > s.
@@ -100,12 +103,13 @@ Rel. to IMSE-optimal: |
 ---------------------------------------------
 
 
-. graph export "s\1_1b.png", replace
-(file s\1_1b.png written in PNG format)
+. graph save "s\1_1b.gph", replace
+(file s\1_1b.gph saved)
 
 . 
 . rdplot rel_pre pov, c(0) binselect(qs) ///
->     graph_options(title("Quantile-spaced binning, IMSE-optimal"))
+>     graph_options(title("Quantile-spaced binning, IMSE-optimal", size(medium)) ///
+>                                         legend(size(vsmall)))
 
 RD Plot with quantile spaced number of bins using spacings estimators.
 
@@ -135,12 +139,14 @@ Rel. to IMSE-optimal: |
 ---------------------------------------------
 
 
-. graph export "s\1_1c.png", replace
-(file s\1_1c.png written in PNG format)
+. graph save "s\1_1c.gph", replace
+(file s\1_1c.gph saved)
 
 . 
 . rdplot rel_pre pov, c(0) binselect(qsmv) ///
->     graph_options(title("Quantile-spaced binning, variability mimicking"))
+>     graph_options(title("Quantile-spaced binning, variability mimicking", size(medi
+> um)) ///
+>                                         legend(size(vsmall)))
 
 RD Plot with quantile spaced mimicking variance quantile spaced using spacings estima
 > tors.
@@ -171,8 +177,14 @@ Rel. to IMSE-optimal: |
 ---------------------------------------------
 
 
-. graph export "s\1_1d.png", replace
-(file s\1_1d.png written in PNG format)
+. graph save "s\1_1d.gph", replace
+(file s\1_1d.gph saved)
+
+. 
+. graph combine "s\1_1a.gph" "s\1_1b.gph" "s\1_1c.gph" "s\1_1d.gph"
+
+. graph export "s\1_1s.png", replace
+(file s\1_1s.png written in PNG format)
 
 . 
 . ********************************************************************************
@@ -183,209 +195,89 @@ Rel. to IMSE-optimal: |
 
 . 
 . * (1) histogram plots
+. twoway (hist pov if t, freq bcolor(black)) leg(lab(Treated)) ///
+>            (hist pov if !t, freq bcolor(red)) leg(lab(Untreated))
+leg(lab(Treated)) is not a twoway plot type
+r(198);
+
+end of do-file
+
+r(198);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
+
 . twoway (hist pov if t, freq bcolor(black)) ///
->            (hist pov if !t, freq bcolor(red))
+>            (hist pov if !t, freq bcolor(red)) ///
+>            legend(1 "Teated" 2 "Untreated")
+) required
+r(100);
 
-. graph export "s\1_2i.png", replace
-(file s\1_2i.png written in PNG format)
+end of do-file
 
-.            
-. * (2) binomial tests using rdlocrand package - how to interpret?
-. rdwinselect pov, wmin(0.05) wstep(0.05) nwindows(100)
+r(100);
 
+. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
 
-Window selection for RD under local randomization
+. twoway (hist pov if t, freq bcolor(black)) ///
+>            (hist pov if !t, freq bcolor(red)), ///
+>            legend(1 "Teated" 2 "Untreated")
+option 1 not allowed
+r(198);
 
+end of do-file
 
-Cutoff c = 0.00   | Left of c   Right of c        Number of obs  =          2783
-------------------+-----------------------        Order of poly  =             0
-    Number of obs |      2489          294        Kernel type    =       uniform
-   1st percentile |        25            3        Reps           =          1000
-   5th percentile |       124           14        Testing method =     rdrandinf
-  10th percentile |       249           29        Balance test   =     diffmeans
-  20th percentile |       497           59
+r(198);
 
+. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
 
-                  |   Bal. test         Var. name    Bin. test 
- Window length /2 |    p-value        (min p-value)   p-value     Obs<c   Obs>=c
-------------------+-------------------------------------------------------------
-            0.050 |         .                 -         1.000         1        1
-            0.100 |         .                 -         1.000         3        3
-            0.150 |         .                 -         1.000         4        5
-            0.200 |         .                 -         0.791         6        8
-            0.250 |         .                 -         0.607         6        9
-            0.300 |         .                 -         1.000         9       10
-            0.350 |         .                 -         1.000        11       12
-            0.400 |         .                 -         1.000        12       12
-            0.450 |         .                 -         1.000        15       15
-            0.500 |         .                 -         0.864        18       16
-            0.550 |         .                 -         0.871        20       18
-            0.600 |         .                 -         1.000        20       20
-            0.650 |         .                 -         1.000        21       20
-            0.700 |         .                 -         0.883        24       22
-            0.750 |         .                 -         0.665        26       22
-            0.800 |         .                 -         0.678        28       24
-            0.850 |         .                 -         0.689        30       26
-            0.900 |         .                 -         0.603        32       27
-            0.950 |         .                 -         0.699        32       28
-            1.000 |         .                 -         0.532        35       29
-            1.050 |         .                 -         0.403        39       31
-            1.100 |         .                 -         0.302        43       33
-            1.150 |         .                 -         0.254        44       33
-            1.200 |         .                 -         0.368        44       35
-            1.250 |         .                 -         0.266        46       35
-            1.300 |         .                 -         0.203        51       38
-            1.350 |         .                 -         0.208        52       39
-            1.400 |         .                 -         0.213        53       40
-            1.450 |         .                 -         0.213        53       40
-            1.500 |         .                 -         0.213        53       40
-            1.550 |         .                 -         0.261        54       42
-            1.600 |         .                 -         0.422        54       45
-            1.650 |         .                 -         0.324        57       46
-            1.700 |         .                 -         0.329        58       47
-            1.750 |         .                 -         0.334        59       48
-            1.800 |         .                 -         0.255        62       49
-            1.850 |         .                 -         0.259        63       50
-            1.900 |         .                 -         0.263        64       51
-            1.950 |         .                 -         0.355        64       53
-            2.000 |         .                 -         0.243        69       55
-            2.050 |         .                 -         0.287        70       57
-            2.100 |         .                 -         0.294        72       59
-            2.150 |         .                 -         0.294        72       59
-            2.200 |         .                 -         0.338        72       60
-            2.250 |         .                 -         0.390        73       62
-            2.300 |         .                 -         0.494        73       64
-            2.350 |         .                 -         0.498        74       65
-            2.400 |         .                 -         0.501        75       66
-            2.450 |         .                 -         0.456        78       68
-            2.500 |         .                 -         0.413        80       69
-            2.550 |         .                 -         0.515        80       71
-            2.600 |         .                 -         0.570        80       72
-            2.650 |         .                 -         0.570        80       72
-            2.700 |         .                 -         0.630        81       74
-            2.750 |         .                 -         0.689        81       75
-            2.800 |         .                 -         0.582        85       77
-            2.850 |         .                 -         0.534        87       78
-            2.900 |         .                 -         0.490        90       80
-            2.950 |         .                 -         0.548        93       84
-            3.000 |         .                 -         0.412        96       84
-            3.050 |         .                 -         0.372        97       84
-            3.100 |         .                 -         0.335        98       84
-            3.150 |         .                 -         0.417        98       86
-            3.200 |         .                 -         0.610        98       90
-            3.250 |         .                 -         0.773        99       94
-            3.300 |         .                 -         0.721       101       95
-            3.350 |         .                 -         0.724       103       97
-            3.400 |         .                 -         0.675       106       99
-            3.450 |         .                 -         0.626       107       99
-            3.500 |         .                 -         0.628       108      100
-            3.550 |         .                 -         0.783       108      103
-            3.600 |         .                 -         0.733       110      104
-            3.650 |         .                 -         0.734       111      105
-            3.700 |         .                 -         0.734       111      105
-            3.750 |         .                 -         0.687       114      107
-            3.800 |         .                 -         0.691       117      110
-            3.850 |         .                 -         0.597       119      110
-            3.900 |         .                 -         0.472       123      111
-            3.950 |         .                 -         0.363       126      111
-            4.000 |         .                 -         0.305       130      113
-            4.050 |         .                 -         0.307       131      114
-            4.100 |         .                 -         0.341       132      116
-            4.150 |         .                 -         0.288       137      119
-            4.200 |         .                 -         0.320       138      121
-            4.250 |         .                 -         0.322       139      122
-            4.300 |         .                 -         0.354       139      123
-            4.350 |         .                 -         0.244       143      123
-            4.400 |         .                 -         0.272       144      125
-            4.450 |         .                 -         0.301       144      126
-            4.500 |         .                 -         0.397       144      129
-            4.550 |         .                 -         0.400       146      131
-            4.600 |         .                 -         0.285       151      132
-            4.650 |         .                 -         0.288       153      134
-            4.700 |         .                 -         0.217       156      134
-            4.750 |         .                 -         0.162       160      135
-            4.800 |         .                 -         0.164       161      136
-            4.850 |         .                 -         0.133       163      136
-            4.900 |         .                 -         0.150       164      138
-            4.950 |         .                 -         0.136       166      139
-            5.000 |         .                 -         0.111       169      140
+. twoway (hist pov if t, freq bcolor(black)) ///
+>            (hist pov if !t, freq bcolor(red)), ///
+>            legend(label(1 "Teated") label(2 "Untreated"))
 
-Variable used in binomial test (running variable): pov
-
-Note: no covariates specified.
-Need to specify covariates to find recommended length.
+. graph export "s\1_2s.png", replace
+(file s\1_2s.png written in PNG format)
 
 . 
-. * (3) continuity-in-density tests using rddensity package - how to interpret?
-. rddensity pov, all
-Computing data-driven bandwidth selectors.
+end of do-file
 
-RD Manipulation Test using local polynomial density estimation.
+. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
 
-      Cutoff c = 0 |Left of c   Right of c          Number of obs =         2783
--------------------+----------------------          Model         = unrestricted
-     Number of obs |      2489         294          BW method     =         comb
-Eff. Number of obs |       331         211          Kernel        =   triangular
-    Order est. (p) |         2           2          VCE method    =    jackknife
-    Order bias (q) |         3           3
-       BW est. (h) |     9.585       8.469
+. twoway (hist pov if t, freq bcolor(black)) ///
+>            (hist pov if !t, freq bcolor(red)), ///
+>            legend(label(1 "Teated") label(2 "Untreated") order(2 1))
 
-Running variable: pov.
------------------------------------------------
-            Method |          T        P>|T|
--------------------+---------------------------
-      Conventional |       0.1955      0.8450
-            Robust |      -0.4692      0.6389
------------------------------------------------
-
-
-. rddensity pov, all h(5 5)
-
-RD Manipulation Test using local polynomial density estimation.
-
-      Cutoff c = 0 |Left of c   Right of c          Number of obs =         2783
--------------------+----------------------          Model         = unrestricted
-     Number of obs |      2489         294          BW method     =       manual
-Eff. Number of obs |       169         140          Kernel        =   triangular
-    Order est. (p) |         2           2          VCE method    =    jackknife
-    Order bias (q) |         3           3
-       BW est. (h) |     5.000       5.000
-
-Running variable: pov.
------------------------------------------------
-            Method |          T        P>|T|
--------------------+---------------------------
-      Conventional |      -0.9798      0.3272
-            Robust |      -1.6268      0.1038
------------------------------------------------
-
-
-. rddensity pov, all h(1 1)
-
-RD Manipulation Test using local polynomial density estimation.
-
-      Cutoff c = 0 |Left of c   Right of c          Number of obs =         2783
--------------------+----------------------          Model         = unrestricted
-     Number of obs |      2489         294          BW method     =       manual
-Eff. Number of obs |        35          29          Kernel        =   triangular
-    Order est. (p) |         2           2          VCE method    =    jackknife
-    Order bias (q) |         3           3
-       BW est. (h) |     1.000       1.000
-
-Running variable: pov.
------------------------------------------------
-            Method |          T        P>|T|
--------------------+---------------------------
-      Conventional |       0.3943      0.6934
-            Robust |       0.7139      0.4753
------------------------------------------------
-
+. graph export "s\1_2s.png", replace
+(file s\1_2s.png written in PNG format)
 
 . 
-. ********************************************************************************
-. * Q2.2.1: constant treatment effect model
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
+
+. twoway (hist pov if t, freq bcolor(black)) ///
+>            (hist pov if !t, freq bcolor(red)), ///
+>            legend(label(1 "Treated") label(2 "Untreated") order(2 1))
+
+. graph export "s\1_2s.png", replace
+(file s\1_2s.png written in PNG format)
+
 . 
-. * generate variables for polynomials of order 3-6
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
+
+. twoway (hist pov if t, freq bcolor(red)) ///
+>            (hist pov if !t, freq bcolor(black)), ///
+>            legend(label(1 "Treated") label(2 "Untreated") order(2 1))
+
+. graph export "s\1_2s.png", replace
+(file s\1_2s.png written in PNG format)
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
+
 . gen p2 = pov^2
 
 . gen p3 = pov^3
@@ -550,18 +442,19 @@ Linear regression                               Number of obs     =      2,783
 . * combine graphs
 . graph combine "s\2_1a.gph" "s\2_1b.gph" "s\2_1c.gph" "s\2_1d.gph"
 
-. graph export "s\2_1.png", replace
-(file s\2_1.png written in PNG format)
+. graph export "s\2_1s.png", replace
+(note: file s\2_1s.png not found)
+(file s\2_1s.png written in PNG format)
 
 . 
 . * write table for LaTeX
 . mat2txt, matrix(tbl) saving("s\2_1.txt") format(%9.4f) replace
 
 . 
-. ********************************************************************************
-. * Q2.2.2: heterogeneous treatment effect model
-. 
-. * define new, interacted terms for polynomials
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
+
 . gen p1t = pov*t
 
 . gen p1u = pov*(1-t)
@@ -761,18 +654,19 @@ Linear regression                               Number of obs     =      2,783
 . * combine graphs
 . graph combine "s\2_2a.gph" "s\2_2b.gph" "s\2_2c.gph" "s\2_2d.gph"
 
-. graph export "s\2_2.png", replace
-(file s\2_2.png written in PNG format)
+. graph export "s\2_2s.png", replace
+(note: file s\2_2s.png not found)
+(file s\2_2s.png written in PNG format)
 
 . 
 . * write table for LaTeX
 . mat2txt, matrix(tbl) saving("s\2_2.txt") format(%9.4f) replace
 
 . 
-. ********************************************************************************
-. * Q2.2.3: local parametric model (p = 0,1,2 and h = 1,5,9,18)
-. 
-. * matrix to fill with estimates
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
+
 . matrix tbl = J(12,3,.)
 
 . matrix tbl[1,1] = 1
@@ -887,12 +781,6 @@ Linear regression                               Number of obs     =         64
 (file s\2_3h1c.gph saved)
 
 . 
-. graph combine "s\2_3h1a.gph" "s\2_3h1b.gph" "s\2_3h1c.gph", c(3)
-
-. graph export "s\2_3h1.png", replace
-(file s\2_3h1.png written in PNG format)
-
-. 
 . * for h = 5
 . reg rel_post t if abs(pov)<=5, vce(hc2)
 
@@ -994,12 +882,6 @@ Linear regression                               Number of obs     =        309
 
 . graph save "s\2_3h5c.gph", replace
 (file s\2_3h5c.gph saved)
-
-. 
-. graph combine "s\2_3h5a.gph" "s\2_3h5b.gph" "s\2_3h5c.gph", c(3)
-
-. graph export "s\2_3h5.png", replace
-(file s\2_3h5.png written in PNG format)
 
 . 
 . * for h = 9
@@ -1105,12 +987,6 @@ Linear regression                               Number of obs     =        524
 (file s\2_3h9c.gph saved)
 
 . 
-. graph combine "s\2_3h9a.gph" "s\2_3h9b.gph" "s\2_3h9c.gph", c(3)
-
-. graph export "s\2_3h9.png", replace
-(file s\2_3h9.png written in PNG format)
-
-. 
 . * for h = 18
 . reg rel_post t if abs(pov)<=18, vce(hc2)
 
@@ -1214,29 +1090,25 @@ Linear regression                               Number of obs     =        954
 (file s\2_3h18c.gph saved)
 
 . 
-. graph combine "s\2_3h18a.gph" "s\2_3h18b.gph" "s\2_3h18c.gph", c(3)
-
-. graph export "s\2_3h18.png", replace
-(file s\2_3h18.png written in PNG format)
-
-. 
-. * combine all four sets of three
+. * combine all graphs
 . graph combine "s\2_3h1a.gph" "s\2_3h1b.gph" "s\2_3h1c.gph" ///
 >         "s\2_3h5a.gph" "s\2_3h5b.gph" "s\2_3h5c.gph" ///
 >         "s\2_3h9a.gph" "s\2_3h9b.gph" "s\2_3h9c.gph" ///
 >         "s\2_3h18a.gph" "s\2_3h18b.gph" "s\2_3h18c.gph", c(3)
 
-. graph export "s\2_3.png", replace
-(file s\2_3.png written in PNG format)
+. graph export "s\2_3s.png", replace
+(note: file s\2_3s.png not found)
+(file s\2_3s.png written in PNG format)
 
 . 
 . * write table to LaTeX
 . mat2txt, matrix(tbl) saving("s\2_3.txt") format(%9.4f) replace
 
 . 
-. ********************************************************************************
-. * Q2.3.1: MSE-optimal RD estimators
-. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
+
 . rdrobust rel_post pov, p(0) q(1) c(0) all
 
 Sharp RD estimates using local polynomial regression.
@@ -1258,6 +1130,62 @@ Outcome: rel_post. Running variable: pov.
       Conventional | -2.1137     .98967   -2.1358  0.033   -4.05344     -.173988
     Bias-corrected | -2.5561     .98967   -2.5828  0.010   -4.49581     -.616362
             Robust | -2.5561     1.2282   -2.0812  0.037   -4.96328     -.148888
+--------------------------------------------------------------------------------
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
+
+. rdrobust rel_post pov, p(1) q(2) c(0) all
+
+Sharp RD estimates using local polynomial regression.
+
+      Cutoff c = 0 | Left of c  Right of c            Number of obs =       2783
+-------------------+----------------------            BW type       =      mserd
+     Number of obs |      2489         294            Kernel        = Triangular
+Eff. Number of obs |       234         180            VCE method    =         NN
+    Order est. (p) |         1           1
+    Order bias (q) |         2           2
+       BW est. (h) |     6.811       6.811
+       BW bias (b) |    10.726      10.726
+         rho (h/b) |     0.635       0.635
+
+Outcome: rel_post. Running variable: pov.
+--------------------------------------------------------------------------------
+            Method |   Coef.    Std. Err.    z     P>|z|    [95% Conf. Interval]
+-------------------+------------------------------------------------------------
+      Conventional |  -2.409     1.2056   -1.9981  0.046   -4.77201     -.046024
+    Bias-corrected | -2.7806     1.2056   -2.3064  0.021   -5.14364     -.417655
+            Robust | -2.7806     1.3683   -2.0323  0.042   -5.46238     -.098916
+--------------------------------------------------------------------------------
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
+
+. rdrobust rel_post pov, p(2) q(3) c(0) all
+
+Sharp RD estimates using local polynomial regression.
+
+      Cutoff c = 0 | Left of c  Right of c            Number of obs =       2783
+-------------------+----------------------            BW type       =      mserd
+     Number of obs |      2489         294            Kernel        = Triangular
+Eff. Number of obs |       269         194            VCE method    =         NN
+    Order est. (p) |         2           2
+    Order bias (q) |         3           3
+       BW est. (h) |     7.578       7.578
+       BW bias (b) |    10.680      10.680
+         rho (h/b) |     0.710       0.710
+
+Outcome: rel_post. Running variable: pov.
+--------------------------------------------------------------------------------
+            Method |   Coef.    Std. Err.    z     P>|z|    [95% Conf. Interval]
+-------------------+------------------------------------------------------------
+      Conventional | -3.4744     1.3684   -2.5391  0.011    -6.1564     -.792448
+    Bias-corrected | -3.7789     1.3684   -2.7616  0.006   -6.46087     -1.09692
+            Robust | -3.7789      1.448   -2.6097  0.009   -6.61696     -.940831
 --------------------------------------------------------------------------------
 
 . 
@@ -1331,7 +1259,176 @@ Outcome: inj_post. Running variable: pov.
 . 
 . * write to LaTeX
 . mat2txt, matrix(tbl) saving("s\3_2b.txt") format(%9.4f) replace
-(note: file s\3_2b.txt not found)
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
+
+. matrix tbl = J(3, 10, .)
+
+. 
+. * loop over bandwidths, calc for three different kernels
+. forvalues h = 1(1)10 {
+  2.     quiet rdrobust rel_post pov, h(`h') kernel(tri) p(1) q(2) c(0) all
+  3.         matrix tbl[1, `h'] = round(e(tau_bc), .001)
+  4.         quiet rdrobust rel_post pov, h(`h') kernel(uni) p(1) q(2) c(0) all
+  5.         matrix tbl[2, `h'] = round(e(tau_bc), .001)
+  6.         quiet rdrobust rel_post pov, h(`h') kernel(epa) p(1) q(2) c(0) all
+  7.         matrix tbl[3, `h'] = round(e(tau_bc), .001)
+  8. }
+
+. 
+. * write to LaTeX
+. mat2txt, matrix(tbl) saving("s\3_2b.txt") format(%9.4f) replace
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
+
+. matrix tbl = J(3, 10, .)
+
+. 
+. * loop over bandwidths, calc for three different kernels
+. forvalues h = 1(1)10 {
+  2.     quiet rdrobust rel_post pov, h(`h') kernel(tri) p(1) q(2) c(0) all
+  3.         matrix tbl[1, `h'] = round(e(tau_bc), .01)
+  4.         quiet rdrobust rel_post pov, h(`h') kernel(uni) p(1) q(2) c(0) all
+  5.         matrix tbl[2, `h'] = round(e(tau_bc), .01)
+  6.         quiet rdrobust rel_post pov, h(`h') kernel(epa) p(1) q(2) c(0) all
+  7.         matrix tbl[3, `h'] = round(e(tau_bc), .01)
+  8. }
+
+. 
+. * write to LaTeX
+. mat2txt, matrix(tbl) saving("s\3_2b.txt") format(%9.4f) replace
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
+
+. gen pov_abs = abs(pov)
+
+. sort pov_abs
+
+. drop pov_abs
+
+. 
+. * empty matrix to fill with results
+. matrix tbl = J(1, 10, .)
+
+. 
+. * loop over 10 l's
+. forvalues l = 1(1)10 {
+  2.     quiet rdrobust rel_post pov if _n>`l', p(1) q(2) c(0) all
+  3.         matrix tbl[1, `l'] = round(e(tau_bc), .01)
+  4. }
+
+. 
+. * write to LaTeX
+. mat2txt, matrix(tbl) saving("s\3_2c.txt") format(%9.4f) replace
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
+
+. matrix tbl = J(2, 10, .)
+
+. 
+. * loop over various cutoffs, save point estimates and p-values
+. forvalues c = -10(2)10 {
+  2.     if `c' != 0 {
+  3.             quiet rdrobust rel_post pov, c(`c') p(1) q(2) all
+  4.                 * to know which matrix position to store in
+.                 if `c' < 0 { 
+  5.                     local i = `c'/2 + 6 
+  6.                 }
+  7.                 if `c' > 0 { 
+  8.                     local i = `c'/2 + 5 
+  9.                 }
+ 10.                 matrix tbl[1, `i'] = round(e(tau_bc), .01)
+ 11.                 matrix tbl[2, `i'] = round(e(pv_rb), .01)
+ 12.         }
+ 13. }
+
+. 
+. * write to LaTeX
+. mat2txt, matrix(tbl) saving("s\3_2d.txt") format(%9.4f) replace
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
+
+. rdrobust rel_pre pov, p(1) q(2) c(0) all
+
+Sharp RD estimates using local polynomial regression.
+
+      Cutoff c = 0 | Left of c  Right of c            Number of obs =       2783
+-------------------+----------------------            BW type       =      mserd
+     Number of obs |      2489         294            Kernel        = Triangular
+Eff. Number of obs |       167         139            VCE method    =         NN
+    Order est. (p) |         1           1
+    Order bias (q) |         2           2
+       BW est. (h) |     4.964       4.964
+       BW bias (b) |     8.531       8.531
+         rho (h/b) |     0.582       0.582
+
+Outcome: rel_pre. Running variable: pov.
+--------------------------------------------------------------------------------
+            Method |   Coef.    Std. Err.    z     P>|z|    [95% Conf. Interval]
+-------------------+------------------------------------------------------------
+      Conventional | -2.3764     2.2481   -1.0570  0.290   -6.78263      2.02987
+    Bias-corrected | -1.7673     2.2481   -0.7861  0.432   -6.17357      2.63892
+            Robust | -1.7673      2.675   -0.6607  0.509   -7.01018      3.47553
+--------------------------------------------------------------------------------
+
+. * check postintervention unrelated mortality
+. rdrobust inj_post pov, p(1) q(2) c(0) all
+
+Sharp RD estimates using local polynomial regression.
+
+      Cutoff c = 0 | Left of c  Right of c            Number of obs =       2783
+-------------------+----------------------            BW type       =      mserd
+     Number of obs |      2489         294            Kernel        = Triangular
+Eff. Number of obs |       211         169            VCE method    =         NN
+    Order est. (p) |         1           1
+    Order bias (q) |         2           2
+       BW est. (h) |     6.263       6.263
+       BW bias (b) |     9.349       9.349
+         rho (h/b) |     0.670       0.670
+
+Outcome: inj_post. Running variable: pov.
+--------------------------------------------------------------------------------
+            Method |   Coef.    Std. Err.    z     P>|z|    [95% Conf. Interval]
+-------------------+------------------------------------------------------------
+      Conventional |  1.1321     3.7754   0.2999   0.764   -6.26747      8.53169
+    Bias-corrected |  1.5214     3.7754   0.4030   0.687   -5.87819      8.92097
+            Robust |  1.5214     4.3859   0.3469   0.729   -7.07472      10.1175
+--------------------------------------------------------------------------------
+
+. 
+. ** b) Bandwidth and Kernel sensitivity
+. * empty matrix to fill with results
+. matrix tbl = J(3, 10, .)
+
+. 
+. * loop over bandwidths, calc for three different kernels
+. forvalues h = 1(1)10 {
+  2.     quiet rdrobust rel_post pov, h(`h') kernel(tri) p(1) q(2) c(0) all
+  3.         matrix tbl[1, `h'] = round(e(tau_bc), .01)
+  4.         quiet rdrobust rel_post pov, h(`h') kernel(uni) p(1) q(2) c(0) all
+  5.         matrix tbl[2, `h'] = round(e(tau_bc), .01)
+  6.         quiet rdrobust rel_post pov, h(`h') kernel(epa) p(1) q(2) c(0) all
+  7.         matrix tbl[3, `h'] = round(e(tau_bc), .01)
+  8. }
+
+. 
+. * write to LaTeX
+. mat2txt, matrix(tbl) saving("s\3_2b.txt") format(%9.4f) replace
 
 . 
 . ** c) "donut hole" approach
@@ -1356,7 +1453,128 @@ Outcome: inj_post. Running variable: pov.
 . 
 . * write to LaTeX
 . mat2txt, matrix(tbl) saving("s\3_2c.txt") format(%9.4f) replace
-(note: file s\3_2c.txt not found)
+
+. 
+. ** d) Placebo cutoff approach
+. * empty matrix to fill with results
+. matrix tbl = J(2, 10, .)
+
+. 
+. * loop over various cutoffs, save point estimates and p-values
+. forvalues c = -10(2)10 {
+  2.     if `c' != 0 {
+  3.             quiet rdrobust rel_post pov, c(`c') p(1) q(2) all
+  4.                 * to know which matrix position to store in
+.                 if `c' < 0 { 
+  5.                     local i = `c'/2 + 6 
+  6.                 }
+  7.                 if `c' > 0 { 
+  8.                     local i = `c'/2 + 5 
+  9.                 }
+ 10.                 matrix tbl[1, `i'] = round(e(tau_bc), .01)
+ 11.                 matrix tbl[2, `i'] = round(e(pv_bc), .01)
+ 12.         }
+ 13. }
+
+. 
+. * write to LaTeX
+. mat2txt, matrix(tbl) saving("s\3_2d.txt") format(%9.4f) replace
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
+
+. rdrobust rel_pre pov, p(1) q(2) c(0) all
+
+Sharp RD estimates using local polynomial regression.
+
+      Cutoff c = 0 | Left of c  Right of c            Number of obs =       2783
+-------------------+----------------------            BW type       =      mserd
+     Number of obs |      2489         294            Kernel        = Triangular
+Eff. Number of obs |       167         139            VCE method    =         NN
+    Order est. (p) |         1           1
+    Order bias (q) |         2           2
+       BW est. (h) |     4.964       4.964
+       BW bias (b) |     8.531       8.531
+         rho (h/b) |     0.582       0.582
+
+Outcome: rel_pre. Running variable: pov.
+--------------------------------------------------------------------------------
+            Method |   Coef.    Std. Err.    z     P>|z|    [95% Conf. Interval]
+-------------------+------------------------------------------------------------
+      Conventional | -2.3764     2.2481   -1.0570  0.290   -6.78263      2.02987
+    Bias-corrected | -1.7673     2.2481   -0.7861  0.432   -6.17357      2.63892
+            Robust | -1.7673      2.675   -0.6607  0.509   -7.01018      3.47553
+--------------------------------------------------------------------------------
+
+. * check postintervention unrelated mortality
+. rdrobust inj_post pov, p(1) q(2) c(0) all
+
+Sharp RD estimates using local polynomial regression.
+
+      Cutoff c = 0 | Left of c  Right of c            Number of obs =       2783
+-------------------+----------------------            BW type       =      mserd
+     Number of obs |      2489         294            Kernel        = Triangular
+Eff. Number of obs |       211         169            VCE method    =         NN
+    Order est. (p) |         1           1
+    Order bias (q) |         2           2
+       BW est. (h) |     6.263       6.263
+       BW bias (b) |     9.349       9.349
+         rho (h/b) |     0.670       0.670
+
+Outcome: inj_post. Running variable: pov.
+--------------------------------------------------------------------------------
+            Method |   Coef.    Std. Err.    z     P>|z|    [95% Conf. Interval]
+-------------------+------------------------------------------------------------
+      Conventional |  1.1321     3.7754   0.2999   0.764   -6.26747      8.53169
+    Bias-corrected |  1.5214     3.7754   0.4030   0.687   -5.87819      8.92097
+            Robust |  1.5214     4.3859   0.3469   0.729   -7.07472      10.1175
+--------------------------------------------------------------------------------
+
+. 
+. ** b) Bandwidth and Kernel sensitivity
+. * empty matrix to fill with results
+. matrix tbl = J(3, 10, .)
+
+. 
+. * loop over bandwidths, calc for three different kernels
+. forvalues h = 1(1)10 {
+  2.     quiet rdrobust rel_post pov, h(`h') kernel(tri) p(1) q(2) c(0) all
+  3.         matrix tbl[1, `h'] = round(e(tau_bc), .01)
+  4.         quiet rdrobust rel_post pov, h(`h') kernel(uni) p(1) q(2) c(0) all
+  5.         matrix tbl[2, `h'] = round(e(tau_bc), .01)
+  6.         quiet rdrobust rel_post pov, h(`h') kernel(epa) p(1) q(2) c(0) all
+  7.         matrix tbl[3, `h'] = round(e(tau_bc), .01)
+  8. }
+
+. 
+. * write to LaTeX
+. mat2txt, matrix(tbl) saving("s\3_2b.txt") format(%9.4f) replace
+
+. 
+. ** c) "donut hole" approach
+. * first sort by closeness for povrate to 0
+. gen pov_abs = abs(pov)
+
+. sort pov_abs
+
+. drop pov_abs
+
+. 
+. * empty matrix to fill with results
+. matrix tbl = J(1, 10, .)
+
+. 
+. * loop over 10 l's
+. forvalues l = 1(1)10 {
+  2.     quiet rdrobust rel_post pov if _n>`l', p(1) q(2) c(0) all
+  3.         matrix tbl[1, `l'] = round(e(tau_bc), .01)
+  4. }
+
+. 
+. * write to LaTeX
+. mat2txt, matrix(tbl) saving("s\3_2c.txt") format(%9.4f) replace
 
 . 
 . ** d) Placebo cutoff approach
@@ -1383,8 +1601,8 @@ Outcome: inj_post. Running variable: pov.
 . 
 . * write to LaTeX
 . mat2txt, matrix(tbl) saving("s\3_2d.txt") format(%9.4f) replace
-(note: file s\3_2d.txt not found)
 
 . 
 end of do-file
 
+. exit, clear
