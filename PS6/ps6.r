@@ -1,7 +1,7 @@
 ###############################################################################
 # Author: Paul R. Organ
 # Purpose: ECON 675, PS6
-# Last Update: Dec 2, 2018
+# Last Update: Dec 4, 2018
 ###############################################################################
 # Preliminaries
 options(stringsAsFactors = F)
@@ -445,9 +445,69 @@ colnames(tbl) <- 1:10
 xtable(tbl)
 
 # clean up Q2.3
-rm(r3_1a, r3_1b, r3_1c, tbl, temp, cutoffs, h, i, l); gc()
+rm(tbl, temp, cutoffs, h, i, l); gc()
 
 ###############################################################################
-# Q2.4: Local Randomization Methods
+# Q2.4.1: Local Randomization Methods - Window Selection
+
+pre <- df[,c('inj_post', 'rel_pre')] %>% as.matrix()
+
+# select windows using the four included methods
+rdwinselect(df$pov, X = pre, cutoff = 0, wmin = 0.1, wstep = 0.2,
+            nwindows = 20, statistic = 'diffmeans')
+# recommended window is 1.7
+
+rdwinselect(df$pov, X = pre, cutoff = 0, wmin = 0.1, wstep = 0.2,
+            nwindows = 20, statistic = 'ksmirnov')
+# recommended window is 1.9
+
+rdwinselect(df$pov, X = pre, cutoff = 0, wmin = 0.1, wstep = 0.2,
+            nwindows = 20, statistic = 'ranksum')
+# recommended window is 1.7
+
+rdwinselect(df$pov, X = pre, cutoff = 0, wmin = 0.1, wstep = 0.2,
+            nwindows = 20, statistic = 'hotelling')
+# recommended window is 1.9
+
+# plot based on the selected binwidth of 1.7 (using diffmeans)
+png('r/4_1r.png')
+rdplot(df$rel_post[df$pov_abs<=1.7], df$pov[df$pov_abs<=1.7],
+       binselect = 'es', p = 0,
+       title = '',
+       x.label = 'Poverty Rate (Normalized)',
+       y.label = 'Average Mortality Rate (Post)')
+dev.off()
+
+###############################################################################
+# Q2.4.2: Local Randomization Methods - Basic Analysis
+
+# do the randomization analysis using window from above
+set.seed(22)
+rdrandinf(df$rel_post, df$pov, wl = -1.7, wr = 1.7)
+
+###############################################################################
+# Q2.4.3: Local Randomization Methods - Sensitivity Analysis
+
+# empty matrix to fill with results
+tbl <- matrix(NA,4,10)
+
+# loop over window values, store results
+for(i in 1:10){
+  win <- 0.8 + (i-1)*0.2
+  tbl[1,i] <- win
+  
+  reg <- lm(rel_post ~ t, df, subset = (pov_abs <= win))
+  
+  tbl[2,i] <- reg$coefficients['t']
+  tbl[3,i] <- diag(vcovHC(reg, type = "HC2")) %>% sqrt() %>% .['t']
+  tbl[4,i] <- summary(reg)$coefficients['t',4]
+}
+
+# write to LaTeX
+tbl %<>% as.data.frame()
+colnames(tbl) <- tbl[1,]
+tbl <- tbl[2:4,]
+rownames(tbl) <- c('Point estimate', 'Standard error', 'p-value')
+xtable(tbl)
 
 ###############################################################################

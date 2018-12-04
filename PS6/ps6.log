@@ -2,7 +2,7 @@
       name:  <unnamed>
        log:  C:\Users\prorgan\Box\Classes\Econ 675\Problem Sets\PS6\ps6.log
   log type:  text
- opened on:   2 Dec 2018, 17:56:53
+ opened on:   4 Dec 2018, 17:41:57
 
 . 
 . use HeadStart.dta
@@ -195,77 +195,6 @@ Rel. to IMSE-optimal: |
 
 . 
 . * (1) histogram plots
-. twoway (hist pov if t, freq bcolor(black)) leg(lab(Treated)) ///
->            (hist pov if !t, freq bcolor(red)) leg(lab(Untreated))
-leg(lab(Treated)) is not a twoway plot type
-r(198);
-
-end of do-file
-
-r(198);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
-
-. twoway (hist pov if t, freq bcolor(black)) ///
->            (hist pov if !t, freq bcolor(red)) ///
->            legend(1 "Teated" 2 "Untreated")
-) required
-r(100);
-
-end of do-file
-
-r(100);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
-
-. twoway (hist pov if t, freq bcolor(black)) ///
->            (hist pov if !t, freq bcolor(red)), ///
->            legend(1 "Teated" 2 "Untreated")
-option 1 not allowed
-r(198);
-
-end of do-file
-
-r(198);
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
-
-. twoway (hist pov if t, freq bcolor(black)) ///
->            (hist pov if !t, freq bcolor(red)), ///
->            legend(label(1 "Teated") label(2 "Untreated"))
-
-. graph export "s\1_2s.png", replace
-(file s\1_2s.png written in PNG format)
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
-
-. twoway (hist pov if t, freq bcolor(black)) ///
->            (hist pov if !t, freq bcolor(red)), ///
->            legend(label(1 "Teated") label(2 "Untreated") order(2 1))
-
-. graph export "s\1_2s.png", replace
-(file s\1_2s.png written in PNG format)
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
-
-. twoway (hist pov if t, freq bcolor(black)) ///
->            (hist pov if !t, freq bcolor(red)), ///
->            legend(label(1 "Treated") label(2 "Untreated") order(2 1))
-
-. graph export "s\1_2s.png", replace
-(file s\1_2s.png written in PNG format)
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
-
 . twoway (hist pov if t, freq bcolor(red)) ///
 >            (hist pov if !t, freq bcolor(black)), ///
 >            legend(label(1 "Treated") label(2 "Untreated") order(2 1))
@@ -273,11 +202,203 @@ end of do-file
 . graph export "s\1_2s.png", replace
 (file s\1_2s.png written in PNG format)
 
+.            
+. * (2) binomial tests using rdlocrand package - how to interpret?
+. rdwinselect pov, wmin(0.05) wstep(0.05) nwindows(100)
+
+
+Window selection for RD under local randomization
+
+
+Cutoff c = 0.00   | Left of c   Right of c        Number of obs  =          2783
+------------------+-----------------------        Order of poly  =             0
+    Number of obs |      2489          294        Kernel type    =       uniform
+   1st percentile |        25            3        Reps           =          1000
+   5th percentile |       124           14        Testing method =     rdrandinf
+  10th percentile |       249           29        Balance test   =     diffmeans
+  20th percentile |       497           59
+
+
+                  |   Bal. test         Var. name    Bin. test 
+ Window length /2 |    p-value        (min p-value)   p-value     Obs<c   Obs>=c
+------------------+-------------------------------------------------------------
+            0.050 |         .                 -         1.000         1        1
+            0.100 |         .                 -         1.000         3        3
+            0.150 |         .                 -         1.000         4        5
+            0.200 |         .                 -         0.791         6        8
+            0.250 |         .                 -         0.607         6        9
+            0.300 |         .                 -         1.000         9       10
+            0.350 |         .                 -         1.000        11       12
+            0.400 |         .                 -         1.000        12       12
+            0.450 |         .                 -         1.000        15       15
+            0.500 |         .                 -         0.864        18       16
+            0.550 |         .                 -         0.871        20       18
+            0.600 |         .                 -         1.000        20       20
+            0.650 |         .                 -         1.000        21       20
+            0.700 |         .                 -         0.883        24       22
+            0.750 |         .                 -         0.665        26       22
+            0.800 |         .                 -         0.678        28       24
+            0.850 |         .                 -         0.689        30       26
+            0.900 |         .                 -         0.603        32       27
+            0.950 |         .                 -         0.699        32       28
+            1.000 |         .                 -         0.532        35       29
+            1.050 |         .                 -         0.403        39       31
+            1.100 |         .                 -         0.302        43       33
+            1.150 |         .                 -         0.254        44       33
+            1.200 |         .                 -         0.368        44       35
+            1.250 |         .                 -         0.266        46       35
+            1.300 |         .                 -         0.203        51       38
+            1.350 |         .                 -         0.208        52       39
+            1.400 |         .                 -         0.213        53       40
+            1.450 |         .                 -         0.213        53       40
+            1.500 |         .                 -         0.213        53       40
+            1.550 |         .                 -         0.261        54       42
+            1.600 |         .                 -         0.422        54       45
+            1.650 |         .                 -         0.324        57       46
+            1.700 |         .                 -         0.329        58       47
+            1.750 |         .                 -         0.334        59       48
+            1.800 |         .                 -         0.255        62       49
+            1.850 |         .                 -         0.259        63       50
+            1.900 |         .                 -         0.263        64       51
+            1.950 |         .                 -         0.355        64       53
+            2.000 |         .                 -         0.243        69       55
+            2.050 |         .                 -         0.287        70       57
+            2.100 |         .                 -         0.294        72       59
+            2.150 |         .                 -         0.294        72       59
+            2.200 |         .                 -         0.338        72       60
+            2.250 |         .                 -         0.390        73       62
+            2.300 |         .                 -         0.494        73       64
+            2.350 |         .                 -         0.498        74       65
+            2.400 |         .                 -         0.501        75       66
+            2.450 |         .                 -         0.456        78       68
+            2.500 |         .                 -         0.413        80       69
+            2.550 |         .                 -         0.515        80       71
+            2.600 |         .                 -         0.570        80       72
+            2.650 |         .                 -         0.570        80       72
+            2.700 |         .                 -         0.630        81       74
+            2.750 |         .                 -         0.689        81       75
+            2.800 |         .                 -         0.582        85       77
+            2.850 |         .                 -         0.534        87       78
+            2.900 |         .                 -         0.490        90       80
+            2.950 |         .                 -         0.548        93       84
+            3.000 |         .                 -         0.412        96       84
+            3.050 |         .                 -         0.372        97       84
+            3.100 |         .                 -         0.335        98       84
+            3.150 |         .                 -         0.417        98       86
+            3.200 |         .                 -         0.610        98       90
+            3.250 |         .                 -         0.773        99       94
+            3.300 |         .                 -         0.721       101       95
+            3.350 |         .                 -         0.724       103       97
+            3.400 |         .                 -         0.675       106       99
+            3.450 |         .                 -         0.626       107       99
+            3.500 |         .                 -         0.628       108      100
+            3.550 |         .                 -         0.783       108      103
+            3.600 |         .                 -         0.733       110      104
+            3.650 |         .                 -         0.734       111      105
+            3.700 |         .                 -         0.734       111      105
+            3.750 |         .                 -         0.687       114      107
+            3.800 |         .                 -         0.691       117      110
+            3.850 |         .                 -         0.597       119      110
+            3.900 |         .                 -         0.472       123      111
+            3.950 |         .                 -         0.363       126      111
+            4.000 |         .                 -         0.305       130      113
+            4.050 |         .                 -         0.307       131      114
+            4.100 |         .                 -         0.341       132      116
+            4.150 |         .                 -         0.288       137      119
+            4.200 |         .                 -         0.320       138      121
+            4.250 |         .                 -         0.322       139      122
+            4.300 |         .                 -         0.354       139      123
+            4.350 |         .                 -         0.244       143      123
+            4.400 |         .                 -         0.272       144      125
+            4.450 |         .                 -         0.301       144      126
+            4.500 |         .                 -         0.397       144      129
+            4.550 |         .                 -         0.400       146      131
+            4.600 |         .                 -         0.285       151      132
+            4.650 |         .                 -         0.288       153      134
+            4.700 |         .                 -         0.217       156      134
+            4.750 |         .                 -         0.162       160      135
+            4.800 |         .                 -         0.164       161      136
+            4.850 |         .                 -         0.133       163      136
+            4.900 |         .                 -         0.150       164      138
+            4.950 |         .                 -         0.136       166      139
+            5.000 |         .                 -         0.111       169      140
+
+Variable used in binomial test (running variable): pov
+
+Note: no covariates specified.
+Need to specify covariates to find recommended length.
+
 . 
-end of do-file
+. * (3) continuity-in-density tests using rddensity package - how to interpret?
+. rddensity pov, all
+Computing data-driven bandwidth selectors.
 
-. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
+RD Manipulation Test using local polynomial density estimation.
 
+      Cutoff c = 0 |Left of c   Right of c          Number of obs =         2783
+-------------------+----------------------          Model         = unrestricted
+     Number of obs |      2489         294          BW method     =         comb
+Eff. Number of obs |       331         211          Kernel        =   triangular
+    Order est. (p) |         2           2          VCE method    =    jackknife
+    Order bias (q) |         3           3
+       BW est. (h) |     9.585       8.469
+
+Running variable: pov.
+-----------------------------------------------
+            Method |          T        P>|T|
+-------------------+---------------------------
+      Conventional |       0.1955      0.8450
+            Robust |      -0.4692      0.6389
+-----------------------------------------------
+
+
+. rddensity pov, all h(5 5)
+
+RD Manipulation Test using local polynomial density estimation.
+
+      Cutoff c = 0 |Left of c   Right of c          Number of obs =         2783
+-------------------+----------------------          Model         = unrestricted
+     Number of obs |      2489         294          BW method     =       manual
+Eff. Number of obs |       169         140          Kernel        =   triangular
+    Order est. (p) |         2           2          VCE method    =    jackknife
+    Order bias (q) |         3           3
+       BW est. (h) |     5.000       5.000
+
+Running variable: pov.
+-----------------------------------------------
+            Method |          T        P>|T|
+-------------------+---------------------------
+      Conventional |      -0.9798      0.3272
+            Robust |      -1.6268      0.1038
+-----------------------------------------------
+
+
+. rddensity pov, all h(1 1)
+
+RD Manipulation Test using local polynomial density estimation.
+
+      Cutoff c = 0 |Left of c   Right of c          Number of obs =         2783
+-------------------+----------------------          Model         = unrestricted
+     Number of obs |      2489         294          BW method     =       manual
+Eff. Number of obs |        35          29          Kernel        =   triangular
+    Order est. (p) |         2           2          VCE method    =    jackknife
+    Order bias (q) |         3           3
+       BW est. (h) |     1.000       1.000
+
+Running variable: pov.
+-----------------------------------------------
+            Method |          T        P>|T|
+-------------------+---------------------------
+      Conventional |       0.3943      0.6934
+            Robust |       0.7139      0.4753
+-----------------------------------------------
+
+
+. 
+. ********************************************************************************
+. * Q2.2.1: constant treatment effect model
+. 
+. * generate variables for polynomials of order 3-6
 . gen p2 = pov^2
 
 . gen p3 = pov^3
@@ -443,7 +564,6 @@ Linear regression                               Number of obs     =      2,783
 . graph combine "s\2_1a.gph" "s\2_1b.gph" "s\2_1c.gph" "s\2_1d.gph"
 
 . graph export "s\2_1s.png", replace
-(note: file s\2_1s.png not found)
 (file s\2_1s.png written in PNG format)
 
 . 
@@ -451,10 +571,10 @@ Linear regression                               Number of obs     =      2,783
 . mat2txt, matrix(tbl) saving("s\2_1.txt") format(%9.4f) replace
 
 . 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
-
+. ********************************************************************************
+. * Q2.2.2: heterogeneous treatment effect model
+. 
+. * define new, interacted terms for polynomials
 . gen p1t = pov*t
 
 . gen p1u = pov*(1-t)
@@ -655,7 +775,6 @@ Linear regression                               Number of obs     =      2,783
 . graph combine "s\2_2a.gph" "s\2_2b.gph" "s\2_2c.gph" "s\2_2d.gph"
 
 . graph export "s\2_2s.png", replace
-(note: file s\2_2s.png not found)
 (file s\2_2s.png written in PNG format)
 
 . 
@@ -663,10 +782,10 @@ Linear regression                               Number of obs     =      2,783
 . mat2txt, matrix(tbl) saving("s\2_2.txt") format(%9.4f) replace
 
 . 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
-
+. ********************************************************************************
+. * Q2.2.3: local parametric model (p = 0,1,2 and h = 1,5,9,18)
+. 
+. * matrix to fill with estimates
 . matrix tbl = J(12,3,.)
 
 . matrix tbl[1,1] = 1
@@ -1097,7 +1216,6 @@ Linear regression                               Number of obs     =        954
 >         "s\2_3h18a.gph" "s\2_3h18b.gph" "s\2_3h18c.gph", c(3)
 
 . graph export "s\2_3s.png", replace
-(note: file s\2_3s.png not found)
 (file s\2_3s.png written in PNG format)
 
 . 
@@ -1105,10 +1223,11 @@ Linear regression                               Number of obs     =        954
 . mat2txt, matrix(tbl) saving("s\2_3.txt") format(%9.4f) replace
 
 . 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
-
+. ********************************************************************************
+. * Q2.3.1: MSE-optimal RD estimators
+. 
+. * just manually typing these into LaTeX
+. * 'all' gives us the three methods, p and q tell the polynomial orders
 . rdrobust rel_post pov, p(0) q(1) c(0) all
 
 Sharp RD estimates using local polynomial regression.
@@ -1132,11 +1251,6 @@ Outcome: rel_post. Running variable: pov.
             Robust | -2.5561     1.2282   -2.0812  0.037   -4.96328     -.148888
 --------------------------------------------------------------------------------
 
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
-
 . rdrobust rel_post pov, p(1) q(2) c(0) all
 
 Sharp RD estimates using local polynomial regression.
@@ -1159,11 +1273,6 @@ Outcome: rel_post. Running variable: pov.
     Bias-corrected | -2.7806     1.2056   -2.3064  0.021   -5.14364     -.417655
             Robust | -2.7806     1.3683   -2.0323  0.042   -5.46238     -.098916
 --------------------------------------------------------------------------------
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
 
 . rdrobust rel_post pov, p(2) q(3) c(0) all
 
@@ -1189,302 +1298,11 @@ Outcome: rel_post. Running variable: pov.
 --------------------------------------------------------------------------------
 
 . 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
-
-. rdrobust rel_pre pov, p(1) q(2) c(0) all
-
-Sharp RD estimates using local polynomial regression.
-
-      Cutoff c = 0 | Left of c  Right of c            Number of obs =       2783
--------------------+----------------------            BW type       =      mserd
-     Number of obs |      2489         294            Kernel        = Triangular
-Eff. Number of obs |       167         139            VCE method    =         NN
-    Order est. (p) |         1           1
-    Order bias (q) |         2           2
-       BW est. (h) |     4.964       4.964
-       BW bias (b) |     8.531       8.531
-         rho (h/b) |     0.582       0.582
-
-Outcome: rel_pre. Running variable: pov.
---------------------------------------------------------------------------------
-            Method |   Coef.    Std. Err.    z     P>|z|    [95% Conf. Interval]
--------------------+------------------------------------------------------------
-      Conventional | -2.3764     2.2481   -1.0570  0.290   -6.78263      2.02987
-    Bias-corrected | -1.7673     2.2481   -0.7861  0.432   -6.17357      2.63892
-            Robust | -1.7673      2.675   -0.6607  0.509   -7.01018      3.47553
---------------------------------------------------------------------------------
-
-. * check postintervention unrelated mortality
-. rdrobust inj_post pov, p(1) q(2) c(0) all
-
-Sharp RD estimates using local polynomial regression.
-
-      Cutoff c = 0 | Left of c  Right of c            Number of obs =       2783
--------------------+----------------------            BW type       =      mserd
-     Number of obs |      2489         294            Kernel        = Triangular
-Eff. Number of obs |       211         169            VCE method    =         NN
-    Order est. (p) |         1           1
-    Order bias (q) |         2           2
-       BW est. (h) |     6.263       6.263
-       BW bias (b) |     9.349       9.349
-         rho (h/b) |     0.670       0.670
-
-Outcome: inj_post. Running variable: pov.
---------------------------------------------------------------------------------
-            Method |   Coef.    Std. Err.    z     P>|z|    [95% Conf. Interval]
--------------------+------------------------------------------------------------
-      Conventional |  1.1321     3.7754   0.2999   0.764   -6.26747      8.53169
-    Bias-corrected |  1.5214     3.7754   0.4030   0.687   -5.87819      8.92097
-            Robust |  1.5214     4.3859   0.3469   0.729   -7.07472      10.1175
---------------------------------------------------------------------------------
-
+. ********************************************************************************
+. * Q2.3.2: Robustness checks
 . 
-. ** b) Bandwidth and Kernel sensitivity
-. * empty matrix to fill with results
-. matrix tbl = J(3, 10, .)
-
-. 
-. * loop over bandwidths, calc for three different kernels
-. forvalues h = 1(1)10 {
-  2.     quiet rdrobust rel_post pov, h(`h') kernel(tri) p(1) q(2) c(0) all
-  3.         matrix tbl[1, `h'] = round(e(tau_bc), .01)
-  4.         quiet rdrobust rel_post pov, h(`h') kernel(uni) p(1) q(2) c(0) all
-  5.         matrix tbl[2, `h'] = round(e(tau_bc), .01)
-  6.         quiet rdrobust rel_post pov, h(`h') kernel(epa) p(1) q(2) c(0) all
-  7.         matrix tbl[3, `h'] = round(e(tau_bc), .01)
-  8. }
-
-. 
-. * write to LaTeX
-. mat2txt, matrix(tbl) saving("s\3_2b.txt") format(%9.4f) replace
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
-
-. matrix tbl = J(3, 10, .)
-
-. 
-. * loop over bandwidths, calc for three different kernels
-. forvalues h = 1(1)10 {
-  2.     quiet rdrobust rel_post pov, h(`h') kernel(tri) p(1) q(2) c(0) all
-  3.         matrix tbl[1, `h'] = round(e(tau_bc), .001)
-  4.         quiet rdrobust rel_post pov, h(`h') kernel(uni) p(1) q(2) c(0) all
-  5.         matrix tbl[2, `h'] = round(e(tau_bc), .001)
-  6.         quiet rdrobust rel_post pov, h(`h') kernel(epa) p(1) q(2) c(0) all
-  7.         matrix tbl[3, `h'] = round(e(tau_bc), .001)
-  8. }
-
-. 
-. * write to LaTeX
-. mat2txt, matrix(tbl) saving("s\3_2b.txt") format(%9.4f) replace
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
-
-. matrix tbl = J(3, 10, .)
-
-. 
-. * loop over bandwidths, calc for three different kernels
-. forvalues h = 1(1)10 {
-  2.     quiet rdrobust rel_post pov, h(`h') kernel(tri) p(1) q(2) c(0) all
-  3.         matrix tbl[1, `h'] = round(e(tau_bc), .01)
-  4.         quiet rdrobust rel_post pov, h(`h') kernel(uni) p(1) q(2) c(0) all
-  5.         matrix tbl[2, `h'] = round(e(tau_bc), .01)
-  6.         quiet rdrobust rel_post pov, h(`h') kernel(epa) p(1) q(2) c(0) all
-  7.         matrix tbl[3, `h'] = round(e(tau_bc), .01)
-  8. }
-
-. 
-. * write to LaTeX
-. mat2txt, matrix(tbl) saving("s\3_2b.txt") format(%9.4f) replace
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
-
-. gen pov_abs = abs(pov)
-
-. sort pov_abs
-
-. drop pov_abs
-
-. 
-. * empty matrix to fill with results
-. matrix tbl = J(1, 10, .)
-
-. 
-. * loop over 10 l's
-. forvalues l = 1(1)10 {
-  2.     quiet rdrobust rel_post pov if _n>`l', p(1) q(2) c(0) all
-  3.         matrix tbl[1, `l'] = round(e(tau_bc), .01)
-  4. }
-
-. 
-. * write to LaTeX
-. mat2txt, matrix(tbl) saving("s\3_2c.txt") format(%9.4f) replace
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
-
-. matrix tbl = J(2, 10, .)
-
-. 
-. * loop over various cutoffs, save point estimates and p-values
-. forvalues c = -10(2)10 {
-  2.     if `c' != 0 {
-  3.             quiet rdrobust rel_post pov, c(`c') p(1) q(2) all
-  4.                 * to know which matrix position to store in
-.                 if `c' < 0 { 
-  5.                     local i = `c'/2 + 6 
-  6.                 }
-  7.                 if `c' > 0 { 
-  8.                     local i = `c'/2 + 5 
-  9.                 }
- 10.                 matrix tbl[1, `i'] = round(e(tau_bc), .01)
- 11.                 matrix tbl[2, `i'] = round(e(pv_rb), .01)
- 12.         }
- 13. }
-
-. 
-. * write to LaTeX
-. mat2txt, matrix(tbl) saving("s\3_2d.txt") format(%9.4f) replace
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
-
-. rdrobust rel_pre pov, p(1) q(2) c(0) all
-
-Sharp RD estimates using local polynomial regression.
-
-      Cutoff c = 0 | Left of c  Right of c            Number of obs =       2783
--------------------+----------------------            BW type       =      mserd
-     Number of obs |      2489         294            Kernel        = Triangular
-Eff. Number of obs |       167         139            VCE method    =         NN
-    Order est. (p) |         1           1
-    Order bias (q) |         2           2
-       BW est. (h) |     4.964       4.964
-       BW bias (b) |     8.531       8.531
-         rho (h/b) |     0.582       0.582
-
-Outcome: rel_pre. Running variable: pov.
---------------------------------------------------------------------------------
-            Method |   Coef.    Std. Err.    z     P>|z|    [95% Conf. Interval]
--------------------+------------------------------------------------------------
-      Conventional | -2.3764     2.2481   -1.0570  0.290   -6.78263      2.02987
-    Bias-corrected | -1.7673     2.2481   -0.7861  0.432   -6.17357      2.63892
-            Robust | -1.7673      2.675   -0.6607  0.509   -7.01018      3.47553
---------------------------------------------------------------------------------
-
-. * check postintervention unrelated mortality
-. rdrobust inj_post pov, p(1) q(2) c(0) all
-
-Sharp RD estimates using local polynomial regression.
-
-      Cutoff c = 0 | Left of c  Right of c            Number of obs =       2783
--------------------+----------------------            BW type       =      mserd
-     Number of obs |      2489         294            Kernel        = Triangular
-Eff. Number of obs |       211         169            VCE method    =         NN
-    Order est. (p) |         1           1
-    Order bias (q) |         2           2
-       BW est. (h) |     6.263       6.263
-       BW bias (b) |     9.349       9.349
-         rho (h/b) |     0.670       0.670
-
-Outcome: inj_post. Running variable: pov.
---------------------------------------------------------------------------------
-            Method |   Coef.    Std. Err.    z     P>|z|    [95% Conf. Interval]
--------------------+------------------------------------------------------------
-      Conventional |  1.1321     3.7754   0.2999   0.764   -6.26747      8.53169
-    Bias-corrected |  1.5214     3.7754   0.4030   0.687   -5.87819      8.92097
-            Robust |  1.5214     4.3859   0.3469   0.729   -7.07472      10.1175
---------------------------------------------------------------------------------
-
-. 
-. ** b) Bandwidth and Kernel sensitivity
-. * empty matrix to fill with results
-. matrix tbl = J(3, 10, .)
-
-. 
-. * loop over bandwidths, calc for three different kernels
-. forvalues h = 1(1)10 {
-  2.     quiet rdrobust rel_post pov, h(`h') kernel(tri) p(1) q(2) c(0) all
-  3.         matrix tbl[1, `h'] = round(e(tau_bc), .01)
-  4.         quiet rdrobust rel_post pov, h(`h') kernel(uni) p(1) q(2) c(0) all
-  5.         matrix tbl[2, `h'] = round(e(tau_bc), .01)
-  6.         quiet rdrobust rel_post pov, h(`h') kernel(epa) p(1) q(2) c(0) all
-  7.         matrix tbl[3, `h'] = round(e(tau_bc), .01)
-  8. }
-
-. 
-. * write to LaTeX
-. mat2txt, matrix(tbl) saving("s\3_2b.txt") format(%9.4f) replace
-
-. 
-. ** c) "donut hole" approach
-. * first sort by closeness for povrate to 0
-. gen pov_abs = abs(pov)
-
-. sort pov_abs
-
-. drop pov_abs
-
-. 
-. * empty matrix to fill with results
-. matrix tbl = J(1, 10, .)
-
-. 
-. * loop over 10 l's
-. forvalues l = 1(1)10 {
-  2.     quiet rdrobust rel_post pov if _n>`l', p(1) q(2) c(0) all
-  3.         matrix tbl[1, `l'] = round(e(tau_bc), .01)
-  4. }
-
-. 
-. * write to LaTeX
-. mat2txt, matrix(tbl) saving("s\3_2c.txt") format(%9.4f) replace
-
-. 
-. ** d) Placebo cutoff approach
-. * empty matrix to fill with results
-. matrix tbl = J(2, 10, .)
-
-. 
-. * loop over various cutoffs, save point estimates and p-values
-. forvalues c = -10(2)10 {
-  2.     if `c' != 0 {
-  3.             quiet rdrobust rel_post pov, c(`c') p(1) q(2) all
-  4.                 * to know which matrix position to store in
-.                 if `c' < 0 { 
-  5.                     local i = `c'/2 + 6 
-  6.                 }
-  7.                 if `c' > 0 { 
-  8.                     local i = `c'/2 + 5 
-  9.                 }
- 10.                 matrix tbl[1, `i'] = round(e(tau_bc), .01)
- 11.                 matrix tbl[2, `i'] = round(e(pv_bc), .01)
- 12.         }
- 13. }
-
-. 
-. * write to LaTeX
-. mat2txt, matrix(tbl) saving("s\3_2d.txt") format(%9.4f) replace
-
-. 
-end of do-file
-
-. do "C:\Users\prorgan\AppData\Local\Temp\STD242c_000000.tmp"
-
+. ** a) Placebo outcome tests
+. * check preintervention related mortality
 . rdrobust rel_pre pov, p(1) q(2) c(0) all
 
 Sharp RD estimates using local polynomial regression.
@@ -1601,6 +1419,1393 @@ Outcome: inj_post. Running variable: pov.
 . 
 . * write to LaTeX
 . mat2txt, matrix(tbl) saving("s\3_2d.txt") format(%9.4f) replace
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. rdwinselect pov inj_post rel_pre, ///
+>     cutoff(0) wmin(0.1) wstep(0.25) nwindows(15) statistic(ttest)
+
+
+Window selection for RD under local randomization
+
+
+Cutoff c = 0.00   | Left of c   Right of c        Number of obs  =          2783
+------------------+-----------------------        Order of poly  =             0
+    Number of obs |      2489          294        Kernel type    =       uniform
+   1st percentile |        25            3        Reps           =          1000
+   5th percentile |       124           14        Testing method =     rdrandinf
+  10th percentile |       249           29        Balance test   =     diffmeans
+  20th percentile |       497           59
+
+
+                  |   Bal. test         Var. name    Bin. test 
+ Window length /2 |    p-value        (min p-value)   p-value     Obs<c   Obs>=c
+------------------+-------------------------------------------------------------
+            0.100 |      0.708         inj_post         1.000         3        3
+            0.350 |      0.432          rel_pre         1.000        11       12
+            0.600 |      0.196          rel_pre         1.000        20       20
+            0.850 |      0.741          rel_pre         0.689        30       26
+            1.100 |      0.683         inj_post         0.302        43       33
+            1.350 |      0.714          rel_pre         0.208        52       39
+            1.600 |      0.380          rel_pre         0.422        54       45
+            1.850 |      0.094          rel_pre         0.259        63       50
+            2.100 |      0.031          rel_pre         0.294        72       59
+            2.350 |      0.057          rel_pre         0.498        74       65
+            2.600 |      0.040          rel_pre         0.570        80       72
+            2.850 |      0.012          rel_pre         0.534        87       78
+            3.100 |      0.013          rel_pre         0.335        98       84
+            3.350 |      0.047          rel_pre         0.724       103       97
+            3.600 |      0.081          rel_pre         0.733       110      104
+
+Variable used in binomial test (running variable): pov
+Covariates used in balance test: inj_post rel_pre
+
+Recommended window is [-1.6; 1.6] with 99 observations (54 below, 45 above).
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. rdwinselect pov inj_post rel_pre, ///
+>     cutoff(0) wmin(0.1) wstep(0.25) nwindows(15) statistic(ksmirnov)
+
+
+Window selection for RD under local randomization
+
+
+Cutoff c = 0.00   | Left of c   Right of c        Number of obs  =          2783
+------------------+-----------------------        Order of poly  =             0
+    Number of obs |      2489          294        Kernel type    =       uniform
+   1st percentile |        25            3        Reps           =          1000
+   5th percentile |       124           14        Testing method =     rdrandinf
+  10th percentile |       249           29        Balance test   =      ksmirnov
+  20th percentile |       497           59
+
+
+                  |   Bal. test         Var. name    Bin. test 
+ Window length /2 |    p-value        (min p-value)   p-value     Obs<c   Obs>=c
+------------------+-------------------------------------------------------------
+            0.100 |      1.000         inj_post         1.000         3        3
+            0.350 |      0.498          rel_pre         1.000        11       12
+            0.600 |      0.654          rel_pre         1.000        20       20
+            0.850 |      0.694         inj_post         0.689        30       26
+            1.100 |      0.753         inj_post         0.302        43       33
+            1.350 |      0.749         inj_post         0.208        52       39
+            1.600 |      0.455         inj_post         0.422        54       45
+            1.850 |      0.358          rel_pre         0.259        63       50
+            2.100 |      0.079          rel_pre         0.294        72       59
+            2.350 |      0.084          rel_pre         0.498        74       65
+            2.600 |      0.078          rel_pre         0.570        80       72
+            2.850 |      0.015          rel_pre         0.534        87       78
+            3.100 |      0.014          rel_pre         0.335        98       84
+            3.350 |      0.044          rel_pre         0.724       103       97
+            3.600 |      0.034          rel_pre         0.733       110      104
+
+Variable used in binomial test (running variable): pov
+Covariates used in balance test: inj_post rel_pre
+
+Recommended window is [-1.85; 1.85] with 113 observations (63 below, 50 above).
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. rdwinselect pov inj_post rel_pre, ///
+>     cutoff(0) wmin(0.2) wstep(0.2) nwindows(20) statistic(diffmeans)
+
+
+Window selection for RD under local randomization
+
+
+Cutoff c = 0.00   | Left of c   Right of c        Number of obs  =          2783
+------------------+-----------------------        Order of poly  =             0
+    Number of obs |      2489          294        Kernel type    =       uniform
+   1st percentile |        25            3        Reps           =          1000
+   5th percentile |       124           14        Testing method =     rdrandinf
+  10th percentile |       249           29        Balance test   =     diffmeans
+  20th percentile |       497           59
+
+
+                  |   Bal. test         Var. name    Bin. test 
+ Window length /2 |    p-value        (min p-value)   p-value     Obs<c   Obs>=c
+------------------+-------------------------------------------------------------
+            0.200 |      0.131         inj_post         0.791         6        8
+            0.400 |      0.387          rel_pre         1.000        12       12
+            0.600 |      0.180          rel_pre         1.000        20       20
+            0.800 |      0.666          rel_pre         0.678        28       24
+            1.000 |      0.629          rel_pre         0.532        35       29
+            1.200 |      0.821         inj_post         0.368        44       35
+            1.400 |      0.681          rel_pre         0.213        53       40
+            1.600 |      0.368          rel_pre         0.422        54       45
+            1.800 |      0.102          rel_pre         0.255        62       49
+            2.000 |      0.039          rel_pre         0.243        69       55
+            2.200 |      0.030          rel_pre         0.338        72       60
+            2.400 |      0.041          rel_pre         0.501        75       66
+            2.600 |      0.046          rel_pre         0.570        80       72
+            2.800 |      0.017          rel_pre         0.582        85       77
+            3.000 |      0.017          rel_pre         0.412        96       84
+            3.200 |      0.019          rel_pre         0.610        98       90
+            3.400 |      0.037          rel_pre         0.675       106       99
+            3.600 |      0.088          rel_pre         0.733       110      104
+            3.800 |      0.165          rel_pre         0.691       117      110
+            4.000 |      0.297          rel_pre         0.305       130      113
+
+Variable used in binomial test (running variable): pov
+Covariates used in balance test: inj_post rel_pre
+
+Smallest window doesn't pass covariate test. Consider modifying smallest window or re
+> ducing the level.
+
+. * recommended window is 1.6
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. rdwinselect pov inj_post rel_pre, ///
+>     cutoff(0) wmin(0.1) wstep(0.2) nwindows(20) statistic(diffmeans)
+
+
+Window selection for RD under local randomization
+
+
+Cutoff c = 0.00   | Left of c   Right of c        Number of obs  =          2783
+------------------+-----------------------        Order of poly  =             0
+    Number of obs |      2489          294        Kernel type    =       uniform
+   1st percentile |        25            3        Reps           =          1000
+   5th percentile |       124           14        Testing method =     rdrandinf
+  10th percentile |       249           29        Balance test   =     diffmeans
+  20th percentile |       497           59
+
+
+                  |   Bal. test         Var. name    Bin. test 
+ Window length /2 |    p-value        (min p-value)   p-value     Obs<c   Obs>=c
+------------------+-------------------------------------------------------------
+            0.100 |      0.708         inj_post         1.000         3        3
+            0.300 |      0.401         inj_post         1.000         9       10
+            0.500 |      0.586          rel_pre         0.864        18       16
+            0.700 |      0.319          rel_pre         0.883        24       22
+            0.900 |      0.760          rel_pre         0.603        32       27
+            1.100 |      0.682         inj_post         0.302        43       33
+            1.300 |      0.628          rel_pre         0.203        51       38
+            1.500 |      0.682          rel_pre         0.213        53       40
+            1.700 |      0.187          rel_pre         0.329        58       47
+            1.900 |      0.082          rel_pre         0.263        64       51
+            2.100 |      0.022          rel_pre         0.294        72       59
+            2.300 |      0.029          rel_pre         0.494        73       64
+            2.500 |      0.046          rel_pre         0.413        80       69
+            2.700 |      0.036          rel_pre         0.630        81       74
+            2.900 |      0.021          rel_pre         0.490        90       80
+            3.100 |      0.009          rel_pre         0.335        98       84
+            3.300 |      0.035          rel_pre         0.721       101       95
+            3.500 |      0.037          rel_pre         0.628       108      100
+            3.700 |      0.123          rel_pre         0.734       111      105
+            3.900 |      0.311          rel_pre         0.472       123      111
+
+Variable used in binomial test (running variable): pov
+Covariates used in balance test: inj_post rel_pre
+
+Recommended window is [-1.7; 1.7] with 105 observations (58 below, 47 above).
+
+. * recommended window is 
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. rdwinselect pov inj_post rel_pre, ///
+>     cutoff(0) wmin(0.1) wstep(0.2) nwindows(20) statistic(ksmirnov)
+
+
+Window selection for RD under local randomization
+
+
+Cutoff c = 0.00   | Left of c   Right of c        Number of obs  =          2783
+------------------+-----------------------        Order of poly  =             0
+    Number of obs |      2489          294        Kernel type    =       uniform
+   1st percentile |        25            3        Reps           =          1000
+   5th percentile |       124           14        Testing method =     rdrandinf
+  10th percentile |       249           29        Balance test   =      ksmirnov
+  20th percentile |       497           59
+
+
+                  |   Bal. test         Var. name    Bin. test 
+ Window length /2 |    p-value        (min p-value)   p-value     Obs<c   Obs>=c
+------------------+-------------------------------------------------------------
+            0.100 |      1.000         inj_post         1.000         3        3
+            0.300 |      0.379         inj_post         1.000         9       10
+            0.500 |      0.933          rel_pre         0.864        18       16
+            0.700 |      0.473          rel_pre         0.883        24       22
+            0.900 |      0.623         inj_post         0.603        32       27
+            1.100 |      0.736         inj_post         0.302        43       33
+            1.300 |      0.759         inj_post         0.203        51       38
+            1.500 |      0.587         inj_post         0.213        53       40
+            1.700 |      0.465          rel_pre         0.329        58       47
+            1.900 |      0.271          rel_pre         0.263        64       51
+            2.100 |      0.055          rel_pre         0.294        72       59
+            2.300 |      0.060          rel_pre         0.494        73       64
+            2.500 |      0.064          rel_pre         0.413        80       69
+            2.700 |      0.052          rel_pre         0.630        81       74
+            2.900 |      0.021          rel_pre         0.490        90       80
+            3.100 |      0.019          rel_pre         0.335        98       84
+            3.300 |      0.041          rel_pre         0.721       101       95
+            3.500 |      0.023          rel_pre         0.628       108      100
+            3.700 |      0.053          rel_pre         0.734       111      105
+            3.900 |      0.158          rel_pre         0.472       123      111
+
+Variable used in binomial test (running variable): pov
+Covariates used in balance test: inj_post rel_pre
+
+Recommended window is [-1.9; 1.9] with 115 observations (64 below, 51 above).
+
+. * recommended window is 
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. rdwinselect pov inj_post rel_pre, ///
+>     cutoff(0) wmin(0.1) wstep(0.2) nwindows(20) statistic(ranksum)
+
+
+Window selection for RD under local randomization
+
+
+Cutoff c = 0.00   | Left of c   Right of c        Number of obs  =          2783
+------------------+-----------------------        Order of poly  =             0
+    Number of obs |      2489          294        Kernel type    =       uniform
+   1st percentile |        25            3        Reps           =          1000
+   5th percentile |       124           14        Testing method =     rdrandinf
+  10th percentile |       249           29        Balance test   =       ranksum
+  20th percentile |       497           59
+
+
+                  |   Bal. test         Var. name    Bin. test 
+ Window length /2 |    p-value        (min p-value)   p-value     Obs<c   Obs>=c
+------------------+-------------------------------------------------------------
+            0.100 |      0.708         inj_post         1.000         3        3
+            0.300 |      0.284         inj_post         1.000         9       10
+            0.500 |      0.731          rel_pre         0.864        18       16
+            0.700 |      0.335          rel_pre         0.883        24       22
+            0.900 |      0.757         inj_post         0.603        32       27
+            1.100 |      0.485         inj_post         0.302        43       33
+            1.300 |      0.617          rel_pre         0.203        51       38
+            1.500 |      0.514         inj_post         0.213        53       40
+            1.700 |      0.292          rel_pre         0.329        58       47
+            1.900 |      0.135          rel_pre         0.263        64       51
+            2.100 |      0.053          rel_pre         0.294        72       59
+            2.300 |      0.087          rel_pre         0.494        73       64
+            2.500 |      0.102          rel_pre         0.413        80       69
+            2.700 |      0.074          rel_pre         0.630        81       74
+            2.900 |      0.041          rel_pre         0.490        90       80
+            3.100 |      0.022          rel_pre         0.335        98       84
+            3.300 |      0.086          rel_pre         0.721       101       95
+            3.500 |      0.076          rel_pre         0.628       108      100
+            3.700 |      0.123          rel_pre         0.734       111      105
+            3.900 |      0.327          rel_pre         0.472       123      111
+
+Variable used in binomial test (running variable): pov
+Covariates used in balance test: inj_post rel_pre
+
+Recommended window is [-1.7; 1.7] with 105 observations (58 below, 47 above).
+
+. * recommended window is 
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. rdwinselect pov inj_post rel_pre, ///
+>     cutoff(0) wmin(0.1) wstep(0.2) nwindows(20) statistic(hotelling)
+
+
+Window selection for RD under local randomization
+
+
+Cutoff c = 0.00   | Left of c   Right of c        Number of obs  =          2783
+------------------+-----------------------        Order of poly  =             0
+    Number of obs |      2489          294        Kernel type    =       uniform
+   1st percentile |        25            3        Reps           =          1000
+   5th percentile |       124           14        Testing method =     rdrandinf
+  10th percentile |       249           29        Balance test   =     hotelling
+  20th percentile |       497           59
+
+
+                  |   Bal. test         Var. name    Bin. test 
+ Window length /2 |    p-value        (min p-value)   p-value     Obs<c   Obs>=c
+------------------+-------------------------------------------------------------
+            0.100 |      0.522                -         1.000         3        3
+            0.300 |      0.694                -         1.000         9       10
+            0.500 |      0.866                -         0.864        18       16
+            0.700 |      0.592                -         0.883        24       22
+            0.900 |      0.955                -         0.603        32       27
+            1.100 |      0.889                -         0.302        43       33
+            1.300 |      0.888                -         0.203        51       38
+            1.500 |      0.914                -         0.213        53       40
+            1.700 |      0.405                -         0.329        58       47
+            1.900 |      0.239                -         0.263        64       51
+            2.100 |      0.067                -         0.294        72       59
+            2.300 |      0.072                -         0.494        73       64
+            2.500 |      0.130                -         0.413        80       69
+            2.700 |      0.078                -         0.630        81       74
+            2.900 |      0.066                -         0.490        90       80
+            3.100 |      0.036                -         0.335        98       84
+            3.300 |      0.091                -         0.721       101       95
+            3.500 |      0.086                -         0.628       108      100
+            3.700 |      0.259                -         0.734       111      105
+            3.900 |      0.482                -         0.472       123      111
+
+Variable used in binomial test (running variable): pov
+Covariates used in balance test: inj_post rel_pre
+
+Recommended window is [-1.9; 1.9] with 115 observations (64 below, 51 above).
+
+. * recommended window is 
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. rdwinselect pov inj_post rel_pre, statistic(diffmeans)
+
+
+Window selection for RD under local randomization
+
+
+Cutoff c = 0.00   | Left of c   Right of c        Number of obs  =          2783
+------------------+-----------------------        Order of poly  =             0
+    Number of obs |      2489          294        Kernel type    =       uniform
+   1st percentile |        25            3        Reps           =          1000
+   5th percentile |       124           14        Testing method =     rdrandinf
+  10th percentile |       249           29        Balance test   =     diffmeans
+  20th percentile |       497           59
+
+
+                  |   Bal. test         Var. name    Bin. test 
+ Window length /2 |    p-value        (min p-value)   p-value     Obs<c   Obs>=c
+------------------+-------------------------------------------------------------
+            0.304 |      0.451         inj_post         1.000        10       10
+            0.431 |      0.616          rel_pre         1.000        13       14
+            0.558 |      0.189          rel_pre         0.871        20       18
+            0.684 |      0.108          rel_pre         1.000        22       21
+            0.811 |      0.688          rel_pre         0.678        28       24
+            0.938 |      0.745          rel_pre         0.603        32       27
+            1.064 |      0.763         inj_post         0.349        41       32
+            1.191 |      0.812         inj_post         0.368        44       35
+            1.318 |      0.653          rel_pre         0.203        51       38
+            1.444 |      0.699          rel_pre         0.213        53       40
+
+Variable used in binomial test (running variable): pov
+Covariates used in balance test: inj_post rel_pre
+
+Recommended window is [-.558; .558] with 38 observations (20 below, 18 above).
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. rdplot rel_post pov, c(0) p(0) binselect(es) lowerend(-1.7) upperend(1.7)
+
+RD Plot with evenly spaced number of bins using spacings estimators.
+
+         Cutoff c = 0 | Left of c  Right of c        Number of obs  =       2783
+----------------------+----------------------        Kernel         =    Uniform
+        Number of obs |      2489         294
+   Eff. Number of obs |      2489         294
+  Order poly. fit (p) |         0           0
+     BW poly. fit (h) |    43.990      22.372
+ Number of bins scale |     1.000       1.000
+
+Outcome: rel_post. Running variable: pov.
+---------------------------------------------
+                      | Left of c  Right of c
+----------------------+----------------------
+        Bins selected |         5           6
+   Average bin length |     8.798       3.729
+    Median bin length |     8.798       3.729
+----------------------+----------------------
+    IMSE-optimal bins |         5           6
+  Mimicking Var. bins |        37          38
+----------------------+----------------------
+Rel. to IMSE-optimal: | 
+        Implied scale |     1.000       1.000
+    WIMSE var. weight |     0.500       0.500
+    WIMSE bias weight |     0.500       0.500
+---------------------------------------------
+
+
+. graph export "s\4_1s.png", replace
+(note: file s\4_1s.png not found)
+(file s\4_1s.png written in PNG format)
+
+. 
+end of do-file
+
+. help rdwinselect
+
+. help rdplot
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. rdplot rel_post pov, c(0) p(0) binselect(es) support(-1.7,1.7)
+option 1.7 not allowed
+r(198);
+
+end of do-file
+
+r(198);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. rdplot rel_post pov, c(0) p(0) binselect(es) scale(-1.7,1.7)
+option 1.7 not allowed
+r(198);
+
+end of do-file
+
+r(198);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. rdplot rel_post pov, c(0) p(0) binselect(es) support(-1.7 1.7)
+
+RD Plot with evenly spaced number of bins using spacings estimators.
+
+         Cutoff c = 0 | Left of c  Right of c        Number of obs  =       2783
+----------------------+----------------------        Kernel         =    Uniform
+        Number of obs |      2489         294
+   Eff. Number of obs |      2489         294
+  Order poly. fit (p) |         0           0
+     BW poly. fit (h) |    43.990      22.372
+ Number of bins scale |     1.000       1.000
+
+Outcome: rel_post. Running variable: pov.
+---------------------------------------------
+                      | Left of c  Right of c
+----------------------+----------------------
+        Bins selected |         5           6
+   Average bin length |     8.798       3.729
+    Median bin length |     8.798       3.729
+----------------------+----------------------
+    IMSE-optimal bins |         5           6
+  Mimicking Var. bins |        37          38
+----------------------+----------------------
+Rel. to IMSE-optimal: | 
+        Implied scale |     1.000       1.000
+    WIMSE var. weight |     0.500       0.500
+    WIMSE bias weight |     0.500       0.500
+---------------------------------------------
+
+
+. graph export "s\4_1s.png", replace
+(file s\4_1s.png written in PNG format)
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. rdplot rel_post pov, c(0) p(0) binselect(es) scale(-1.7 1.7)
+                rangen():  3300  argument out of range
+                 <istmt>:     -  function returned error
+r(3300);
+
+end of do-file
+
+r(3300);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. * plot based on the selected binwidth of 1.7 (using diffmeans)
+. rdplot rel_post pov, c(0) p(0) binselect(es) h(-1.7 1.7)
+
+RD Plot with evenly spaced number of bins using spacings estimators.
+
+         Cutoff c = 0 | Left of c  Right of c        Number of obs  =       2783
+----------------------+----------------------        Kernel         =    Uniform
+        Number of obs |      2489         294
+   Eff. Number of obs |         0          47
+  Order poly. fit (p) |         0           0
+     BW poly. fit (h) |    -1.700       1.700
+ Number of bins scale |     1.000       1.000
+
+Outcome: rel_post. Running variable: pov.
+---------------------------------------------
+                      | Left of c  Right of c
+----------------------+----------------------
+        Bins selected |         5           6
+   Average bin length |     8.798       3.729
+    Median bin length |     8.798       3.729
+----------------------+----------------------
+    IMSE-optimal bins |         5           6
+  Mimicking Var. bins |        37          38
+----------------------+----------------------
+Rel. to IMSE-optimal: | 
+        Implied scale |     1.000       1.000
+    WIMSE var. weight |     0.500       0.500
+    WIMSE bias weight |     0.500       0.500
+---------------------------------------------
+
+
+. graph export "s\4_1s.png", replace
+(file s\4_1s.png written in PNG format)
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. rdplot rel_post pov, c(0) p(0) binselect(es) support(-1.7 1.7)
+
+RD Plot with evenly spaced number of bins using spacings estimators.
+
+         Cutoff c = 0 | Left of c  Right of c        Number of obs  =       2783
+----------------------+----------------------        Kernel         =    Uniform
+        Number of obs |      2489         294
+   Eff. Number of obs |      2489         294
+  Order poly. fit (p) |         0           0
+     BW poly. fit (h) |    43.990      22.372
+ Number of bins scale |     1.000       1.000
+
+Outcome: rel_post. Running variable: pov.
+---------------------------------------------
+                      | Left of c  Right of c
+----------------------+----------------------
+        Bins selected |         5           6
+   Average bin length |     8.798       3.729
+    Median bin length |     8.798       3.729
+----------------------+----------------------
+    IMSE-optimal bins |         5           6
+  Mimicking Var. bins |        37          38
+----------------------+----------------------
+Rel. to IMSE-optimal: | 
+        Implied scale |     1.000       1.000
+    WIMSE var. weight |     0.500       0.500
+    WIMSE bias weight |     0.500       0.500
+---------------------------------------------
+
+
+. graph export "s\4_1s.png", replace
+(file s\4_1s.png written in PNG format)
+
+. 
+end of do-file
+
+. help rdplot
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. rdplot mort_related_post povrate60 if abs(pov)<=1.6, c(0) p(0) binselect(es)
+variable povrate60 not found
+r(111);
+
+end of do-file
+
+r(111);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. rdplot rel_post pov if abs(pov)<=1.7, c(0) p(0) binselect(es)
+
+RD Plot with evenly spaced number of bins using spacings estimators.
+
+         Cutoff c = 0 | Left of c  Right of c        Number of obs  =        105
+----------------------+----------------------        Kernel         =    Uniform
+        Number of obs |        58          47
+   Eff. Number of obs |        57          46
+  Order poly. fit (p) |         0           0
+     BW poly. fit (h) |     1.691       1.678
+ Number of bins scale |     1.000       1.000
+
+Outcome: rel_post. Running variable: pov.
+---------------------------------------------
+                      | Left of c  Right of c
+----------------------+----------------------
+        Bins selected |         7           3
+   Average bin length |     0.242       0.559
+    Median bin length |     0.242       0.559
+----------------------+----------------------
+    IMSE-optimal bins |         7           3
+  Mimicking Var. bins |        14           5
+----------------------+----------------------
+Rel. to IMSE-optimal: | 
+        Implied scale |     1.000       1.000
+    WIMSE var. weight |     0.500       0.500
+    WIMSE bias weight |     0.500       0.500
+---------------------------------------------
+
+
+. graph export "s\4_1s.png", replace
+(file s\4_1s.png written in PNG format)
+
+. 
+end of do-file
+
+. help rdrandinf
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. rdrandinf rel_post pov, wl(-1.7) wr(1.7)
+
+Selected window = [-1.7 ; 1.7]
+
+Running randomization-based test...
+Randomization-based test complete.
+
+
+Inference for sharp design
+
+
+Cutoff c = 0.00   |  Left of c  Right of c        Number of obs =           2783
+------------------+-----------------------        Order of poly =              0
+     Number of obs|       2489         294        Kernel type   =        uniform
+Eff. Number of obs|         58          47        Reps          =           1000
+   Mean of outcome|      3.869       1.213        Window        =    set by user
+   S.D. of outcome|      9.277       2.596        H0:       tau =          0.000
+            Window|     -1.700       1.700        Randomization =  fixed margins
+
+Outcome: rel_post. Running variable: pov.
+--------------------------------------------------------------------------------
+                  |              Finite sample             Large sample
+                  |             ---------------  -------------------------------
+         Statistic|      T           P>|T|         P>|T|   Power vs d =     4.64
+------------------+-------------------------------------------------------------
+    Diff. in means|     -2.656       0.025          0.037                  0.953
+--------------------------------------------------------------------------------
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. rdrandinf rel_post pov, wl(-1.7) wr(1.7) seed(22)
+
+Selected window = [-1.7 ; 1.7]
+
+Running randomization-based test...
+Randomization-based test complete.
+
+
+Inference for sharp design
+
+
+Cutoff c = 0.00   |  Left of c  Right of c        Number of obs =           2783
+------------------+-----------------------        Order of poly =              0
+     Number of obs|       2489         294        Kernel type   =        uniform
+Eff. Number of obs|         58          47        Reps          =           1000
+   Mean of outcome|      3.869       1.213        Window        =    set by user
+   S.D. of outcome|      9.277       2.596        H0:       tau =          0.000
+            Window|     -1.700       1.700        Randomization =  fixed margins
+
+Outcome: rel_post. Running variable: pov.
+--------------------------------------------------------------------------------
+                  |              Finite sample             Large sample
+                  |             ---------------  -------------------------------
+         Statistic|      T           P>|T|         P>|T|   Power vs d =     4.64
+------------------+-------------------------------------------------------------
+    Diff. in means|     -2.656       0.027          0.037                  0.953
+--------------------------------------------------------------------------------
+
+. 
+end of do-file
+
+. help rdrandinf
+
+. help reg
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. matrix tbl = J(4, 10, .)
+
+. 
+. forvalues i = 1(1)10 {
+  2.         local win = (0.8+(`win'-1)*0.2)
+  3.         matrix tbl[1,`i'] = `win'
+  4.         
+.     reg rel_post pov if abs(pov)<=`win', vce(hc2)
+  5.     
+.     matrix tbl[2, `i'] = _b
+  6.     matrix tbl[3, `i'] = _se
+  7.     matrix tbl[4, `i'] = _p
+  8. }
+
+Linear regression                               Number of obs     =         40
+                                                F(1, 38)          =       3.39
+                                                Prob > F          =     0.0735
+                                                R-squared         =     0.0538
+                                                Root MSE          =     3.7149
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         pov |  -2.462846   1.338031    -1.84   0.073    -5.171548    .2458557
+       _cons |   1.885693   .5799586     3.25   0.002     .7116283    3.059758
+------------------------------------------------------------------------------
+_b not found
+r(111);
+
+end of do-file
+
+r(111);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. matrix tbl = J(4, 10, .)
+
+. 
+. forvalues i = 1(1)10 {
+  2.         local win = (0.8+(`win'-1)*0.2)
+  3.         matrix tbl[1,`i'] = `win'
+  4.         
+.     reg rel_post pov if abs(pov)<=`win', vce(hc2)
+  5.     
+.     matrix tbl[2, `i'] = _b["t"]
+  6.     matrix tbl[3, `i'] = _se["t"]
+  7.     matrix tbl[4, `i'] = _p["t"]
+  8. }
+
+Linear regression                               Number of obs     =         40
+                                                F(1, 38)          =       3.39
+                                                Prob > F          =     0.0735
+                                                R-squared         =     0.0538
+                                                Root MSE          =     3.7149
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         pov |  -2.462846   1.338031    -1.84   0.073    -5.171548    .2458557
+       _cons |   1.885693   .5799586     3.25   0.002     .7116283    3.059758
+------------------------------------------------------------------------------
+["t"] not found
+r(111);
+
+end of do-file
+
+r(111);
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. matrix tbl = J(4, 10, .)
+
+. 
+. forvalues i = 1(1)10 {
+  2.         local win = (0.8+(`win'-1)*0.2)
+  3.         matrix tbl[1,`i'] = `win'
+  4.         
+.     reg rel_post t if abs(pov)<=`win', vce(hc2)
+  5.     
+.     matrix tbl[2, `i'] = _b["t"]
+  6.     matrix tbl[3, `i'] = _se["t"]
+  7.     matrix tbl[4, `i'] = _p["t"]
+  8. }
+
+Linear regression                               Number of obs     =         40
+                                                F(1, 38)          =       4.79
+                                                Prob > F          =     0.0349
+                                                R-squared         =     0.1119
+                                                Root MSE          =      3.599
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.490528   1.138115    -2.19   0.035    -4.794521   -.1865356
+       _cons |   3.142845   1.076061     2.92   0.006     .9644737    5.321216
+------------------------------------------------------------------------------
+_p not found
+r(111);
+
+end of do-file
+
+r(111);
+
+. reg rel_post t if abs(pov)<=0.8, vce(hc2)
+
+Linear regression                               Number of obs     =         52
+                                                F(1, 50)          =       2.81
+                                                Prob > F          =     0.0999
+                                                R-squared         =     0.0490
+                                                Root MSE          =     3.7259
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |   -1.66401   .9926755    -1.68   0.100    -3.657857    .3298375
+       _cons |   2.621954   .8579933     3.06   0.004     .8986233    4.345284
+------------------------------------------------------------------------------
+
+. matrix temp = r(table)
+
+. matrix list temp
+
+temp[9,2]
+                 t       _cons
+     b    -1.66401   2.6219536
+    se   .99267553   .85799334
+     t  -1.6762879   3.0559137
+pvalue   .09992459   .00359488
+    ll  -3.6578575   .89862326
+    ul   .32983751   4.3452839
+    df          50          50
+  crit   2.0085591   2.0085591
+ eform           0           0
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. matrix tbl = J(4, 10, .)
+
+. 
+. forvalues i = 1(1)10 {
+  2.         local win = (0.8+(`win'-1)*0.2)
+  3.         matrix tbl[1,`i'] = `win'
+  4.         
+.     reg rel_post t if abs(pov)<=`win', vce(hc2)
+  5.         matrix temp = r(table)
+  6.     
+.     matrix tbl[2, `i'] = temp["b","t"]
+  7.     matrix tbl[3, `i'] = temp["se","t"]
+  8.     matrix tbl[4, `i'] = temp["pvalue","t"]
+  9. }
+
+Linear regression                               Number of obs     =         40
+                                                F(1, 38)          =       4.79
+                                                Prob > F          =     0.0349
+                                                R-squared         =     0.1119
+                                                Root MSE          =      3.599
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.490528   1.138115    -2.19   0.035    -4.794521   -.1865356
+       _cons |   3.142845   1.076061     2.92   0.006     .9644737    5.321216
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         46
+                                                F(1, 44)          =       4.23
+                                                Prob > F          =     0.0458
+                                                R-squared         =     0.0822
+                                                Root MSE          =     3.4573
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.026022   .9856177    -2.06   0.046    -4.012404   -.0396402
+       _cons |   2.619037   .9256113     2.83   0.007     .7535903    4.484484
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         48
+                                                F(1, 46)          =       5.25
+                                                Prob > F          =     0.0266
+                                                R-squared         =     0.0907
+                                                Root MSE          =     3.5956
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.230627   .9737084    -2.29   0.027    -4.190601   -.2706537
+       _cons |   2.823642   .9129196     3.09   0.003     .9860305    4.661254
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         48
+                                                F(1, 46)          =       5.25
+                                                Prob > F          =     0.0266
+                                                R-squared         =     0.0907
+                                                Root MSE          =     3.5956
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.230627   .9737084    -2.29   0.027    -4.190601   -.2706537
+       _cons |   2.823642   .9129196     3.09   0.003     .9860305    4.661254
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         48
+                                                F(1, 46)          =       5.25
+                                                Prob > F          =     0.0266
+                                                R-squared         =     0.0907
+                                                Root MSE          =     3.5956
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.230627   .9737084    -2.29   0.027    -4.190601   -.2706537
+       _cons |   2.823642   .9129196     3.09   0.003     .9860305    4.661254
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         48
+                                                F(1, 46)          =       5.25
+                                                Prob > F          =     0.0266
+                                                R-squared         =     0.0907
+                                                Root MSE          =     3.5956
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.230627   .9737084    -2.29   0.027    -4.190601   -.2706537
+       _cons |   2.823642   .9129196     3.09   0.003     .9860305    4.661254
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         48
+                                                F(1, 46)          =       5.25
+                                                Prob > F          =     0.0266
+                                                R-squared         =     0.0907
+                                                Root MSE          =     3.5956
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.230627   .9737084    -2.29   0.027    -4.190601   -.2706537
+       _cons |   2.823642   .9129196     3.09   0.003     .9860305    4.661254
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         48
+                                                F(1, 46)          =       5.25
+                                                Prob > F          =     0.0266
+                                                R-squared         =     0.0907
+                                                Root MSE          =     3.5956
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.230627   .9737084    -2.29   0.027    -4.190601   -.2706537
+       _cons |   2.823642   .9129196     3.09   0.003     .9860305    4.661254
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         48
+                                                F(1, 46)          =       5.25
+                                                Prob > F          =     0.0266
+                                                R-squared         =     0.0907
+                                                Root MSE          =     3.5956
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.230627   .9737084    -2.29   0.027    -4.190601   -.2706537
+       _cons |   2.823642   .9129196     3.09   0.003     .9860305    4.661254
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         48
+                                                F(1, 46)          =       5.25
+                                                Prob > F          =     0.0266
+                                                R-squared         =     0.0907
+                                                Root MSE          =     3.5956
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.230627   .9737084    -2.29   0.027    -4.190601   -.2706537
+       _cons |   2.823642   .9129196     3.09   0.003     .9860305    4.661254
+------------------------------------------------------------------------------
+
+. 
+. matrix list tbl
+
+tbl[4,10]
+            c1          c2          c3          c4          c5          c6
+r1          .6         .72        .744       .7488      .74976     .749952
+r2  -2.4905281  -2.0260221  -2.2306271  -2.2306271  -2.2306271  -2.2306271
+r3   1.1381146   .98561772   .97370845   .97370845   .97370845   .97370845
+r4   .03486626   .04578654   .02660277   .02660277   .02660277   .02660277
+
+            c7          c8          c9         c10
+r1    .7499904   .74999808   .74999962   .74999992
+r2  -2.2306271  -2.2306271  -2.2306271  -2.2306271
+r3   .97370845   .97370845   .97370845   .97370845
+r4   .02660277   .02660277   .02660277   .02660277
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. matrix tbl = J(4, 10, .)
+
+. 
+. forvalues i = 1(1)10 {
+  2.         local win = (0.8+(`i'-1)*0.2)
+  3.         matrix tbl[1,`i'] = `win'
+  4.         
+.     reg rel_post t if abs(pov)<=`win', vce(hc2)
+  5.         matrix temp = r(table)
+  6.     
+.     matrix tbl[2, `i'] = temp["b","t"]
+  7.     matrix tbl[3, `i'] = temp["se","t"]
+  8.     matrix tbl[4, `i'] = temp["pvalue","t"]
+  9. }
+
+Linear regression                               Number of obs     =         52
+                                                F(1, 50)          =       2.81
+                                                Prob > F          =     0.0999
+                                                R-squared         =     0.0490
+                                                Root MSE          =     3.7259
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |   -1.66401   .9926755    -1.68   0.100    -3.657857    .3298375
+       _cons |   2.621954   .8579933     3.06   0.004     .8986233    4.345284
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         64
+                                                F(1, 62)          =       6.53
+                                                Prob > F          =     0.0131
+                                                R-squared         =     0.0854
+                                                Root MSE          =     3.8247
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.311095   .9044063    -2.56   0.013    -4.118978   -.5032127
+       _cons |    3.22022   .8014279     4.02   0.000     1.618189    4.822252
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         79
+                                                F(1, 77)          =       7.14
+                                                Prob > F          =     0.0092
+                                                R-squared         =     0.0753
+                                                Root MSE          =     3.8677
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.193863   .8209801    -2.67   0.009    -3.828644    -.559083
+       _cons |    3.19938   .7058623     4.53   0.000     1.793829    4.604931
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         93
+                                                F(1, 91)          =       5.01
+                                                Prob > F          =     0.0277
+                                                R-squared         =     0.0411
+                                                Root MSE          =      7.466
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |   -3.08942   1.380505    -2.24   0.028    -5.831623   -.3472176
+       _cons |   4.188292   1.324909     3.16   0.002     1.556524    6.820061
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         99
+                                                F(1, 97)          =       4.67
+                                                Prob > F          =     0.0332
+                                                R-squared         =     0.0395
+                                                Root MSE          =     7.2898
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.936863   1.359299    -2.16   0.033    -5.634696   -.2390305
+       _cons |   4.110731   1.302453     3.16   0.002     1.525722    6.695741
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =        111
+                                                F(1, 109)         =       4.52
+                                                Prob > F          =     0.0358
+                                                R-squared         =     0.0328
+                                                Root MSE          =      6.955
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.555318   1.202513    -2.12   0.036    -4.938659   -.1719769
+       _cons |   3.812888   1.144007     3.33   0.001     1.545504    6.080272
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =        124
+                                                F(1, 122)         =       5.29
+                                                Prob > F          =     0.0231
+                                                R-squared         =     0.0345
+                                                Root MSE          =     6.6748
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.520602   1.095531    -2.30   0.023    -4.689314   -.3518894
+       _cons |   3.712205   1.042355     3.56   0.001     1.648759    5.775651
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =        132
+                                                F(1, 130)         =       5.51
+                                                Prob > F          =     0.0204
+                                                R-squared         =     0.0350
+                                                Root MSE          =     6.4936
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.465227   1.049859    -2.35   0.020    -4.542248    -.388206
+       _cons |    3.55753   1.002491     3.55   0.001     1.574222    5.540838
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =        141
+                                                F(1, 139)         =       3.65
+                                                Prob > F          =     0.0580
+                                                R-squared         =     0.0233
+                                                Root MSE          =     6.4894
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -1.996042   1.044358    -1.91   0.058    -4.060924    .0688394
+       _cons |   3.415229   .9655272     3.54   0.001      1.50621    5.324247
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =        152
+                                                F(1, 150)         =       3.09
+                                                Prob > F          =     0.0808
+                                                R-squared         =     0.0188
+                                                Root MSE          =     6.3799
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |   -1.75735    .999642    -1.76   0.081    -3.732548    .2178484
+       _cons |   3.424547   .9085579     3.77   0.000     1.629322    5.219771
+------------------------------------------------------------------------------
+
+. 
+. matrix list tbl
+
+tbl[4,10]
+            c1          c2          c3          c4          c5          c6
+r1          .8           1         1.2         1.4         1.6         1.8
+r2    -1.66401  -2.3110952  -2.1938633  -3.0894203  -2.9368634   -2.555318
+r3   .99267553   .90440632   .82098013   1.3805046   1.3592993   1.2025127
+r4   .09992459   .01307453   .00919235   .02766837   .03319148   .03584757
+
+            c7          c8          c9         c10
+r1           2         2.2         2.4         2.6
+r2  -2.5206017  -2.4652268  -1.9960422  -1.7573497
+r3   1.0955306   1.0498592   1.0443581   .99964203
+r4   .02310025    .0203756   .05802936    .0807908
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. rdrandinf rel_post pov, wl(-1.7) wr(1.7) seed(22)
+
+Selected window = [-1.7 ; 1.7]
+
+Running randomization-based test...
+Randomization-based test complete.
+
+
+Inference for sharp design
+
+
+Cutoff c = 0.00   |  Left of c  Right of c        Number of obs =           2783
+------------------+-----------------------        Order of poly =              0
+     Number of obs|       2489         294        Kernel type   =        uniform
+Eff. Number of obs|         58          47        Reps          =           1000
+   Mean of outcome|      3.869       1.213        Window        =    set by user
+   S.D. of outcome|      9.277       2.596        H0:       tau =          0.000
+            Window|     -1.700       1.700        Randomization =  fixed margins
+
+Outcome: rel_post. Running variable: pov.
+--------------------------------------------------------------------------------
+                  |              Finite sample             Large sample
+                  |             ---------------  -------------------------------
+         Statistic|      T           P>|T|         P>|T|   Power vs d =     4.64
+------------------+-------------------------------------------------------------
+    Diff. in means|     -2.656       0.027          0.037                  0.953
+--------------------------------------------------------------------------------
+
+. 
+end of do-file
+
+. do "C:\Users\prorgan\AppData\Local\Temp\STD580_000000.tmp"
+
+. matrix tbl = J(4, 10, .)
+
+. 
+. * loop over window values, store results
+. forvalues i = 1(1)10 {
+  2.         local win = 0.8+(`i'-1)*0.2
+  3.         matrix tbl[1,`i'] = `win'
+  4.         
+.     reg rel_post t if abs(pov)<=`win', vce(hc2)
+  5.         matrix temp = r(table)
+  6.     
+.     matrix tbl[2, `i'] = temp["b","t"]
+  7.     matrix tbl[3, `i'] = temp["se","t"]
+  8.     matrix tbl[4, `i'] = temp["pvalue","t"]
+  9. }
+
+Linear regression                               Number of obs     =         52
+                                                F(1, 50)          =       2.81
+                                                Prob > F          =     0.0999
+                                                R-squared         =     0.0490
+                                                Root MSE          =     3.7259
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |   -1.66401   .9926755    -1.68   0.100    -3.657857    .3298375
+       _cons |   2.621954   .8579933     3.06   0.004     .8986233    4.345284
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         64
+                                                F(1, 62)          =       6.53
+                                                Prob > F          =     0.0131
+                                                R-squared         =     0.0854
+                                                Root MSE          =     3.8247
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.311095   .9044063    -2.56   0.013    -4.118978   -.5032127
+       _cons |    3.22022   .8014279     4.02   0.000     1.618189    4.822252
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         79
+                                                F(1, 77)          =       7.14
+                                                Prob > F          =     0.0092
+                                                R-squared         =     0.0753
+                                                Root MSE          =     3.8677
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.193863   .8209801    -2.67   0.009    -3.828644    -.559083
+       _cons |    3.19938   .7058623     4.53   0.000     1.793829    4.604931
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         93
+                                                F(1, 91)          =       5.01
+                                                Prob > F          =     0.0277
+                                                R-squared         =     0.0411
+                                                Root MSE          =      7.466
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |   -3.08942   1.380505    -2.24   0.028    -5.831623   -.3472176
+       _cons |   4.188292   1.324909     3.16   0.002     1.556524    6.820061
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =         99
+                                                F(1, 97)          =       4.67
+                                                Prob > F          =     0.0332
+                                                R-squared         =     0.0395
+                                                Root MSE          =     7.2898
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.936863   1.359299    -2.16   0.033    -5.634696   -.2390305
+       _cons |   4.110731   1.302453     3.16   0.002     1.525722    6.695741
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =        111
+                                                F(1, 109)         =       4.52
+                                                Prob > F          =     0.0358
+                                                R-squared         =     0.0328
+                                                Root MSE          =      6.955
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.555318   1.202513    -2.12   0.036    -4.938659   -.1719769
+       _cons |   3.812888   1.144007     3.33   0.001     1.545504    6.080272
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =        124
+                                                F(1, 122)         =       5.29
+                                                Prob > F          =     0.0231
+                                                R-squared         =     0.0345
+                                                Root MSE          =     6.6748
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.520602   1.095531    -2.30   0.023    -4.689314   -.3518894
+       _cons |   3.712205   1.042355     3.56   0.001     1.648759    5.775651
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =        132
+                                                F(1, 130)         =       5.51
+                                                Prob > F          =     0.0204
+                                                R-squared         =     0.0350
+                                                Root MSE          =     6.4936
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -2.465227   1.049859    -2.35   0.020    -4.542248    -.388206
+       _cons |    3.55753   1.002491     3.55   0.001     1.574222    5.540838
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =        141
+                                                F(1, 139)         =       3.65
+                                                Prob > F          =     0.0580
+                                                R-squared         =     0.0233
+                                                Root MSE          =     6.4894
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |  -1.996042   1.044358    -1.91   0.058    -4.060924    .0688394
+       _cons |   3.415229   .9655272     3.54   0.001      1.50621    5.324247
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =        152
+                                                F(1, 150)         =       3.09
+                                                Prob > F          =     0.0808
+                                                R-squared         =     0.0188
+                                                Root MSE          =     6.3799
+
+------------------------------------------------------------------------------
+             |             Robust HC2
+    rel_post |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           t |   -1.75735    .999642    -1.76   0.081    -3.732548    .2178484
+       _cons |   3.424547   .9085579     3.77   0.000     1.629322    5.219771
+------------------------------------------------------------------------------
+
+. 
+. * write to LaTeX
+. mat2txt, matrix(tbl) saving("s\4_3.txt") format(%9.4f) replace
+(note: file s\4_3.txt not found)
 
 . 
 end of do-file

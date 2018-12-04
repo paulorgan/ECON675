@@ -1,7 +1,7 @@
 ********************************************************************************
 * Author: Paul R. Organ
 * Purpose: ECON 675, PS6
-* Last Update: Dec 2, 2018
+* Last Update: Dec 4, 2018
 ********************************************************************************
 clear all
 set more off
@@ -394,7 +394,56 @@ forvalues c = -10(2)10 {
 mat2txt, matrix(tbl) saving("s\3_2d.txt") format(%9.4f) replace
 
 ********************************************************************************
-* Q2.4: Local Randomization Methods
+* Q2.4.1: Local Randomization Methods - Window Selection
+
+* select windows using the four included methods
+rdwinselect pov inj_post rel_pre, ///
+    cutoff(0) wmin(0.1) wstep(0.2) nwindows(20) statistic(diffmeans)
+* recommended window is 1.7
+	
+rdwinselect pov inj_post rel_pre, ///
+    cutoff(0) wmin(0.1) wstep(0.2) nwindows(20) statistic(ksmirnov)
+* recommended window is 1.9
+
+rdwinselect pov inj_post rel_pre, ///
+    cutoff(0) wmin(0.1) wstep(0.2) nwindows(20) statistic(ranksum)
+* recommended window is 1.7
+
+rdwinselect pov inj_post rel_pre, ///
+    cutoff(0) wmin(0.1) wstep(0.2) nwindows(20) statistic(hotelling)
+* recommended window is 1.9
+
+* plot based on the selected binwidth of 1.7 (using diffmeans)
+rdplot rel_post pov if abs(pov)<=1.7, c(0) p(0) binselect(es)
+graph export "s\4_1s.png", replace
+
+********************************************************************************
+* Q2.4.2: Local Randomization Methods - Basic Analysis
+
+* do the randomization analysis using window from above
+rdrandinf rel_post pov, wl(-1.7) wr(1.7) seed(22)
+
+********************************************************************************
+* Q2.4.2: Local Randomization Methods - Sensitivity Analysis
+
+* empty matrix to fill with results
+matrix tbl = J(4, 10, .)
+
+* loop over window values, store results
+forvalues i = 1(1)10 {
+	local win = 0.8+(`i'-1)*0.2
+	matrix tbl[1,`i'] = `win'
+	
+    reg rel_post t if abs(pov)<=`win', vce(hc2)
+	matrix temp = r(table)
+    
+    matrix tbl[2, `i'] = temp["b","t"]
+    matrix tbl[3, `i'] = temp["se","t"]
+    matrix tbl[4, `i'] = temp["pvalue","t"]
+}
+
+* write to LaTeX
+mat2txt, matrix(tbl) saving("s\4_3.txt") format(%9.4f) replace
 	
 ********************************************************************************
 log close
